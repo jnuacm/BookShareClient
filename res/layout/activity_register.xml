@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:id = "@+id/registerLayout">
+
+   
+    <EditText  
+        android:inputType="textPersonName" 
+        android:hint = "用户名" 
+        android:id = "@+id/NewUsername"  
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+    <EditText  
+        android:hint = "真实姓名" 
+        android:id = "@+id/realname"  
+        android:layout_below="@id/NewUsername"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+    <EditText  
+        android:password="true"
+        android:hint = "密码" 
+        android:id = "@+id/NewPassword"  
+        android:layout_below="@id/realname"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+    <EditText  
+        android:password="true"
+        android:hint = "确认密码" 
+        android:id = "@+id/AginNewPassword"  
+        android:layout_below="@id/NewPassword"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+    
+    <Spinner
+	    android:id="@+id/NewUserBaseName"
+	    android:layout_below="@id/AginNewPassword"
+        android:layout_alignParentLeft ="true"
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+	    />
+	
+    <Button 
+        android:id="@+id/Back" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="返回" 
+        android:onClick="Back"
+        android:layout_below="@id/NewUserBaseName"
+         android:layout_alignParentRight = "true"/>
+    
+    <Button 
+        android:id="@+id/Enter" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="确定" 
+        android:onClick="Enter"
+        android:layout_below="@id/NewUserBaseName"
+        android:layout_marginLeft ="5dp"
+        android:layout_toLeftOf ="@id/Back"/>
+    
+
+	
+</RelativeLayout>

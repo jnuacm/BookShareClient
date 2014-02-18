@@ -1,0 +1,16 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/BrowseLayout"
+    >
+    <ListView
+        android:id="@+id/BrowseListView"
+        android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"
+        android:cacheColorHint="@android:color/transparent"
+        android:scrollbars="none"
+        >
+    </ListView>
+
+</LinearLayout>
