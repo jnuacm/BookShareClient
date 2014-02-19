@@ -13,6 +13,7 @@ import com.example.bookshare.R;
 
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -24,6 +25,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class CaptureActivity extends Activity implements Callback {
 
@@ -43,16 +45,20 @@ public class CaptureActivity extends Activity implements Callback {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_body);
+		setContentView(R.layout.scan);
 		//≥ı ºªØ CameraManager
-	/*	CameraManager.init(getApplication());
+		CameraManager.init(getApplication());
+		
 
 		viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
 		txtResult = (TextView) findViewById(R.id.txtResult);
 		hasSurface = false;
-		inactivityTimer = new InactivityTimer(this);*/
+		inactivityTimer = new InactivityTimer(this);
+		
+		
 	}
-
+	
+		
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() {
@@ -146,6 +152,7 @@ public class CaptureActivity extends Activity implements Callback {
 		 playBeepSoundAndVibrate();
 		txtResult.setText(obj.getBarcodeFormat().toString() + ":"
 				+ obj.getText());
+		Toast.makeText(this,txtResult.getText().toString() ,Toast.LENGTH_LONG).show();
 	}
 
 	private void initBeepSound() {
