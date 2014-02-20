@@ -13,7 +13,6 @@ import com.example.bookshare.R;
 
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;

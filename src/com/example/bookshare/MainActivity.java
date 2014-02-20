@@ -1,13 +1,10 @@
 package com.example.bookshare;
 
-import com.entity.LocalAccount;
-import com.socket.Ackownledge;
-import com.socket.RSignIn;
+
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -15,11 +12,9 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -47,8 +42,6 @@ public class MainActivity extends Activity {
 		//mainLayout.setBackgroundColor(Color.argb(150, 22, 70, 150));
 		
 
-		LocalAccount localact = (LocalAccount)getApplicationContext();
-		localact.Initia();
 		
 		m_Spinner = (Spinner) findViewById(R.id.BASENAME);
 
@@ -78,26 +71,13 @@ public class MainActivity extends Activity {
 		Str_name = username.getText().toString();
 		Str_passw = password.getText().toString();
 		Str_basen = m_basename[now_flag];
-		RSignIn RS = new RSignIn(Str_basen,Str_name,Str_passw);
-		/*RS.send();
-		boolean is_legal = Ackownledge.receive().getStatus();
+	
 		
-		if(true == is_legal)
-		{*/
-			LocalAccount localact = (LocalAccount)getApplicationContext();
-			localact.setAccount(RS.getAccount());
-			Intent intent = new Intent();
-			intent.setClass(this, CaptureActivity.class);
-			startActivity(intent);
-		/*}
-		else
-		{
-			Toast.makeText(MainActivity.this,"密码错误或不存在这样的账户" ,Toast.LENGTH_LONG).show();
-		}*/
-		/*
 		Intent intent = new Intent();
-		intent.setClass(this, HomeActivity.class);
-		startActivity(intent);*/
+		intent.setClass(this, CaptureActivity.class);
+		startActivity(intent);
+		
+		
 	}
 
 	public void Register(View v)// 登录相应按钮

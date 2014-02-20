@@ -18,11 +18,11 @@
 	<uses-permission android:name="android.permission.FLASHLIGHT"/>
 
     <application
-        android:name="com.entity.LocalAccount"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        
         <activity
             android:name="com.example.bookshare.MainActivity"
             android:label="@string/app_name"
@@ -33,31 +33,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.bookshare.GetisonActivity" >
-        </activity>
-        <activity android:name="com.example.bookshare.SearchBookActivity" >
-        </activity>
-        <activity
-            android:name="com.example.bookshare.BodyActivity"
-            android:label="@string/title_activity_body" >
-        </activity>
+       
+      
         <activity
             android:name="com.example.bookshare.RegisterActivity"
             android:label="@string/title_activity_register" >
         </activity>
-        <activity
-            android:name="com.example.bookshare.HomeActivity"
-            android:label="@string/title_activity_home" >
-        </activity>
-        <activity
-            android:name="com.example.bookshare.BrowseActivity"
-            android:label="@string/title_activity_browse" >
-        </activity>
+        
+       
        <activity 
            android:name="com.example.bookshare.CaptureActivity"
            android:screenOrientation="portrait"
 			android:label="@string/title_CaptureActivity">
 	   </activity>
+	   
     </application>
     
     
