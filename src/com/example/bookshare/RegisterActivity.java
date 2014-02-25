@@ -75,7 +75,7 @@ public class RegisterActivity extends Activity {
 	public void Back(View v)//注册确认
 	{
 		Intent intent = new Intent();
-		intent.setClass(this, MainActivity.class);
+		intent.setClass(this, LoginActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);////退出当前activity
 		startActivity(intent);
 		finish();

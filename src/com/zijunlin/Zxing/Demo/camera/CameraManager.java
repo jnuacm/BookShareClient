@@ -25,9 +25,9 @@ import android.hardware.Camera;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
-
 
 import java.io.IOException;
 
@@ -47,7 +47,7 @@ public final class CameraManager {
   private static final int MAX_FRAME_WIDTH = 480;
   private static final int MAX_FRAME_HEIGHT = 360;
 
-  private static CameraManager cameraManager;
+  public  CameraManager cameraManager;
 
   static final int SDK_INT; // Later we can use Build.VERSION.SDK_INT
   static {
@@ -82,10 +82,11 @@ public final class CameraManager {
    *
    * @param context The Activity which wants to use the camera.
    */
-  public static void init(Context context) {
+  public void init(Context context) {
     if (cameraManager == null) {
       cameraManager = new CameraManager(context);
     }
+    
   }
 
   /**
@@ -93,11 +94,11 @@ public final class CameraManager {
    *
    * @return A reference to the CameraManager singleton.
    */
-  public static CameraManager get() {
+  public  CameraManager get() {
     return cameraManager;
   }
 
-  private CameraManager(Context context) {
+  public CameraManager(Context context) {
 
     this.context = context;
     this.configManager = new CameraConfigurationManager(context);
@@ -225,20 +226,27 @@ public final class CameraManager {
       if (camera == null) {
         return null;
       }
-      int width = screenResolution.x * 3 / 4;
+      DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+
+     int width = (int)(metrics.widthPixels * 0.6);
+
+     int height = (int)(width * 0.9);
+
+     // int width = screenResolution.x * 3 / 4;
       if (width < MIN_FRAME_WIDTH) {
         width = MIN_FRAME_WIDTH;
       } else if (width > MAX_FRAME_WIDTH) {
         width = MAX_FRAME_WIDTH;
       }
-      int height = screenResolution.y * 3 / 4;
+      //int height = screenResolution.y * 3 / 4;
       if (height < MIN_FRAME_HEIGHT) {
         height = MIN_FRAME_HEIGHT;
       } else if (height > MAX_FRAME_HEIGHT) {
         height = MAX_FRAME_HEIGHT;
       }
       int leftOffset = (screenResolution.x - width) / 2;
-      int topOffset = (screenResolution.y - height) / 2;
+      int topOffset = (screenResolution.y - height)/4;
+      //(screenResolution.y - height) / 2;
       framingRect = new Rect(leftOffset, topOffset, leftOffset + width, topOffset + height);
       Log.d(TAG, "Calculated framing rect: " + framingRect);
     }

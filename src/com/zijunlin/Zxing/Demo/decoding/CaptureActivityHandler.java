@@ -62,7 +62,7 @@ public final class CaptureActivityHandler extends Handler {
     state = State.SUCCESS;
 
     // Start ourselves capturing previews and decoding.
-    CameraManager.get().startPreview();
+    activity.cameraManager.startPreview();
     restartPreviewAndDecode();
   }
 
@@ -74,7 +74,7 @@ public final class CaptureActivityHandler extends Handler {
         // When one auto focus pass finishes, start another. This is the closest thing to
         // continuous AF. It does seem to hunt a bit, but I'm not sure what else to do.
         if (state == State.PREVIEW) {
-          CameraManager.get().requestAutoFocus(this, R.id.auto_focus);
+        	activity.cameraManager.requestAutoFocus(this, R.id.auto_focus);
         }
         break;
       case R.id.restart_preview:
@@ -92,7 +92,7 @@ public final class CaptureActivityHandler extends Handler {
       case R.id.decode_failed:
         // We're decoding as fast as possible, so when one decode fails, start another.
         state = State.PREVIEW;
-        CameraManager.get().requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
+        activity.cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
         break;
       case R.id.return_scan_result:
         Log.d(TAG, "Got return scan result message");
@@ -111,7 +111,7 @@ public final class CaptureActivityHandler extends Handler {
 
   public void quitSynchronously() {
     state = State.DONE;
-    CameraManager.get().stopPreview();
+    activity.cameraManager.stopPreview();
     Message quit = Message.obtain(decodeThread.getHandler(), R.id.quit);
     quit.sendToTarget();
     try {
@@ -128,8 +128,8 @@ public final class CaptureActivityHandler extends Handler {
   private void restartPreviewAndDecode() {
     if (state == State.SUCCESS) {
       state = State.PREVIEW;
-      CameraManager.get().requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
-      CameraManager.get().requestAutoFocus(this, R.id.auto_focus);
+      activity.cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
+      activity.cameraManager.requestAutoFocus(this, R.id.auto_focus);
       activity.drawViewfinder();
     }
   }

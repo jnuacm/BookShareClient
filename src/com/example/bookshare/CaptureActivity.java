@@ -11,15 +11,21 @@ import com.zijunlin.Zxing.Demo.decoding.InactivityTimer;
 import com.zijunlin.Zxing.Demo.view.ViewfinderView;
 import com.example.bookshare.R;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Menu;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
@@ -29,11 +35,11 @@ import android.widget.Toast;
 public class CaptureActivity extends Activity implements Callback {
 
 	private CaptureActivityHandler handler;
+	public  CameraManager cameraManager;
 	private ViewfinderView viewfinderView;
 	private boolean hasSurface;
 	private Vector<BarcodeFormat> decodeFormats;
 	private String characterSet;
-	private TextView txtResult;
 	private InactivityTimer inactivityTimer;
 	private MediaPlayer mediaPlayer;
 	private boolean playBeep;
@@ -46,29 +52,33 @@ public class CaptureActivity extends Activity implements Callback {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.scan);
 		//≥ı ºªØ CameraManager
-		CameraManager.init(getApplication());
 		
-
-		viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
-		txtResult = (TextView) findViewById(R.id.txtResult);
+		
+		cameraManager = new CameraManager(getApplication());
 		hasSurface = false;
+		viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
+		viewfinderView.setCameraManager(cameraManager);
 		inactivityTimer = new InactivityTimer(this);
 		
-		
-	}
+		}
 	
+
 		
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() {
 		super.onResume();
+
 		SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
 		SurfaceHolder surfaceHolder = surfaceView.getHolder();
 		if (hasSurface) {
+			
 			initCamera(surfaceHolder);
+			
 		} else {
 			surfaceHolder.addCallback(this);
 			surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+			
 		}
 		decodeFormats = null;
 		characterSet = null;
@@ -80,27 +90,32 @@ public class CaptureActivity extends Activity implements Callback {
 		}
 		initBeepSound();
 		vibrate = true;
+		
 	}
 
 	@Override
 	protected void onPause() {
-		super.onPause();
+		
 		if (handler != null) {
 			handler.quitSynchronously();
 			handler = null;
 		}
-		CameraManager.get().closeDriver();
+		cameraManager.closeDriver();
+		super.onPause();
 	}
 
 	@Override
 	protected void onDestroy() {
+		
 		inactivityTimer.shutdown();
 		super.onDestroy();
+		
 	}
 
 	private void initCamera(SurfaceHolder surfaceHolder) {
+		
 		try {
-			CameraManager.get().openDriver(surfaceHolder);
+			cameraManager.openDriver(surfaceHolder);
 		} catch (IOException ioe) {
 			return;
 		} catch (RuntimeException e) {
@@ -109,6 +124,7 @@ public class CaptureActivity extends Activity implements Callback {
 		if (handler == null) {
 			handler = new CaptureActivityHandler(this, decodeFormats,characterSet);
 		}
+		
 	}
 
 	@Override
@@ -149,9 +165,14 @@ public class CaptureActivity extends Activity implements Callback {
 		inactivityTimer.onActivity();
 		viewfinderView.drawResultBitmap(barcode);
 		 playBeepSoundAndVibrate();
-		txtResult.setText(obj.getBarcodeFormat().toString() + ":"
-				+ obj.getText());
-		Toast.makeText(this,txtResult.getText().toString() ,Toast.LENGTH_LONG).show();
+		 
+		Toast.makeText(this,obj.getBarcodeFormat().toString() + ":"+ obj.getText() ,Toast.LENGTH_LONG).show();
+		
+		
+		Intent intent = new Intent(CaptureActivity.this, MainActivity.class);
+		finish();
+		startActivity(intent);
+		
 	}
 
 	private void initBeepSound() {
@@ -197,5 +218,10 @@ public class CaptureActivity extends Activity implements Callback {
 			mediaPlayer.seekTo(0);
 		}
 	};
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
 
 }

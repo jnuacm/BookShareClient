@@ -8,6 +8,8 @@
     <string name="title_activity_register">RegisterActivity</string>
     <string name="title_activity_home">HomeActivity</string>
     <string name="title_activity_browse">BrowseActivity</string>
-      <string name="title_CaptureActivity">CaptureActivity</string>
+    <string name="title_CaptureActivity">CaptureActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="add_book">添加</string>
 
 </resources>
