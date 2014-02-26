@@ -99,8 +99,7 @@ public class CaptureActivity extends Activity implements Callback {
 	{
 		Intent intent = new Intent();
 		intent.setClass(this, LoginActivity.class);
-		finish();
-		startActivity(intent);
+		CaptureActivity.this.finish();
 	}
 	
 	public void Flash(View v)// øÿ÷∆…¡π‚µ∆∞¥≈•
@@ -231,9 +230,8 @@ public class CaptureActivity extends Activity implements Callback {
 		Toast.makeText(this,obj.getBarcodeFormat().toString() + ":"+ obj.getText() ,Toast.LENGTH_LONG).show();
 		
 		
-		Intent intent = new Intent(CaptureActivity.this, LoginActivity.class);
+	
 		finish();
-		startActivity(intent);
 		
 	}
 

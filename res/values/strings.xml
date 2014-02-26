@@ -11,5 +11,6 @@
     <string name="title_CaptureActivity">CaptureActivity</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="add_book">添加</string>
+    <string name="title_activity_welcome">WelcomeActivity</string>
 
 </resources>
