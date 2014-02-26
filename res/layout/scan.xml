@@ -14,24 +14,56 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="fill_parent"
-             android:layout_height="fill_parent"
-             android:id = "@+id/scan">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="right"
+    android:orientation="vertical" >
+    
+    <FrameLayout 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id = "@+id/scan">
+        <SurfaceView 
+            android:id="@+id/preview_view"
+            android:layout_width="fill_parent"
+            android:layout_gravity="center"
+            android:layout_height="fill_parent"/>
 
-  <SurfaceView android:id="@+id/preview_view"
-               android:layout_width="fill_parent"
-               android:layout_gravity="center"
-               android:layout_height="fill_parent"
-               />
+ 		 <com.zijunlin.Zxing.Demo.view.ViewfinderView
+    		  android:id="@+id/viewfinder_view"
+    		  android:layout_width="wrap_content"
+     		  android:layout_height="wrap_content"
+    		  android:layout_gravity="center"
+    		  android:background="@color/transparent"/>
+	</FrameLayout>
+	
+  
+	<ImageView 
+  	      android:id="@+id/turnback" 
+			android:layout_width = "wrap_content"
+			android:layout_height ="wrap_content"
+			android:src="@drawable/turnback_b" 
+			android:onClick="Turnback"
+			android:layout_alignParentBottom ="true"
+			android:layout_alignParentRight ="true"
+			android:scaleType="matrix"
+    	    />
+    
+ 	   <ImageView
+   	   		android:id="@+id/flash" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" 
+			android:layout_alignParentBottom ="true"
+			android:layout_toLeftOf ="@id/turnback"
+			android:layout_marginLeft ="5dp"
+			android:src="@drawable/open_b" 
+			android:onClick="Flash"
+			android:scaleType="matrix"
+			
+     	   />
+ 	  
+   
+</RelativeLayout>
 
-  <com.zijunlin.Zxing.Demo.view.ViewfinderView
-      android:id="@+id/viewfinder_view"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center"
-
-      android:background="@color/transparent"/>
-
-
-</FrameLayout>
+    

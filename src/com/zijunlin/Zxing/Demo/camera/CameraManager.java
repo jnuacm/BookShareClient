@@ -220,6 +220,12 @@ public final class CameraManager {
    *
    * @return The rectangle to draw on screen in window coordinates.
    */
+  
+  public Camera getCamera()
+  {
+	  return camera;
+  }
+  
   public Rect getFramingRect() {
     Point screenResolution = configManager.getScreenResolution();
     if (framingRect == null) {
@@ -228,7 +234,7 @@ public final class CameraManager {
       }
       DisplayMetrics metrics = context.getResources().getDisplayMetrics();
 
-     int width = (int)(metrics.widthPixels * 0.6);
+     int width = (int)(metrics.widthPixels * 0.8);
 
      int height = (int)(width * 0.9);
 

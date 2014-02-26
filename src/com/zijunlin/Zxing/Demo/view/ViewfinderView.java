@@ -32,6 +32,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -60,7 +61,8 @@ public final class ViewfinderView extends View {
   private Collection<ResultPoint> possibleResultPoints;
   private Collection<ResultPoint> lastPossibleResultPoints;
   
-  private int i = 0;// 添加的
+  private static int i = 0;// 添加的
+  private static int Direction = 1;
   private Rect mRect;// 扫描线填充边界
   private GradientDrawable mDrawable;// 采用渐变图作为扫描线
   private Drawable lineDrawable;// 采用图片作为扫描线
@@ -125,17 +127,17 @@ public final class ViewfinderView extends View {
       
     //绘制四个角
       paint.setColor(Color.rgb(50,189,189));
-      canvas.drawRect(frame.left,frame.top, frame.left + 30,frame.top+ 5,paint);
-      canvas.drawRect(frame.left,frame.top, frame.left + 5,frame.top+ 30,paint);
+      canvas.drawRect(frame.left,frame.top, frame.left + 50,frame.top+ 5,paint);
+      canvas.drawRect(frame.left,frame.top, frame.left + 5,frame.top+ 50,paint);
       
-      canvas.drawRect(frame.right- 30,frame.top, frame.right,frame.top + 5,paint);
-      canvas.drawRect(frame.right - 5,frame.top, frame.right,frame.top + 30,paint);
+      canvas.drawRect(frame.right- 50,frame.top, frame.right,frame.top + 5,paint);
+      canvas.drawRect(frame.right - 5,frame.top, frame.right,frame.top + 50,paint);
       
-      canvas.drawRect(frame.left,frame.bottom - 5,frame.left + 30,frame.bottom,paint);
-      canvas.drawRect(frame.left,frame.bottom - 30,frame.left + 5,frame.bottom,paint);
+      canvas.drawRect(frame.left,frame.bottom - 5,frame.left + 50,frame.bottom,paint);
+      canvas.drawRect(frame.left,frame.bottom - 50,frame.left + 5,frame.bottom,paint);
 
-      canvas.drawRect(frame.right- 30,frame.bottom - 5,frame.right,frame.bottom, paint);
-      canvas.drawRect(frame.right- 5,frame.bottom - 30,frame.right,frame.bottom, paint);
+      canvas.drawRect(frame.right- 50,frame.bottom - 5,frame.right,frame.bottom, paint);
+      canvas.drawRect(frame.right- 5,frame.bottom - 50,frame.right,frame.bottom, paint);
      
       // Draw a red "laser scanner" line through the middle to show decoding is active
       /*paint.setColor(laserColor);
@@ -178,7 +180,9 @@ public final class ViewfinderView extends View {
 		// middle + 2, paint);
 
 		// 将扫描线修改为上下走的线
-		if ((i += 5) < frame.bottom - frame.top) {
+		
+
+		if (Direction > 0) {
 			/* 以下为用渐变线条作为扫描线 */
 			// 渐变图为矩形
 			// mDrawable.setShape(GradientDrawable.RECTANGLE);
@@ -196,15 +200,32 @@ public final class ViewfinderView extends View {
 			// mDrawable.draw(canvas);
 
 			/* 以下为图片作为扫描线 */
+			
 			mRect.set(frame.left - 6, frame.top + i - 6, frame.right + 6,
 					frame.top + 6 + i);
+			i+=2;
+			if(i > frame.bottom - frame.top)
+			{
+				i = frame.bottom - frame.top -1;
+				Direction = -1;
+			}
 			lineDrawable.setBounds(mRect);
 			lineDrawable.draw(canvas);
 
 			// 刷新
 			invalidate();
 		} else {
-			i = 0;
+			
+			mRect.set(frame.left - 6, frame.top + i - 6, frame.right + 6,
+					frame.top + 6 + i);
+			i-=3;
+			if(i < 0)
+			{
+				i = 1;
+				Direction = 1;
+			}
+			lineDrawable.setBounds(mRect);
+			lineDrawable.draw(canvas);
 		}
 
       // Request another update at the animation interval, but only repaint the laser line,

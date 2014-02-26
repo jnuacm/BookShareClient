@@ -2,7 +2,6 @@ package com.example.bookshare;
 
 import java.io.IOException;
 import java.util.Vector;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.zijunlin.Zxing.Demo.camera.CameraManager;
@@ -11,12 +10,18 @@ import com.zijunlin.Zxing.Demo.decoding.InactivityTimer;
 import com.zijunlin.Zxing.Demo.view.ViewfinderView;
 import com.example.bookshare.R;
 
+
+
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -24,12 +29,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class CaptureActivity extends Activity implements Callback {
@@ -45,23 +50,80 @@ public class CaptureActivity extends Activity implements Callback {
 	private boolean playBeep;
 	private static final float BEEP_VOLUME = 0.10f;
 	private boolean vibrate;
+	private static boolean is_flash;
 
 	/** Called when the activity is first created. */
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.scan);
 		//初始化 CameraManager
 		
-		
+		is_flash = false;
 		cameraManager = new CameraManager(getApplication());
 		hasSurface = false;
 		viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
 		viewfinderView.setCameraManager(cameraManager);
 		inactivityTimer = new InactivityTimer(this);
 		
+		ImageView flash_img = (ImageView) findViewById(R.id.flash);  
+		/*int bmpW = BitmapFactory.decodeResource(getResources(), R.drawable.open_w).getWidth();// 获取图片宽度 
+		int bmpH = BitmapFactory.decodeResource(getResources(), R.drawable.open_w).getHeight();// 获取图片宽度 
+		DisplayMetrics dm = new DisplayMetrics();  
+		getWindowManager().getDefaultDisplay().getMetrics(dm);  
+		int screenW = dm.widthPixels;// 获取分辨率宽度
+		int screenH = dm.heightPixels;// 获取分辨率宽度
+		Matrix matrix1 = new Matrix();
+		matrix1.setScale(screenW/(10*bmpW), screenH/(10*bmpH));
+		matrix1.postTranslate(screenW/10*4, screenH/10*7);
+		flash_img.setImageMatrix(matrix1);*/
+		
+		
+		
+		/*ImageView turnback_img = (ImageView) findViewById(R.id.turnback);  
+		bmpW = BitmapFactory.decodeResource(getResources(), R.drawable.turnback_b).getWidth();// 获取图片宽度 
+		bmpH = BitmapFactory.decodeResource(getResources(), R.drawable.turnback_b).getHeight();// 获取图片宽度 
+		
+		Matrix matrix2 = new Matrix();
+		matrix2.setScale(screenW/(10*bmpW), screenH/(10*bmpH));
+		matrix2.postTranslate(screenW/10*4, screenH/10*7);
+		matrix2.postTranslate(screenW/10*6, screenH/10*7);
+		turnback_img.setImageMatrix(matrix2);*/
+		
+		
 		}
 	
+	
+	public void Turnback(View v)// 返回按钮
+	{
+		Intent intent = new Intent();
+		intent.setClass(this, LoginActivity.class);
+		finish();
+		startActivity(intent);
+	}
+	
+	public void Flash(View v)// 控制闪光灯按钮
+	{
+		if(false == is_flash)
+		{
+			Parameters params = cameraManager.getCamera().getParameters();
+			params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+			cameraManager.getCamera().setParameters(params);
+			is_flash = true;
+			ImageView flash_image = (ImageView) findViewById(R.id.flash);
+			flash_image.setImageResource(R.drawable.close_b);
+		}
+		else
+		{
+			Parameters params = cameraManager.getCamera().getParameters();
+			params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+			cameraManager.getCamera().setParameters(params);
+			is_flash = false;
+			ImageView flash_image = (ImageView) findViewById(R.id.flash);
+			flash_image.setImageResource(R.drawable.open_b);
+		}
+	}
 
 		
 	@SuppressWarnings("deprecation")
@@ -169,7 +231,7 @@ public class CaptureActivity extends Activity implements Callback {
 		Toast.makeText(this,obj.getBarcodeFormat().toString() + ":"+ obj.getText() ,Toast.LENGTH_LONG).show();
 		
 		
-		Intent intent = new Intent(CaptureActivity.this, MainActivity.class);
+		Intent intent = new Intent(CaptureActivity.this, LoginActivity.class);
 		finish();
 		startActivity(intent);
 		
