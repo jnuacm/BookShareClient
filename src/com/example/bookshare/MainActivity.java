@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -336,9 +337,9 @@ public class MainActivity extends Activity implements OnScrollListener {
 					Toast.makeText(getApplicationContext(),
 							"Jump into add friends", Toast.LENGTH_SHORT).show();
 				else {
-					// Intent intent = new
-					// Intent(MainActivity.this,MyBookContentActivity.class);
-					// startActivity(intent);
+					 Intent intent = new
+					 Intent(MainActivity.this,FriendsInformationActivity.class);
+					 startActivity(intent);
 				}
 			}
 		});

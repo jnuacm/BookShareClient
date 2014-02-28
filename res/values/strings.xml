@@ -12,5 +12,8 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="add_book">添加</string>
     <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="title_activity_friends_information">FriendsInformationActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>
