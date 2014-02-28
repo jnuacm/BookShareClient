@@ -41,17 +41,17 @@ public class MainActivity extends Activity implements OnScrollListener {
 	private int offset = 0;// 动画图片偏移量
 	private int currIndex = 0;// 当前页卡编号
 	private int bmpW;// 动画图片宽度
-	private int textNum;// 页卡个数
+	
 	private List<TextView> textViews;
 
 	private List<View> viewList;
 	private ViewPager viewPager;// viewpager
 
-	ListView mybookslistview;
-	SimpleAdapter adapter;
-	List<Map<String, Object>> list;
-	boolean isLastRow = false;
-	boolean isFirstRow = false;
+	ListView mybookslistview,myfriendslistview;
+	SimpleAdapter bookAdapter,friendAdapter;
+	List<Map<String, Object>> bookList,friendList;
+	boolean isBookLastRow = false, isFriendLastRow = false;
+	boolean isBookFirstRow = false, isFriendFirstRow = false;
 	int listshowsize = 10;
 
 	@SuppressWarnings("static-access")
@@ -60,18 +60,22 @@ public class MainActivity extends Activity implements OnScrollListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		/* 以下是子示图1 */
-		initData();
-		mybookslistview.setAdapter(adapter);
-		viewPager = (ViewPager) findViewById(R.id.viewpager);
+		/* 以下是子示图*/
+		initBookData();
+		initFriendData();
+		mybookslistview.setAdapter(bookAdapter);
+		myfriendslistview.setAdapter(friendAdapter);
+		
 
 		layout_in_flater = getLayoutInflater().from(this);
 		viewList = new ArrayList<View>();
 		viewList.add(mybookslistview);
-		viewList.add(layout_in_flater.inflate(R.layout.view02, null));
+		viewList.add(myfriendslistview);
 		viewList.add(layout_in_flater.inflate(R.layout.view03, null));
-
-		textNum = 3;
+		
+		
+		/*以下是显示翻页部分*/
+		viewPager = (ViewPager) findViewById(R.id.viewpager);
 		InitImageView();// 初始化下划线
 		InitTextView();
 		viewPager.setAdapter(new MyViewPagerAdapter(viewList));
@@ -187,17 +191,31 @@ public class MainActivity extends Activity implements OnScrollListener {
 		}
 
 	}
+	
+	
+	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+	/*!!!!!!!!!!!!!!!!!!!!!!!!!!以下是构造子页面的调用函数!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
-	// @Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
 		// TODO Auto-generated method stub
 		if (firstVisibleItem + visibleItemCount == totalItemCount
 				&& totalItemCount > 0) {
-			isLastRow = true;
+			if(0 == currIndex){
+				isBookLastRow = true;
+			}
+			else if(1 == currIndex){
+				isFriendLastRow = true;
+			}
 		}
 		if (0 == firstVisibleItem && totalItemCount > 0) {
-			isFirstRow = true;
+			if(0 == currIndex){
+				isBookFirstRow = true;
+			}
+			else if(1 == currIndex){
+				isFriendFirstRow = true;
+			}
 		}
 	}
 
@@ -205,24 +223,43 @@ public class MainActivity extends Activity implements OnScrollListener {
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		// TODO Auto-generated method stub
 
-		if (isLastRow
+		if( (0 == currIndex) && isBookLastRow
 				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
 			// 加载元素
-			loadData();
-			adapter.notifyDataSetChanged();
-			isLastRow = false;
-		} else if (isFirstRow
+			loadBookData();
+			bookAdapter.notifyDataSetChanged();
+			isBookLastRow = false;
+			
+		} else if ((0 == currIndex) &&isBookFirstRow
 				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-			list.clear();
-			loadData();
-			adapter.notifyDataSetChanged();
-			isFirstRow = false;
+			
+			bookList.clear();
+			loadBookData();
+			bookAdapter.notifyDataSetChanged();
+			isBookFirstRow = false;
+			
+		} else if((1 == currIndex) &&isFriendLastRow
+				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE){
+			
+			loadFriendData();
+			friendAdapter.notifyDataSetChanged();
+			isFriendLastRow = false;
+			
+		} else if((1 == currIndex) &&isFriendFirstRow
+				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE){
+			
+			friendList.clear();
+			loadFriendData();
+			friendAdapter.notifyDataSetChanged();
+			isFriendFirstRow = false;
+			
 		}
+		
 	}
 
-	private void initData() {
-		list = getData();
-		adapter = new SimpleAdapter(this, list, R.layout.mybooks_listview_item,
+	private void initBookData() {
+		bookList = getBookData();
+		bookAdapter = new SimpleAdapter(this, bookList, R.layout.mybooks_listview_item,
 				new String[] { "image", "bookname", "state" }, new int[] {
 						R.id.mybookslistitem_bookimage,
 						R.id.mybookslistitem_bookname,
@@ -252,14 +289,16 @@ public class MainActivity extends Activity implements OnScrollListener {
 				R.layout.mybooks_listview_top, null));
 
 	}
+	
+	
 
-	private List<Map<String, Object>> getData() {
+	private List<Map<String, Object>> getBookData() {
 		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
 
 		Map<String, Object> map;
 		for (int i = 0; i < listshowsize; i++) {
 			map = new HashMap<String, Object>();
-			map.put("image", R.drawable.tmp);
+			map.put("image", R.drawable.book1);
 			map.put("bookname", "Book Name !!! " + i);
 			map.put("state", "状态！！！");
 			ret.add(map);
@@ -268,21 +307,69 @@ public class MainActivity extends Activity implements OnScrollListener {
 		return ret;
 	}
 
-	private void loadData() {
+	private void loadBookData() {
 		Map<String, Object> map;
 		for (int i = 0; i < listshowsize; i++) {
 			map = new HashMap<String, Object>();
-			map.put("image", R.drawable.tmp);
-			map.put("bookname", "REN YAO " + list.size());
+			map.put("image", R.drawable.book1);
+			map.put("bookname", "REN YAO " + bookList.size());
 			map.put("state", "在借");
-			list.add(map);
+			bookList.add(map);
 		}
 	}
+	
+	private void initFriendData() {
+		friendList = getFriendData();
+		friendAdapter = new SimpleAdapter(this, friendList, R.layout.myfriends_listview_item,
+				new String[] { "image", "friendname" }, new int[] {
+						R.id.myfriendslistitem_friendimage,
+						R.id.myfriendslistitem_friendname});
 
-	/*
-	 * @Override public boolean onCreateOptionsMenu(Menu menu) { // Inflate the
-	 * menu; this adds items to the action bar if it is present.
-	 * getMenuInflater().inflate(R.menu.main, menu); return true; }
-	 */
+		View view = LayoutInflater.from(this).inflate(
+				R.layout.activity_submain2, null);
+		myfriendslistview = (ListView) view.findViewById(R.id.myfirendslistview);
+
+		myfriendslistview.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				if (0 == position)
+					Toast.makeText(getApplicationContext(),
+							"Jump into add friends", Toast.LENGTH_SHORT).show();
+				else {
+					// Intent intent = new
+					// Intent(MainActivity.this,MyBookContentActivity.class);
+					// startActivity(intent);
+				}
+			}
+		});
+
+		myfriendslistview.setOnScrollListener(this);
+		myfriendslistview.addHeaderView(LayoutInflater.from(this).inflate(
+				R.layout.myfriends_listview_top, null));
+
+	}
+	private List<Map<String, Object>> getFriendData() {
+		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+
+		Map<String, Object> map;
+		for (int i = 0; i < listshowsize; i++) {
+			map = new HashMap<String, Object>();
+			map.put("image", R.drawable.friend1);
+			map.put("friendname", "好友名" + i);
+			ret.add(map);
+		}
+
+		return ret;
+	}
+	
+	private void loadFriendData() {
+		Map<String, Object> map;
+		for (int i = 0; i < listshowsize; i++) {
+			map = new HashMap<String, Object>();
+			map.put("image", R.drawable.friend1);
+			map.put("friendname", "Kitty" + i);
+			friendList.add(map);
+		}
+	}
 
 }
