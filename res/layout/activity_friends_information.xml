@@ -7,10 +7,113 @@
     
     
     <ImageView 
-        android:layout_alignParentTop = ""
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_width = "90dp"
+        android:layout_height = "90dp"
+        android:id="@+id/IF_img"
         />
-
+    
+    
+    <TextView 
+        android:textColor="#000000"
+        android:layout_below="@id/IF_img"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="20dp"
+        android:layout_width = "80dp"
+        android:layout_height = "25dp"
+        android:text="用户名"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:id="@+id/IF_username_top"
+        />
+    
+    <TextView 
+        android:textColor="#000000"
+        android:layout_toRightOf="@id/IF_username_top"
+        android:layout_below="@id/IF_img"
+        android:layout_marginTop="25dp"
+        android:layout_width = "fill_parent"
+        android:layout_height = "25dp"
+        android:text="未知"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:id="@+id/IF_username"
+        />
+    
+    
+    <TextView 
+        android:textColor="#000000"
+        android:layout_below="@id/IF_username_top"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_width = "80dp"
+        android:layout_height = "25dp"
+        android:text="地区"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:id="@+id/IF_area_top"
+        />
+    
+    <TextView 
+        android:textColor="#000000"
+        android:layout_toRightOf="@id/IF_area_top"
+        android:layout_below="@id/IF_username"
+        android:layout_marginTop="20dp"
+        android:layout_width = "fill_parent"
+        android:layout_height = "25dp"
+        android:text="未知"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:id="@+id/IF_area"
+        />
+    
+    <TextView 
+        android:textColor="#000000"
+        android:layout_below="@id/IF_area_top"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_width = "80dp"
+        android:layout_height = "25dp"
+        android:text="藏书量"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:id="@+id/IF_collection_top"
+        />
+    
+	<TextView 
+        android:textColor="#111111"
+        android:layout_toRightOf="@id/IF_collection_top"
+        android:layout_below="@id/IF_area"
+        android:layout_marginTop="20dp"
+        android:layout_width = "fill_parent"
+        android:layout_height = "25dp"
+        android:text="未知"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:id="@+id/IF_collection"
+        />
+	<LinearLayout 
+	   android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:layout_alignParentBottom="true"
+       android:gravity="center_horizontal"
+	   android:padding="10dp"
+	    >
+	    <Button 
+	        android:id="@+id/add_friend"
+	        android:text="添加"
+	        android:textColor="#000000"
+	        android:layout_width="100dp"
+     	    android:layout_height="50dp"
+       />
+	    <Button 
+	        android:id="@+id/add_BlackList"
+	        android:text="黑名单"
+	        android:textColor="#000000"
+	        android:layout_width="100dp"
+     	    android:layout_height="50dp"
+       />
+	</LinearLayout>
    
 </RelativeLayout>

@@ -333,14 +333,16 @@ public class MainActivity extends Activity implements OnScrollListener {
 		myfriendslistview.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				if (0 == position)
-					Toast.makeText(getApplicationContext(),
-							"Jump into add friends", Toast.LENGTH_SHORT).show();
-				else {
-					 Intent intent = new
-					 Intent(MainActivity.this,FriendsInformationActivity.class);
+				
+					 Bundle bundle =new Bundle();// 创建 email 内容
+					 Map<String, Object> temp = new HashMap<String, Object>();
+					 temp = friendList.get(position-1);
+					 bundle.putString("friendName",temp.get("friendname").toString());
+					 bundle.putString("image",temp.get("image").toString());
+					 Intent intent = new Intent(MainActivity.this,FriendsInformationActivity.class);
+					 intent.putExtra("key", bundle);// 封装 email 
 					 startActivity(intent);
-				}
+				
 			}
 		});
 
