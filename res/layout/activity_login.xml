@@ -2,12 +2,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
+	android:background="@drawable/login_background"
 	android:id = "@+id/mainLayout">
 
-   
-    <EditText  
+   <ImageView 
+       android:src="@drawable/logo"
+       android:id="@+id/LOGO"
+       android:layout_width="fill_parent"
+       android:layout_height="200dp"
+       />
+    
+    <EditText
+       
         android:inputType="textPersonName" 
         android:hint = "用户名" 
+        android:layout_below="@id/LOGO"
         android:id = "@+id/USERNAME"  
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -20,30 +29,30 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         />
-	<Spinner
-	    android:id="@+id/BASENAME"
-	    android:layout_below="@id/PASSWORD"
-        android:layout_alignParentLeft ="true"
-        android:layout_width="wrap_content" 
+
+    <LinearLayout 
+        android:layout_width="fill_parent" 
         android:layout_height="wrap_content" 
-	    />
-     <Button 
+        android:layout_below="@id/PASSWORD"
+        android:gravity="center_horizontal"
+        >
+     <ImageButton 
         android:id="@+id/REGISTER" 
+        android:background="@color/transparent"
         android:layout_width="wrap_content" 
         android:layout_height="wrap_content" 
-        android:text="注册" 
-        android:layout_below="@id/PASSWORD"
+        android:src="@drawable/registerbutton"
         android:layout_marginLeft ="5dp"
-        android:layout_alignParentRight = "true"
         android:onClick="Register"/>
-    <Button 
-        android:id="@+id/LOGIN" 
+     <ImageButton
+        android:id="@+id/LOGIN"
+        android:src="@drawable/loginbutton"
+        android:background="@color/transparent"
         android:layout_width="wrap_content" 
         android:layout_height="wrap_content" 
-        android:text="登录" 
-        android:layout_below="@id/PASSWORD"
+        
         android:layout_toLeftOf ="@id/REGISTER"
         android:onClick="Login"/>
-    
+    </LinearLayout>
 
 </RelativeLayout>
