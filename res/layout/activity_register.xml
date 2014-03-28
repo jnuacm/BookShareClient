@@ -1,68 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent"
-	android:layout_height="fill_parent"
-	android:id = "@+id/registerLayout">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/registerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/login_background"
+    android:orientation="vertical" >
 
-   
-    <EditText  
-        android:inputType="textPersonName" 
-        android:hint = "用户名" 
-        android:id = "@+id/NewUsername"  
-        android:layout_width="fill_parent"
+    <EditText
+        android:id="@+id/registerusername"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        />
-    <EditText  
-        android:hint = "真实姓名" 
-        android:id = "@+id/realname"  
-        android:layout_below="@id/NewUsername"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        />
-    <EditText  
-        android:password="true"
-        android:hint = "密码" 
-        android:id = "@+id/NewPassword"  
-        android:layout_below="@id/realname"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        />
-    <EditText  
-        android:password="true"
-        android:hint = "确认密码" 
-        android:id = "@+id/AginNewPassword"  
-        android:layout_below="@id/NewPassword"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        />
-    
-    <Spinner
-	    android:id="@+id/NewUserBaseName"
-	    android:layout_below="@id/AginNewPassword"
-        android:layout_alignParentLeft ="true"
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-	    />
-	
-    <Button 
-        android:id="@+id/Back" 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-        android:text="返回" 
-        android:onClick="Back"
-        android:layout_below="@id/NewUserBaseName"
-         android:layout_alignParentRight = "true"/>
-    
-    <Button 
-        android:id="@+id/Enter" 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-        android:text="确定" 
-        android:onClick="Enter"
-        android:layout_below="@id/NewUserBaseName"
-        android:layout_marginLeft ="5dp"
-        android:layout_toLeftOf ="@id/Back"/>
-    
+        android:ems="10"
+        android:hint="用户名" />
 
-	
-</RelativeLayout>
+    <EditText
+        android:id="@+id/registerpassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="密码"
+        android:inputType="textPassword" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/registeremail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="E-mail"
+        android:inputType="textEmailAddress" />
+
+    <EditText
+        android:id="@+id/registerarea"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="地区" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right" >
+
+        <ImageButton
+            android:id="@+id/registerconfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@color/transparent"
+            android:onClick="confirm"
+            android:src="@drawable/registerbutton" />
+
+        <ImageButton
+            android:id="@+id/registercancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@color/transparent"
+            android:onClick="cancel"
+            android:src="@drawable/loginbutton" />
+
+    </LinearLayout>
+
+</LinearLayout>

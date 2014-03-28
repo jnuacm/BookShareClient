@@ -31,6 +31,9 @@ public class LoginActivity extends Activity {
 
 	@SuppressLint("NewApi")
 	private Handler mMainHandler, mChildHandler;
+	private static int MSG_LOGIN = 0x1234;
+	private static int MSG_RESPONSE = 0x1235;
+
 	ChildThread test;
 
 	@SuppressLint("HandlerLeak")
@@ -40,7 +43,9 @@ public class LoginActivity extends Activity {
 
 		mMainHandler = new Handler() {
 			public void handleMessage(Message msg) {
-				Log.i("hello", "我是主线程，我屌爆了子线程的屎忽窿！");
+				/*Toast.makeText(LoginActivity.this,
+						(CharSequence) msg.getData().get("Response"),
+						Toast.LENGTH_LONG).show();*/
 			}
 		};
 
@@ -61,16 +66,16 @@ public class LoginActivity extends Activity {
 		data.putString("username", username);
 		data.putString("password", password);
 		msg.setData(data);
-		msg.what = 0x1234;
+		msg.what = MSG_LOGIN;
 		mChildHandler.sendMessage(msg);
 	}
 
 	public void Register(View v)// 登录相应按钮
 	{
-		Intent intent = new Intent();
-		intent.setClass(this, CaptureActivity.class);
-		startActivity(intent);
 
+		Intent intent = new Intent();
+		intent.setClass(this, RegisterActivity.class);
+		startActivity(intent);
 	}
 
 	@Override
@@ -84,6 +89,7 @@ public class LoginActivity extends Activity {
 
 		private static final String CHILD_TAG = "ChildThread";
 
+		@SuppressLint("HandlerLeak")
 		public void run() {
 			this.setName("ChildThread");
 
@@ -92,15 +98,13 @@ public class LoginActivity extends Activity {
 
 			mChildHandler = new Handler() {
 				public void handleMessage(Message msg) {
-					if (msg.what == 0x1234) {
+					if (msg.what == MSG_LOGIN) {
 						Bundle data = msg.getData();
 						String username = data.getString("username");
 						String password = data.getString("password");
 
-						Log.i("username", username);
-						Log.i("password", password);
-
 						HttpClient httpLogin = new DefaultHttpClient();
+
 						HttpResponse loginResponse = null;
 						HttpPost post = new HttpPost(
 								"http://192.168.1.10:8080/BookShareYii/index.php?r=user/mbsignin");
@@ -112,9 +116,22 @@ public class LoginActivity extends Activity {
 						try {
 							post.setEntity(new UrlEncodedFormEntity(nvps,
 									"UTF-8"));
+
 							loginResponse = httpLogin.execute(post);
 							String strMsg = EntityUtils.toString(loginResponse
 									.getEntity());
+							if (strMsg.matches("yes")) {
+								Intent intent = new Intent(LoginActivity.this,
+										MainActivity.class);
+								startActivity(intent);
+								finish();
+							} else {
+								Bundle retdata = new Bundle();
+								retdata.putString("Response", strMsg);
+								msg.setData(retdata);
+								msg.what = MSG_RESPONSE;
+								mMainHandler.sendMessage(msg);
+							}
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -125,7 +142,7 @@ public class LoginActivity extends Activity {
 						 * bundle.putString("loginResponse", strMsg);
 						 * loginResponseMsg.setData(bundle);
 						 * mMainHandler.sendMessage(loginResponseMsg);
-						 */
+						 **/
 
 					}
 				}

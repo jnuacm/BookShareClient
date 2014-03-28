@@ -83,10 +83,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int zx_code_line=0x7f020018;
     }
     public static final class id {
-        public static final int AginNewPassword=0x7f070025;
-        public static final int Back=0x7f070027;
-        public static final int Enter=0x7f070028;
-        public static final int Group=0x7f070032;
+        public static final int Group=0x7f070031;
         public static final int IF_area=0x7f070010;
         public static final int IF_area_top=0x7f07000f;
         public static final int IF_collection=0x7f070012;
@@ -96,13 +93,10 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int IF_username_top=0x7f07000d;
         public static final int LOGIN=0x7f07001a;
         public static final int LOGO=0x7f070016;
-        public static final int NewPassword=0x7f070024;
-        public static final int NewUserBaseName=0x7f070026;
-        public static final int NewUsername=0x7f070022;
         public static final int PASSWORD=0x7f070018;
         public static final int REGISTER=0x7f070019;
         public static final int USERNAME=0x7f070017;
-        public static final int action_settings=0x7f070039;
+        public static final int action_settings=0x7f070038;
         public static final int add_BlackList=0x7f070014;
         public static final int add_friend=0x7f070013;
         /**  Messages IDs 
@@ -113,35 +107,40 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int decode_succeeded=0x7f070003;
         public static final int encode_failed=0x7f070004;
         public static final int encode_succeeded=0x7f070005;
-        public static final int flash=0x7f070037;
+        public static final int flash=0x7f070036;
         public static final int launch_product_query=0x7f070006;
         public static final int linearLayout1=0x7f07001b;
         public static final int mainLayout=0x7f070015;
-        public static final int mybooksadd=0x7f07002f;
-        public static final int mybooksaddimage=0x7f07002e;
-        public static final int mybookslistitem_bookimage=0x7f07002b;
-        public static final int mybookslistitem_bookname=0x7f07002c;
-        public static final int mybookslistitem_bookstate=0x7f07002d;
-        public static final int mybookslistview=0x7f070029;
-        public static final int myfirendslistview=0x7f07002a;
-        public static final int myfriendslistitem_friendimage=0x7f070030;
-        public static final int myfriendslistitem_friendname=0x7f070031;
-        public static final int preview_view=0x7f070034;
+        public static final int mybooksadd=0x7f07002e;
+        public static final int mybooksaddimage=0x7f07002d;
+        public static final int mybookslistitem_bookimage=0x7f07002a;
+        public static final int mybookslistitem_bookname=0x7f07002b;
+        public static final int mybookslistitem_bookstate=0x7f07002c;
+        public static final int mybookslistview=0x7f070028;
+        public static final int myfirendslistview=0x7f070029;
+        public static final int myfriendslistitem_friendimage=0x7f07002f;
+        public static final int myfriendslistitem_friendname=0x7f070030;
+        public static final int preview_view=0x7f070033;
         public static final int quit=0x7f070007;
-        public static final int realname=0x7f070023;
         public static final int registerLayout=0x7f070021;
+        public static final int registerarea=0x7f070025;
+        public static final int registercancel=0x7f070027;
+        public static final int registerconfirm=0x7f070026;
+        public static final int registeremail=0x7f070024;
+        public static final int registerpassword=0x7f070023;
+        public static final int registerusername=0x7f070022;
         public static final int restart_preview=0x7f070008;
         public static final int return_scan_result=0x7f070009;
-        public static final int scan=0x7f070033;
+        public static final int scan=0x7f070032;
         public static final int search_book_contents_failed=0x7f07000a;
         public static final int search_book_contents_succeeded=0x7f07000b;
         public static final int text1=0x7f07001c;
         public static final int text2=0x7f07001d;
         public static final int text3=0x7f07001e;
-        public static final int turnback=0x7f070036;
+        public static final int turnback=0x7f070035;
         public static final int underlined=0x7f07001f;
-        public static final int view03=0x7f070038;
-        public static final int viewfinder_view=0x7f070035;
+        public static final int view03=0x7f070037;
+        public static final int viewfinder_view=0x7f070034;
         public static final int viewpager=0x7f070020;
     }
     public static final class layout {
