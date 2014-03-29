@@ -157,9 +157,14 @@ public class RegisterActivity extends Activity {
 	public void cancel(View v) // 取消
 	{
 		Intent intent = new Intent();
-		intent.setClass(this, LoginActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //退出当前activity
+		intent.setClass(this, CaptureActivity.class);
 		startActivity(intent);
+		/*
+		 * Intent intent = new Intent(); intent.setClass(this,
+		 * LoginActivity.class);
+		 * intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //退出当前activity
+		 * startActivity(intent);
+		 */
 		finish();
 	}
 
