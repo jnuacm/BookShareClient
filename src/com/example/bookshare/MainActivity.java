@@ -5,6 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.NameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,6 +19,9 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -34,6 +43,8 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.bookshare.util.NetAccess;
+
 public class MainActivity extends Activity implements OnScrollListener {
 
 	private LayoutInflater layout_in_flater;
@@ -42,18 +53,23 @@ public class MainActivity extends Activity implements OnScrollListener {
 	private int offset = 0;// 动画图片偏移量
 	private int currIndex = 0;// 当前页卡编号
 	private int bmpW;// 动画图片宽度
-	
+
 	private List<TextView> textViews;
 
 	private List<View> viewList;
 	private ViewPager viewPager;// viewpager
 
-	ListView mybookslistview,myfriendslistview;
-	SimpleAdapter bookAdapter,friendAdapter;
-	List<Map<String, Object>> bookList,friendList;
+	ListView mybookslistview, myfriendslistview;
+	SimpleAdapter bookAdapter, friendAdapter;
+	List<Map<String, Object>> bookList, friendList;
 	boolean isBookLastRow = false, isFriendLastRow = false;
 	boolean isBookFirstRow = false, isFriendFirstRow = false;
 	int listshowsize = 10;
+
+	// 书表
+	private Handler mMainHandler, mChildHandler;
+	private static int MSG_BOOKLIST = 0x1239;
+	private static int MSG_BOOKLISTRESPONSE = 0x1230;
 
 	@SuppressWarnings("static-access")
 	@Override
@@ -61,21 +77,55 @@ public class MainActivity extends Activity implements OnScrollListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		/* 以下是子示图*/
+		/* 以下是子示图 */
 		initBookData();
+
+		// //////////////////////以下实现网络更新数据/////////////////////////////////////////
+		mMainHandler = new Handler() {
+			@SuppressLint("HandlerLeak")
+			public void handleMessage(Message msg) {
+				if (msg.what == MSG_BOOKLISTRESPONSE) {
+					// 数据加载完成后更新界面
+					bookAdapter.notifyDataSetChanged(); // UI的更新只能在主线程做,否则会报错
+				}
+			}
+		};
+
+		new Thread() { // 此线程负责通过访问网络注册
+			@SuppressLint("HandlerLeak")
+			public void run() {
+				// 初始化消息循环队列，需要在Handler创建之前
+				Looper.prepare();
+				mChildHandler = new Handler() {
+					public void handleMessage(Message msg) {
+						if (msg.what == MSG_BOOKLIST) {
+							bookList.clear();
+							// 在loadBookData()函数中不能直接new一个对象给bookList，
+							// 否则将改变UI的绑定关系，导致无法更新显示
+							loadBookData();
+							mMainHandler.sendEmptyMessage(MSG_BOOKLISTRESPONSE);
+						}
+					}
+
+				};
+				// 启动子线程消息循环队列
+				Looper.loop();
+
+			}
+		}.start();
+		// ////////////////////以上实现网络更新数据///////////////////////////
+
 		initFriendData();
 		mybookslistview.setAdapter(bookAdapter);
 		myfriendslistview.setAdapter(friendAdapter);
-		
 
 		layout_in_flater = getLayoutInflater().from(this);
 		viewList = new ArrayList<View>();
 		viewList.add(mybookslistview);
 		viewList.add(myfriendslistview);
 		viewList.add(layout_in_flater.inflate(R.layout.view03, null));
-		
-		
-		/*以下是显示翻页部分*/
+
+		/* 以下是显示翻页部分 */
 		viewPager = (ViewPager) findViewById(R.id.viewpager);
 		InitImageView();// 初始化下划线
 		InitTextView();
@@ -85,6 +135,8 @@ public class MainActivity extends Activity implements OnScrollListener {
 		viewPager.setOnPageChangeListener(new MyOnPageChangeListener());
 		textViews.get(currIndex).setTextColor(Color.rgb(50, 189, 189));
 
+		// 发送消息调用线程更新页面1的书本信息
+		mChildHandler.sendEmptyMessage(MSG_BOOKLIST);
 	}
 
 	@SuppressWarnings("unused")
@@ -192,29 +244,26 @@ public class MainActivity extends Activity implements OnScrollListener {
 		}
 
 	}
-	
-	
-	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-	/*!!!!!!!!!!!!!!!!!!!!!!!!!!以下是构造子页面的调用函数!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
+	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+	/* !!!!!!!!!!!!!!!!!!!!!!!!!!以下是构造子页面的调用函数!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
 		// TODO Auto-generated method stub
 		if (firstVisibleItem + visibleItemCount == totalItemCount
 				&& totalItemCount > 0) {
-			if(0 == currIndex){
+			if (0 == currIndex) {
 				isBookLastRow = true;
-			}
-			else if(1 == currIndex){
+			} else if (1 == currIndex) {
 				isFriendLastRow = true;
 			}
 		}
 		if (0 == firstVisibleItem && totalItemCount > 0) {
-			if(0 == currIndex){
+			if (0 == currIndex) {
 				isBookFirstRow = true;
-			}
-			else if(1 == currIndex){
+			} else if (1 == currIndex) {
 				isFriendFirstRow = true;
 			}
 		}
@@ -224,44 +273,49 @@ public class MainActivity extends Activity implements OnScrollListener {
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		// TODO Auto-generated method stub
 
-		if( (0 == currIndex) && isBookLastRow
+		if ((0 == currIndex)
+				&& isBookLastRow
 				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
 			// 加载元素
-			loadBookData();
-			bookAdapter.notifyDataSetChanged();
+			// loadBookData();
+			// bookAdapter.notifyDataSetChanged();
 			isBookLastRow = false;
-			
-		} else if ((0 == currIndex) &&isBookFirstRow
+
+		} else if ((0 == currIndex)
+				&& isBookFirstRow
 				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-			
-			bookList.clear();
-			loadBookData();
-			bookAdapter.notifyDataSetChanged();
+
+			// bookList.clear();
+			// loadBookData();
+			// bookAdapter.notifyDataSetChanged();
 			isBookFirstRow = false;
-			
-		} else if((1 == currIndex) &&isFriendLastRow
-				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE){
-			
+
+		} else if ((1 == currIndex)
+				&& isFriendLastRow
+				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+
 			loadFriendData();
 			friendAdapter.notifyDataSetChanged();
 			isFriendLastRow = false;
-			
-		} else if((1 == currIndex) &&isFriendFirstRow
-				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE){
-			
+
+		} else if ((1 == currIndex)
+				&& isFriendFirstRow
+				&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+
 			friendList.clear();
 			loadFriendData();
 			friendAdapter.notifyDataSetChanged();
 			isFriendFirstRow = false;
-			
+
 		}
-		
+
 	}
 
 	private void initBookData() {
 		bookList = getBookData();
-		bookAdapter = new SimpleAdapter(this, bookList, R.layout.mybooks_listview_item,
-				new String[] { "image", "bookname", "state" }, new int[] {
+		bookAdapter = new SimpleAdapter(this, bookList,
+				R.layout.mybooks_listview_item, new String[] { "image",
+						"bookname", "state" }, new int[] {
 						R.id.mybookslistitem_bookimage,
 						R.id.mybookslistitem_bookname,
 						R.id.mybookslistitem_bookstate });
@@ -290,59 +344,104 @@ public class MainActivity extends Activity implements OnScrollListener {
 				R.layout.mybooks_listview_top, null));
 
 	}
-	
-	
 
 	private List<Map<String, Object>> getBookData() {
 		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
 
 		Map<String, Object> map;
-		for (int i = 0; i < listshowsize; i++) {
+		for (int i = 0; i < 5; i++) {
 			map = new HashMap<String, Object>();
 			map.put("image", R.drawable.book1);
-			map.put("bookname", "Book Name !!! " + i);
-			map.put("state", "状态！！！");
+			map.put("bookname", "Localbookname");
+			map.put("state", "localstate");
 			ret.add(map);
 		}
+
+		/*
+		 * 
+		 * for (int i = 0; i < listshowsize; i++) { map = new HashMap<String,
+		 * Object>(); map.put("image", R.drawable.book1); map.put("bookname",
+		 * "Book Name !!! " + i); map.put("state", "状态！！！"); ret.add(map); }
+		 */
 
 		return ret;
 	}
 
 	private void loadBookData() {
-		Map<String, Object> map;
-		for (int i = 0; i < listshowsize; i++) {
-			map = new HashMap<String, Object>();
-			map.put("image", R.drawable.book1);
-			map.put("bookname", "REN YAO " + bookList.size());
-			map.put("state", "在借");
-			bookList.add(map);
+		// 访问网络
+		NetAccess netaccess = NetAccess.getInstance();
+		String response = netaccess
+				.getResponse(
+						"http://192.168.1.10:8080/BookShareYii/index.php?r=book/mbbooklist",
+						new ArrayList<NameValuePair>()); // 此处加入空的类型
+
+		JSONObject jsonobj;
+		try {
+			jsonobj = new JSONObject(response);
+			JSONArray jsonarray = jsonobj.getJSONArray("ownedBooks");
+
+			Map<String, Object> map;
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				String bookname = item.getString("name");
+				int state = item.getInt("status");
+
+				map = new HashMap<String, Object>();
+				map.put("image", R.drawable.book1);
+				map.put("bookname", bookname);
+				if (state == 0)
+					map.put("state", "mine");
+				else
+					map.put("state", "other");
+				bookList.add(map);
+			}
+
+			jsonarray = jsonobj.getJSONArray("borrowedBooks");
+
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				String bookname = item.getString("name");
+
+				map = new HashMap<String, Object>();
+				map.put("image", R.drawable.book1);
+				map.put("bookname", bookname);
+				map.put("state", "borrow");
+				bookList.add(map);
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
-	
+
 	private void initFriendData() {
 		friendList = getFriendData();
-		friendAdapter = new SimpleAdapter(this, friendList, R.layout.myfriends_listview_item,
-				new String[] { "image", "friendname" }, new int[] {
+		friendAdapter = new SimpleAdapter(this, friendList,
+				R.layout.myfriends_listview_item, new String[] { "image",
+						"friendname" }, new int[] {
 						R.id.myfriendslistitem_friendimage,
-						R.id.myfriendslistitem_friendname});
+						R.id.myfriendslistitem_friendname });
 
 		View view = LayoutInflater.from(this).inflate(
 				R.layout.activity_submain2, null);
-		myfriendslistview = (ListView) view.findViewById(R.id.myfirendslistview);
+		myfriendslistview = (ListView) view
+				.findViewById(R.id.myfirendslistview);
 
 		myfriendslistview.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				
-					 Bundle bundle =new Bundle();// 创建 email 内容
-					 Map<String, Object> temp = new HashMap<String, Object>();
-					 temp = friendList.get(position-1);
-					 bundle.putString("friendName",temp.get("friendname").toString());
-					 bundle.putString("image",temp.get("image").toString());
-					 Intent intent = new Intent(MainActivity.this,FriendsInformationActivity.class);
-					 intent.putExtra("key", bundle);// 封装 email 
-					 startActivity(intent);
-				
+
+				Bundle bundle = new Bundle();// 创建 email 内容
+				Map<String, Object> temp = new HashMap<String, Object>();
+				temp = friendList.get(position - 1);
+				bundle.putString("friendName", temp.get("friendname")
+						.toString());
+				bundle.putString("image", temp.get("image").toString());
+				Intent intent = new Intent(MainActivity.this,
+						FriendsInformationActivity.class);
+				intent.putExtra("key", bundle);// 封装 email
+				startActivity(intent);
+
 			}
 		});
 
@@ -351,6 +450,7 @@ public class MainActivity extends Activity implements OnScrollListener {
 				R.layout.myfriends_listview_top, null));
 
 	}
+
 	private List<Map<String, Object>> getFriendData() {
 		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
 
@@ -364,7 +464,7 @@ public class MainActivity extends Activity implements OnScrollListener {
 
 		return ret;
 	}
-	
+
 	private void loadFriendData() {
 		Map<String, Object> map;
 		for (int i = 0; i < listshowsize; i++) {

@@ -4,19 +4,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +21,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
+
+import com.example.bookshare.util.NetAccess;
 
 public class LoginActivity extends Activity {
 
@@ -43,9 +40,10 @@ public class LoginActivity extends Activity {
 
 		mMainHandler = new Handler() {
 			public void handleMessage(Message msg) {
-				/*Toast.makeText(LoginActivity.this,
-						(CharSequence) msg.getData().get("Response"),
-						Toast.LENGTH_LONG).show();*/
+				/*
+				 * Toast.makeText(LoginActivity.this, (CharSequence)
+				 * msg.getData().get("Response"), Toast.LENGTH_LONG).show();
+				 */
 			}
 		};
 
@@ -53,14 +51,18 @@ public class LoginActivity extends Activity {
 
 	}
 
-	public void Login(View v) throws JSONException, ClientProtocolException,
-			IOException {
+	public void Login(View v) {
 		String username, password;
 		username = ((TextView) findViewById(R.id.USERNAME)).getText()
 				.toString();
 		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
 				.toString();
 
+		// ////////////////////////！！！注意！！！！///////////////////////////////////////////
+		// ////////////////////////以下为测试代码//////////////////////////////////////////////
+		username = "Luoluo";
+		password = "123456";
+		// ////////////////////////以上为测试代码//////////////////////////////////////////////
 		Message msg = new Message();
 		Bundle data = new Bundle();
 		data.putString("username", username);
@@ -103,37 +105,32 @@ public class LoginActivity extends Activity {
 						String username = data.getString("username");
 						String password = data.getString("password");
 
-						HttpClient httpLogin = new DefaultHttpClient();
-
-						HttpResponse loginResponse = null;
-						HttpPost post = new HttpPost(
-								"http://192.168.1.10:8080/BookShareYii/index.php?r=user/mbsignin");
 						List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 						nvps.add(new BasicNameValuePair("LoginForm[username]",
 								username));
 						nvps.add(new BasicNameValuePair("LoginForm[password]",
 								password));
-						try {
-							post.setEntity(new UrlEncodedFormEntity(nvps,
-									"UTF-8"));
 
-							loginResponse = httpLogin.execute(post);
-							String strMsg = EntityUtils.toString(loginResponse
-									.getEntity());
-							if (strMsg.matches("yes")) {
-								Intent intent = new Intent(LoginActivity.this,
-										MainActivity.class);
-								startActivity(intent);
-								finish();
-							} else {
-								Bundle retdata = new Bundle();
-								retdata.putString("Response", strMsg);
-								msg.setData(retdata);
-								msg.what = MSG_RESPONSE;
-								mMainHandler.sendMessage(msg);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
+						// 访问网络
+						NetAccess network = NetAccess.getInstance();
+						String strMsg = network
+								.getResponse(
+										"http://192.168.1.10:8080/BookShareYii/index.php?r=user/mbsignin",
+										nvps);
+
+						if (strMsg.matches("yes")) {
+							LocalApp localapp = (LocalApp) getApplication();
+							localapp.setUsername(username);
+							Intent intent = new Intent(LoginActivity.this,
+									MainActivity.class);
+							startActivity(intent);
+							finish();
+						} else {
+							Bundle retdata = new Bundle();
+							retdata.putString("Response", strMsg);
+							msg.setData(retdata);
+							msg.what = MSG_RESPONSE;
+							mMainHandler.sendMessage(msg);
 						}
 
 						/*
@@ -142,7 +139,7 @@ public class LoginActivity extends Activity {
 						 * bundle.putString("loginResponse", strMsg);
 						 * loginResponseMsg.setData(bundle);
 						 * mMainHandler.sendMessage(loginResponseMsg);
-						 **/
+						 */
 
 					}
 				}

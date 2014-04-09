@@ -41,7 +41,6 @@ public class NetAccess {
 		if (internetaccess == null) {
 			internetaccess = new NetAccess();
 		}
-		Log.i("inside netaccess", "µ÷ÓÃgetresponse");
 		accessNetwork(url, nvps);
 		return ret;
 	}
@@ -51,9 +50,13 @@ public class NetAccess {
 		post = new HttpPost(url);
 		try {
 			post.setEntity(new UrlEncodedFormEntity(nvps));
-			loginResponse = httpLogin.execute(post);
+			synchronized (httpLogin) {
+				Log.i("run","1");
+				loginResponse = httpLogin.execute(post);
+			}
+			Log.i("run","2");
 			ret = EntityUtils.toString(loginResponse.getEntity());
-			Log.i("return", ret);
+			Log.i("httpreturn", ret);
 
 		} catch (Exception e) {
 			e.printStackTrace();
