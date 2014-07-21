@@ -16,9 +16,10 @@
 
 package com.zijunlin.Zxing.Demo.view;
 
-import com.google.zxing.ResultPoint;
-import com.example.bookshare.R;
-import com.zijunlin.Zxing.Demo.camera.CameraManager;
+import group.acm.bookshare.R;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -30,12 +31,10 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
-import java.util.Collection;
-import java.util.HashSet;
+import com.google.zxing.ResultPoint;
+import com.zijunlin.Zxing.Demo.camera.CameraManager;
 
 /**
  * This view is overlaid on top of the camera preview. It adds the viewfinder rectangle and partial

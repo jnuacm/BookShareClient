@@ -1,17 +1,16 @@
-package com.example.bookshare;
+package group.acm.bookshare;
 
-import java.io.IOException;
+import group.acm.bookshare.function.NetAccess;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONException;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,9 +19,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.TextView;
-
-import com.example.bookshare.util.NetAccess;
+import android.widget.Toast;
 
 public class LoginActivity extends Activity {
 
@@ -40,10 +37,8 @@ public class LoginActivity extends Activity {
 
 		mMainHandler = new Handler() {
 			public void handleMessage(Message msg) {
-				/*
-				 * Toast.makeText(LoginActivity.this, (CharSequence)
-				 * msg.getData().get("Response"), Toast.LENGTH_LONG).show();
-				 */
+				 Toast.makeText(LoginActivity.this, (CharSequence)
+				 msg.getData().get("Response"), Toast.LENGTH_LONG).show();
 			}
 		};
 
@@ -53,15 +48,13 @@ public class LoginActivity extends Activity {
 
 	public void Login(View v) {
 		String username, password;
-		username = ((TextView) findViewById(R.id.USERNAME)).getText()
-				.toString();
-		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
-				.toString();
+		//username = ((TextView) findViewById(R.id.USERNAME)).getText().toString();
+		//password = ((TextView) findViewById(R.id.PASSWORD)).getText().toString();
 
 		// ////////////////////////！！！注意！！！！///////////////////////////////////////////
 		// ////////////////////////以下为测试代码//////////////////////////////////////////////
-		username = "Luoluo";
-		password = "123456";
+		username = "gg";
+		password = "1234";
 		// ////////////////////////以上为测试代码//////////////////////////////////////////////
 		Message msg = new Message();
 		Bundle data = new Bundle();
@@ -106,28 +99,35 @@ public class LoginActivity extends Activity {
 						String password = data.getString("password");
 
 						List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-						nvps.add(new BasicNameValuePair("LoginForm[username]",
-								username));
-						nvps.add(new BasicNameValuePair("LoginForm[password]",
-								password));
+						nvps.add(new BasicNameValuePair("username", username));
+						nvps.add(new BasicNameValuePair("password", password));
 
 						// 访问网络
 						NetAccess network = NetAccess.getInstance();
-						String strMsg = network
-								.getResponse(
-										"http://192.168.1.10:8080/BookShareYii/index.php?r=user/mbsignin",
-										nvps);
+						String url = LoginActivity.this
+								.getString(R.string.url_host);
+						url += LoginActivity.this.getString(R.string.url_login);
+						Map<String, Object> map = network
+								.getResponse(url, nvps);
+						
+						int status = (Integer)map.get("status");
+						
+						if (status == NetAccess.STATUS_SUCCESS) {
+							// LocalApp localapp = (LocalApp) getApplication();
+							// localapp.setUsername(username);
 
-						if (strMsg.matches("yes")) {
-							LocalApp localapp = (LocalApp) getApplication();
-							localapp.setUsername(username);
+							Bundle retdata = new Bundle();
+							retdata.putString("response",
+									(String) map.get("response"));
+
 							Intent intent = new Intent(LoginActivity.this,
 									MainActivity.class);
+							intent.putExtras(retdata);
 							startActivity(intent);
 							finish();
-						} else {
+						} else if (status == NetAccess.STATUS_ERROR){
 							Bundle retdata = new Bundle();
-							retdata.putString("Response", strMsg);
+							retdata.putString("Response","no");
 							msg.setData(retdata);
 							msg.what = MSG_RESPONSE;
 							mMainHandler.sendMessage(msg);

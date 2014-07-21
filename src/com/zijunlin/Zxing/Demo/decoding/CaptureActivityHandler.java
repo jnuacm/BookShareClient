@@ -16,6 +16,9 @@
 
 package com.zijunlin.Zxing.Demo.decoding;
 
+import group.acm.bookshare.CaptureActivity;
+import group.acm.bookshare.R;
+
 import java.util.Vector;
 
 import android.app.Activity;
@@ -27,11 +30,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.example.bookshare.CaptureActivity;
-import com.example.bookshare.R;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
-import com.zijunlin.Zxing.Demo.camera.CameraManager;
 import com.zijunlin.Zxing.Demo.view.ViewfinderResultPointCallback;
 
 /**

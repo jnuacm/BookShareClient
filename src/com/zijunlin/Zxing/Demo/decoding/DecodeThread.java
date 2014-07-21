@@ -19,12 +19,13 @@ package com.zijunlin.Zxing.Demo.decoding;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.ResultPointCallback;
-import com.example.bookshare.CaptureActivity;
 
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+
+import group.acm.bookshare.CaptureActivity;
 
 import java.util.Hashtable;
 import java.util.Vector;

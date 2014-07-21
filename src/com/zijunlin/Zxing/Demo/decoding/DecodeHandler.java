@@ -16,16 +16,10 @@
 
 package com.zijunlin.Zxing.Demo.decoding;
 
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.DecodeHintType;
-import com.google.zxing.MultiFormatReader;
-import com.google.zxing.ReaderException;
-import com.google.zxing.Result;
-import com.zijunlin.Zxing.Demo.camera.CameraManager;
-import com.zijunlin.Zxing.Demo.camera.PlanarYUVLuminanceSource;
-import com.google.zxing.common.HybridBinarizer;
-import com.example.bookshare.CaptureActivity;
-import com.example.bookshare.R;
+import group.acm.bookshare.CaptureActivity;
+import group.acm.bookshare.R;
+
+import java.util.Hashtable;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,7 +27,13 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import java.util.Hashtable;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.ReaderException;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
+import com.zijunlin.Zxing.Demo.camera.PlanarYUVLuminanceSource;
 
 final class DecodeHandler extends Handler {
 

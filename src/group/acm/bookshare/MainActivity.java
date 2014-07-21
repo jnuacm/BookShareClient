@@ -1,16 +1,14 @@
-package com.example.bookshare;
+package group.acm.bookshare;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.NameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,9 +17,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -41,9 +36,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.example.bookshare.util.NetAccess;
 
 public class MainActivity extends Activity implements OnScrollListener {
 
@@ -66,10 +58,7 @@ public class MainActivity extends Activity implements OnScrollListener {
 	boolean isBookFirstRow = false, isFriendFirstRow = false;
 	int listshowsize = 10;
 
-	// 书表
-	private Handler mMainHandler, mChildHandler;
-	private static int MSG_BOOKLIST = 0x1239;
-	private static int MSG_BOOKLISTRESPONSE = 0x1230;
+	public static final int SCANREQUEST_ADDBOOK = 1;
 
 	@SuppressWarnings("static-access")
 	@Override
@@ -79,42 +68,6 @@ public class MainActivity extends Activity implements OnScrollListener {
 
 		/* 以下是子示图 */
 		initBookData();
-
-		// //////////////////////以下实现网络更新数据/////////////////////////////////////////
-		mMainHandler = new Handler() {
-			@SuppressLint("HandlerLeak")
-			public void handleMessage(Message msg) {
-				if (msg.what == MSG_BOOKLISTRESPONSE) {
-					// 数据加载完成后更新界面
-					bookAdapter.notifyDataSetChanged(); // UI的更新只能在主线程做,否则会报错
-				}
-			}
-		};
-
-		new Thread() { // 此线程负责通过访问网络注册
-			@SuppressLint("HandlerLeak")
-			public void run() {
-				// 初始化消息循环队列，需要在Handler创建之前
-				Looper.prepare();
-				mChildHandler = new Handler() {
-					public void handleMessage(Message msg) {
-						if (msg.what == MSG_BOOKLIST) {
-							bookList.clear();
-							// 在loadBookData()函数中不能直接new一个对象给bookList，
-							// 否则将改变UI的绑定关系，导致无法更新显示
-							loadBookData();
-							mMainHandler.sendEmptyMessage(MSG_BOOKLISTRESPONSE);
-						}
-					}
-
-				};
-				// 启动子线程消息循环队列
-				Looper.loop();
-
-			}
-		}.start();
-		// ////////////////////以上实现网络更新数据///////////////////////////
-
 		initFriendData();
 		mybookslistview.setAdapter(bookAdapter);
 		myfriendslistview.setAdapter(friendAdapter);
@@ -134,9 +87,6 @@ public class MainActivity extends Activity implements OnScrollListener {
 		viewPager.setCurrentItem(0);
 		viewPager.setOnPageChangeListener(new MyOnPageChangeListener());
 		textViews.get(currIndex).setTextColor(Color.rgb(50, 189, 189));
-
-		// 发送消息调用线程更新页面1的书本信息
-		mChildHandler.sendEmptyMessage(MSG_BOOKLIST);
 	}
 
 	@SuppressWarnings("unused")
@@ -311,11 +261,18 @@ public class MainActivity extends Activity implements OnScrollListener {
 
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
+			String isbn = data.getStringExtra("isbn");
+		}
+	}
+
 	private void initBookData() {
 		bookList = getBookData();
 		bookAdapter = new SimpleAdapter(this, bookList,
 				R.layout.mybooks_listview_item, new String[] { "image",
-						"bookname", "state" }, new int[] {
+						"bookname", "status" }, new int[] {
 						R.id.mybookslistitem_bookimage,
 						R.id.mybookslistitem_bookname,
 						R.id.mybookslistitem_bookstate });
@@ -327,10 +284,11 @@ public class MainActivity extends Activity implements OnScrollListener {
 		mybookslistview.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				if (0 == position)
-					Toast.makeText(getApplicationContext(),
-							"Jump into add books", Toast.LENGTH_SHORT).show();
-				else {
+				if (0 == position) {
+					Intent intent = new Intent(MainActivity.this,
+							CaptureActivity.class);
+					startActivityForResult(intent, SCANREQUEST_ADDBOOK);
+				} else {
 					// Intent intent = new
 					// Intent(MainActivity.this,MyBookContentActivity.class);
 					// startActivity(intent);
@@ -347,71 +305,53 @@ public class MainActivity extends Activity implements OnScrollListener {
 
 	private List<Map<String, Object>> getBookData() {
 		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+		Map<String, Object> map = new HashMap<String, Object>();
 
-		Map<String, Object> map;
-		for (int i = 0; i < 5; i++) {
-			map = new HashMap<String, Object>();
-			map.put("image", R.drawable.book1);
-			map.put("bookname", "Localbookname");
-			map.put("state", "localstate");
-			ret.add(map);
-		}
+		String response = getIntent().getStringExtra("response");
 
-		/*
-		 * 
-		 * for (int i = 0; i < listshowsize; i++) { map = new HashMap<String,
-		 * Object>(); map.put("image", R.drawable.book1); map.put("bookname",
-		 * "Book Name !!! " + i); map.put("state", "状态！！！"); ret.add(map); }
-		 */
-
-		return ret;
-	}
-
-	private void loadBookData() {
-		// 访问网络
-		NetAccess netaccess = NetAccess.getInstance();
-		String response = netaccess
-				.getResponse(
-						"http://192.168.1.10:8080/BookShareYii/index.php?r=book/mbbooklist",
-						new ArrayList<NameValuePair>()); // 此处加入空的类型
+		Log.i("MainActivity", "getBookData():" + response);
 
 		JSONObject jsonobj;
 		try {
 			jsonobj = new JSONObject(response);
-			JSONArray jsonarray = jsonobj.getJSONArray("ownedBooks");
+			JSONArray jsonarray = jsonobj.getJSONArray("own_book");
 
-			Map<String, Object> map;
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject item = jsonarray.getJSONObject(i);
+				String imageUrl = "";
 				String bookname = item.getString("name");
-				int state = item.getInt("status");
+				String status = item.getString("status");
 
 				map = new HashMap<String, Object>();
 				map.put("image", R.drawable.book1);
 				map.put("bookname", bookname);
-				if (state == 0)
-					map.put("state", "mine");
-				else
-					map.put("state", "other");
-				bookList.add(map);
+				map.put("status", status);
+				ret.add(map);
 			}
 
-			jsonarray = jsonobj.getJSONArray("borrowedBooks");
+			jsonarray = jsonobj.getJSONArray("borrowed_book");
 
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject item = jsonarray.getJSONObject(i);
 				String bookname = item.getString("name");
+				String status = item.getString("status");
 
 				map = new HashMap<String, Object>();
 				map.put("image", R.drawable.book1);
 				map.put("bookname", bookname);
-				map.put("state", "borrow");
-				bookList.add(map);
+				map.put("status", status);
+				ret.add(map);
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		return ret;
+	}
+
+	private void loadBookData() {
+
 	}
 
 	private void initFriendData() {

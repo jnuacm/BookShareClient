@@ -1,7 +1,10 @@
-package com.example.bookshare;
+package group.acm.bookshare;
+
+import group.acm.bookshare.function.NetAccess;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -17,8 +20,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
-
-import com.example.bookshare.util.NetAccess;
+import android.widget.Toast;
 
 public class RegisterActivity extends Activity {
 
@@ -39,16 +41,17 @@ public class RegisterActivity extends Activity {
 						/*
 						 * 注册成功，需要记录该用户帐号密码，可能需要在此处立即建立线程加载主页数据
 						 */
-						Intent intent = new Intent();
+						Toast.makeText(RegisterActivity.this, "yes!success!",
+								Toast.LENGTH_LONG).show();
+						/*Intent intent = new Intent();
 						intent.setClass(RegisterActivity.this,
 								MainActivity.class);
 						startActivity(intent);
-						finish();
-					} else if (tmp.matches("username")) {
-						// 帐号已存在
+						finish();*/
+					} else {
+						Toast.makeText(RegisterActivity.this, "no!fail!",
+								Toast.LENGTH_LONG).show();
 
-					} else if (tmp.matches("email")) {
-						// email已存在
 					}
 				}
 			}
@@ -72,22 +75,31 @@ public class RegisterActivity extends Activity {
 
 							// 访问网络
 							List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-							nvps.add(new BasicNameValuePair("User[username]",
+							nvps.add(new BasicNameValuePair("username",
 									username));
-							nvps.add(new BasicNameValuePair("User[password]",
+							nvps.add(new BasicNameValuePair("password",
 									password));
-							nvps.add(new BasicNameValuePair("User[email]",
-									email));
-							if (area != "")
-								nvps.add(new BasicNameValuePair("User[area]",
-										area));
+							nvps.add(new BasicNameValuePair("email", email));
+							nvps.add(new BasicNameValuePair("area", area));
 
+							String url = RegisterActivity.this
+									.getString(R.string.url_host);
+							url += RegisterActivity.this
+									.getString(R.string.url_register);
 							NetAccess network = NetAccess.getInstance();
-							String response = network
-									.getResponse(
-											"http://192.168.1.10:8080/BookShareYii/index.php?r=user/mbsignup",
-											nvps);
-
+							Map<String, Object> map = network.getResponse(url,
+									nvps);
+							String response;
+							if (NetAccess.STATUS_SUCCESS == ((Integer) map
+									.get("status"))) {
+								response = "yes";
+								Log.i("RegisterActivity",
+										"Handler.handleMessage():yes");
+							} else {
+								response = "no";
+								Log.i("RegisterActivity",
+										"Handler.handleMessage():no");
+							}
 							// 返回结果回传
 							data = new Bundle();
 							data.putString("response", response);
@@ -133,6 +145,11 @@ public class RegisterActivity extends Activity {
 		area = "";
 		area = edittext.getText().toString();
 
+		username = "google";
+		password = "123456";
+		email = "abc@qd.com";
+		area = "jnu";
+
 		if (username == "" || password == "" || email == "")
 			return;
 
@@ -165,7 +182,6 @@ public class RegisterActivity extends Activity {
 		 * intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //退出当前activity
 		 * startActivity(intent);
 		 */
-		finish();
 	}
 
 }

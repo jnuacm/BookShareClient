@@ -1,4 +1,4 @@
-package com.example.bookshare.util;
+package group.acm.bookshare.util;
 
 import android.app.Activity;
 import android.view.View;
