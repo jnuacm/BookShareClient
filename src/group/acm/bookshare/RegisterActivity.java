@@ -1,6 +1,7 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.Update;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,102 +23,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class RegisterActivity extends Activity {
-
-	private Handler mMainHandler, mChildHandler;
-	private static int MSG_REGISTER = 0x1234;
-	private static int MSG_RESPONSE = 0x1235;
-
+public class RegisterActivity extends Activity implements Update {
 	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
-		mMainHandler = new Handler() {
-			public void handleMessage(Message msg) {
-				if (msg.what == MSG_RESPONSE) {
-					String tmp = (String) msg.getData().get("response");
-					if (tmp.matches("yes")) {
-						/*
-						 * 注册成功，需要记录该用户帐号密码，可能需要在此处立即建立线程加载主页数据
-						 */
-						Toast.makeText(RegisterActivity.this, "yes!success!",
-								Toast.LENGTH_LONG).show();
-						/*Intent intent = new Intent();
-						intent.setClass(RegisterActivity.this,
-								MainActivity.class);
-						startActivity(intent);
-						finish();*/
-					} else {
-						Toast.makeText(RegisterActivity.this, "no!fail!",
-								Toast.LENGTH_LONG).show();
-
-					}
-				}
-			}
-		};
-
-		new Thread() { // 此线程负责通过访问网络注册
-
-			@SuppressLint("HandlerLeak")
-			public void run() {
-				// 初始化消息循环队列，需要在Handler创建之前
-				Looper.prepare();
-
-				mChildHandler = new Handler() {
-					public void handleMessage(Message msg) {
-						if (msg.what == MSG_REGISTER) {
-							Bundle data = msg.getData();
-							String username = data.getString("username");
-							String password = data.getString("password");
-							String email = data.getString("email");
-							String area = data.getString("area");
-
-							// 访问网络
-							List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-							nvps.add(new BasicNameValuePair("username",
-									username));
-							nvps.add(new BasicNameValuePair("password",
-									password));
-							nvps.add(new BasicNameValuePair("email", email));
-							nvps.add(new BasicNameValuePair("area", area));
-
-							String url = RegisterActivity.this
-									.getString(R.string.url_host);
-							url += RegisterActivity.this
-									.getString(R.string.url_register);
-							NetAccess network = NetAccess.getInstance();
-							Map<String, Object> map = network.getResponse(url,
-									nvps);
-							String response;
-							if (NetAccess.STATUS_SUCCESS == ((Integer) map
-									.get("status"))) {
-								response = "yes";
-								Log.i("RegisterActivity",
-										"Handler.handleMessage():yes");
-							} else {
-								response = "no";
-								Log.i("RegisterActivity",
-										"Handler.handleMessage():no");
-							}
-							// 返回结果回传
-							data = new Bundle();
-							data.putString("response", response);
-							msg = new Message();
-							msg.setData(data);
-							msg.what = MSG_RESPONSE;
-
-							mMainHandler.sendMessage(msg);
-
-						}
-					}
-
-				};
-				// 启动子线程消息循环队列
-				Looper.loop();
-
-			}
-		}.start();
 	}
 
 	@Override
@@ -127,8 +38,7 @@ public class RegisterActivity extends Activity {
 		return true;
 	}
 
-	public void confirm(View v) // 确认
-	{
+	public void confirm(View v) {
 		// 获取注册的内容
 		String username, password, email, area;
 
@@ -158,30 +68,49 @@ public class RegisterActivity extends Activity {
 		Log.i("email", email);
 		Log.i("area", area);
 
-		// 消息传递给子线程访问网络
-		Bundle bundle = new Bundle();
-		bundle.putString("username", username);
-		bundle.putString("password", password);
-		bundle.putString("email", email);
-		bundle.putString("area", area);
-		Message msg = new Message();
-		msg.setData(bundle);
-		msg.what = MSG_REGISTER;
+		// 访问网络
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("username", username));
+		nvps.add(new BasicNameValuePair("password", password));
+		nvps.add(new BasicNameValuePair("email", email));
+		nvps.add(new BasicNameValuePair("area", area));
 
-		mChildHandler.sendMessage(msg);
+		String url = RegisterActivity.this.getString(R.string.url_host);
+		url += RegisterActivity.this.getString(R.string.url_register);
+		NetAccess network = NetAccess.getInstance();
+
+		List<Update> updates = new ArrayList<Update>();
+		updates.add(this);
+		network.getPostThread(url, nvps, updates).start();
 	}
 
-	public void cancel(View v) // 取消
-	{
-		Intent intent = new Intent();
-		intent.setClass(this, CaptureActivity.class);
-		startActivity(intent);
-		/*
-		 * Intent intent = new Intent(); intent.setClass(this,
-		 * LoginActivity.class);
-		 * intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //退出当前activity
-		 * startActivity(intent);
-		 */
+	public void cancel(View v) {
+		finish();
+	}
+
+	@Override
+	public void before() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void process(int value) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void after(Map<String, Object> map) {
+		// TODO Auto-generated method stub
+
+		if (NetAccess.STATUS_SUCCESS == ((Integer) map.get("status"))) {
+			Toast.makeText(RegisterActivity.this, "yes!success!",
+					Toast.LENGTH_LONG).show();
+		} else if (NetAccess.STATUS_ERROR == ((Integer) map.get("status"))) {
+			Toast.makeText(RegisterActivity.this, "no!error!",
+					Toast.LENGTH_LONG).show();
+		}
 	}
 
 }
