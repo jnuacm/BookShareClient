@@ -6,4 +6,5 @@ public interface Update {
 	public void before();
 	public void process(int value);
 	public void after(Map<String,Object> map);
+	public void error(String content);
 }

@@ -214,8 +214,9 @@ public class CaptureActivity extends Activity implements Callback {
 
 	}
 
+	// /////////////////扫描成功后结果在handleDecode 获取/////////////////////
 	public void handleDecode(Result obj, Bitmap barcode) {
-		
+
 		inactivityTimer.onActivity();
 		viewfinderView.drawResultBitmap(barcode);
 		playBeepSoundAndVibrate();
@@ -229,7 +230,7 @@ public class CaptureActivity extends Activity implements Callback {
 		Intent intent = new Intent();
 		intent.putExtras(data);
 		CaptureActivity.this.setResult(RESULT_OK, intent);
-		
+
 		finish();
 
 	}

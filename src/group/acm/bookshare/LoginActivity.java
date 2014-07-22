@@ -87,4 +87,10 @@ public class LoginActivity extends Activity implements Update {
 		}
 	}
 
+	@Override
+	public void error(String content) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

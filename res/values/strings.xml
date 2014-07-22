@@ -10,14 +10,25 @@
     <string name="title_activity_browse">BrowseActivity</string>
     <string name="title_CaptureActivity">CaptureActivity</string>
     <string name="title_activity_main">MainActivity</string>
-    <string name="add_book">添加</string>
     <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="title_activity_book_information">BookInformationActivity</string>
     <string name="title_activity_friends_information">FriendsInformationActivity</string>
+    <string name="add_book">添加</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="url_host">http://192.168.1.10</string>
-    <string name="url_login">/bookshareyii/index.php/api/login</string>
-    <string name="url_register">/bookshareyii/index.php/api/register</string>
     <string name="login_error">account/password is not correct!</string>
+
+    <!-- url resources -->
+    <string name="url_host">http://192.168.1.10/</string>
+    <string name="url_login">bookshareyii/index.php/api/login</string>
+    <string name="url_register">bookshareyii/index.php/api/register</string>
+    <string name="path_api">bookshare/index.php/api/user/</string>
+    <string name="action_book">book</string>
+    <string name="action_ownbook">ownbook</string>
+    <string name="action_borrowedbook">borrowedbook</string>
+
+    <!-- douban url -->
+    <string name="douban_url">http://api.douban.com/book/subject/</string>
+    <string name="douban_form">?alt=json</string>
 
 </resources>

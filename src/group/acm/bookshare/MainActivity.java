@@ -1,5 +1,9 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.LocalApp;
+import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.Update;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +40,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -191,6 +196,8 @@ public class MainActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
 			String isbn = data.getStringExtra("isbn");
+			LocalApp localapp = (LocalApp) getApplication();
+			localapp.getUser().addBook(isbn, bookmanage);
 		}
 	}
 
@@ -198,7 +205,7 @@ public class MainActivity extends Activity {
 	/* !!!!!!!!!!!!!!!!!!!!!!!!!!以下是构造子页面的调用函数!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
-	private class BookListManage implements OnScrollListener {
+	private class BookListManage implements OnScrollListener, Update {
 
 		ListView mybookslistview;
 		SimpleAdapter bookAdapter;
@@ -246,6 +253,10 @@ public class MainActivity extends Activity {
 			return mybookslistview;
 		}
 
+		public void showToast(String content) {
+			Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG);
+		}
+
 		private void initBookList() {
 			bookList = getBookData();
 			bookAdapter = new SimpleAdapter(MainActivity.this, bookList,
@@ -268,9 +279,9 @@ public class MainActivity extends Activity {
 								CaptureActivity.class);
 						startActivityForResult(intent, SCANREQUEST_ADDBOOK);
 					} else {
-						// Intent intent = new
-						// Intent(MainActivity.this,MyBookContentActivity.class);
-						// startActivity(intent);
+						Intent intent = new Intent(MainActivity.this,
+								BookInformationActivity.class);
+						startActivity(intent);
 					}
 				}
 			});
@@ -368,10 +379,33 @@ public class MainActivity extends Activity {
 			bookAdapter.notifyDataSetChanged();
 		}
 
-	}
+		@Override
+		public void before() {
+			// TODO Auto-generated method stub
 
-	private void loadBookData() {
+		}
 
+		@Override
+		public void process(int value) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void after(Map<String, Object> map) {
+			// TODO Auto-generated method stub
+			if ((Integer) map.get("status") == NetAccess.STATUS_SUCCESS)
+				Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_LONG)
+						.show();
+			else
+				error("添加失败");
+		}
+
+		@Override
+		public void error(String content) {
+			// TODO Auto-generated method stub
+			Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG).show();
+		}
 	}
 
 	private class FriendListManage implements OnScrollListener {

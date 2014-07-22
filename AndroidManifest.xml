@@ -62,6 +62,10 @@
             android:name="group.acm.bookshare.FriendsInformationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" >
         </activity>
+        <activity
+            android:name="group.acm.bookshare.BookInformationActivity"
+            android:label="@string/title_activity_book_information" >
+        </activity>
     </application>
 
 </manifest>
