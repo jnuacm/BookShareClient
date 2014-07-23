@@ -12,6 +12,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.R.bool;
 import android.app.Application;
 import android.text.format.Time;
+import android.util.Log;
 
 public class User {
 	private String username;
@@ -97,10 +98,6 @@ public class User {
 
 		@Override
 		public void after(Map<String, Object> map) {
-			if ((Integer)map.get("status") == NetAccess.STATUS_ERROR){
-				User.this.update.error("book no finding");
-				return ;	
-			}
 			User.this.update.process(50);
 
 			// TODO Auto-generated method stub
@@ -110,7 +107,7 @@ public class User {
 			nvps.add(new BasicNameValuePair("authors", (String)map.get("authors")));
 			nvps.add(new BasicNameValuePair("description", (String)map.get("description")));
 			nvps.add(new BasicNameValuePair("publisher", (String)map.get("publisher")));
-			nvps.add(new BasicNameValuePair("status", (String)map.get("status")));
+			nvps.add(new BasicNameValuePair("status", "¿É½è"));
 
 			NetAccess network = NetAccess.getInstance();
 			String url = application.getString(R.string.url_host);
@@ -158,8 +155,9 @@ public class User {
 	}
 
 	public void addBook(String isbn, Update update) {
+		Log.i("User: addBook()", "success");
 		this.update = update;
-		Book book = new Book();
+		Book book = new Book(this.application);
 		book.getBookByIsbn(isbn, new GetBookUpdate());
 	}
 

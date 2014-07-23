@@ -196,6 +196,7 @@ public class MainActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
 			String isbn = data.getStringExtra("isbn");
+			Log.i("in onactivityresult", "go inside");
 			LocalApp localapp = (LocalApp) getApplication();
 			localapp.getUser().addBook(isbn, bookmanage);
 		}
@@ -302,8 +303,6 @@ public class MainActivity extends Activity {
 
 			String response = getIntent().getStringExtra("response");
 
-			Log.i("MainActivity", "getBookData():" + response);
-
 			JSONObject jsonobj;
 			try {
 				jsonobj = new JSONObject(response);
@@ -404,7 +403,8 @@ public class MainActivity extends Activity {
 		@Override
 		public void error(String content) {
 			// TODO Auto-generated method stub
-			Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG).show();
+			Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG)
+					.show();
 		}
 	}
 

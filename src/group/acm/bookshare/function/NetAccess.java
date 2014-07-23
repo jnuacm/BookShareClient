@@ -1,9 +1,12 @@
 package group.acm.bookshare.function;
 
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -16,6 +19,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+
+import android.util.Log;
 
 /*
  * 此类负责访问网络，利用Singleton模式保证HttpClient只会产生一个实例对象
@@ -37,6 +42,55 @@ public class NetAccess {
 	// 获取实例对象的唯一方法
 	public static NetAccess getInstance() {
 		return internetaccess;
+	}
+
+	public Thread getDoubanThread(String url, List<Update> updates) {
+		return new DoubanThread(url, updates);
+	}
+
+	public class DoubanThread extends Thread {
+		String url;
+		List<Update> updates;
+
+		public DoubanThread(String url, List<Update> updates) {
+			this.url = url;
+			this.updates = updates;
+		}
+
+		public void run() {
+			for (int i = 0; i < updates.size(); i++)
+				updates.get(i).before();
+			int status = STATUS_DEFAULT;
+			String response = "";
+			Map<String, Object> map = new HashMap<String, Object>();
+			try {
+
+				HttpURLConnection conn = (HttpURLConnection) new URL(this.url)
+						.openConnection();
+				conn.setConnectTimeout(3000);
+				conn.setRequestMethod("GET");
+				GZIPInputStream gis = (GZIPInputStream) conn.getContent();
+				int count;
+				byte data[] = new byte[1024];
+				while ((count = gis.read(data, 0, 1024)) != -1) {
+					String tmp = new String(data, 0, count);
+					response += tmp;
+				}
+				status = conn.getResponseCode();
+				Log.i("NetAccess:url", url);
+				Log.i("NetAccess:status", Integer.toString(status));
+				Log.i("NetAccess:response", response);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			map.put("status", status);
+			map.put("response", response);
+
+			for (int i = 0; i < updates.size(); i++)
+				updates.get(i).after(map);
+		}
 	}
 
 	public Thread getPostThread(String url, List<NameValuePair> nvps,
@@ -65,7 +119,7 @@ public class NetAccess {
 		return thread;
 	}
 
-	///////////////////网络访问线程///////////////////////////
+	// /////////////////网络访问线程///////////////////////////
 	public abstract class NetThread extends Thread {
 		protected String url;
 		protected List<NameValuePair> nvps;
@@ -99,12 +153,17 @@ public class NetAccess {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("status", status);
 			map.put("response", response);
+
+			Log.i("NetAccess:url", url);
+			Log.i("NetAccess:status", Integer.toString(status));
+			Log.i("NetAccess:response", response);
+
 			for (int i = 0; i < updates.size(); i++)
 				updates.get(i).after(map);
 		}
 	}
 
-	///////////////////////四种访问方法分别对应四种线程////////////////////////////////
+	// /////////////////////四种访问方法分别对应四种线程////////////////////////////////
 	public class PostThread extends NetThread {
 		private PostThread(String url, List<NameValuePair> nvps) {
 			super(url, nvps);

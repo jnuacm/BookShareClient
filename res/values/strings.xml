@@ -22,13 +22,13 @@
     <string name="url_host">http://192.168.1.10/</string>
     <string name="url_login">bookshareyii/index.php/api/login</string>
     <string name="url_register">bookshareyii/index.php/api/register</string>
-    <string name="path_api">bookshare/index.php/api/user/</string>
-    <string name="action_book">book</string>
-    <string name="action_ownbook">ownbook</string>
-    <string name="action_borrowedbook">borrowedbook</string>
+    <string name="path_api">bookshareyii/index.php/api/user/</string>
+    <string name="action_book">/book</string>
+    <string name="action_ownbook">/ownbook</string>
+    <string name="action_borrowedbook">/borrowedbook</string>
 
     <!-- douban url -->
-    <string name="douban_url">http://api.douban.com/book/subject/</string>
-    <string name="douban_form">?alt=json</string>
+    <string name="douban_url">http://api.douban.com/book/subject/isbn/</string>
+    <string name="douban_form">\?alt=json&amp;apikey=060debf571622a801229c3e054267f80</string>
 
 </resources>
