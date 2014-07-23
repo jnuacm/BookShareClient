@@ -32,6 +32,30 @@ public class Book implements Update {
 		this.application = application;
 	}
 
+	public String getIsbn() {
+		return this.isbn;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public String getAuthors() {
+		return this.authors;
+	}
+
+	public String getDescription() {
+		return this.description;
+	}
+
+	public String getPublisher() {
+		return this.publisher;
+	}
+
+	public String getCoverurl() {
+		return this.coverurl;
+	}
+
 	public void getBookByIsbn(String isbn, Update update) {
 		Log.i("Book : getbookbyisbn()", "success");
 		this.isbn = isbn;
@@ -107,11 +131,8 @@ public class Book implements Update {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		tmap.put("isbn", this.isbn);
-		tmap.put("name", name);
-		tmap.put("authors", authors);
-		tmap.put("description", description);
-		tmap.put("publisher", publisher);
+
+		tmap.put("book", this);
 		update.after(tmap);
 	}
 

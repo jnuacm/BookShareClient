@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -31,11 +32,7 @@ public class NetAccess {
 	public static final int STATUS_ERROR = 403;
 	private static final int STATUS_DEFAULT = 403;
 
-	private HttpClient httpClient;
-
-	private NetAccess() {
-		httpClient = new DefaultHttpClient();
-	}
+	private HttpClient httpClient = new DefaultHttpClient();
 
 	private static NetAccess internetaccess = new NetAccess();
 
@@ -63,20 +60,25 @@ public class NetAccess {
 			int status = STATUS_DEFAULT;
 			String response = "";
 			Map<String, Object> map = new HashMap<String, Object>();
+
 			try {
 
 				HttpURLConnection conn = (HttpURLConnection) new URL(this.url)
 						.openConnection();
-				conn.setConnectTimeout(3000);
-				conn.setRequestMethod("GET");
-				GZIPInputStream gis = (GZIPInputStream) conn.getContent();
-				int count;
-				byte data[] = new byte[1024];
-				while ((count = gis.read(data, 0, 1024)) != -1) {
-					String tmp = new String(data, 0, count);
-					response += tmp;
+				synchronized (conn) {
+					conn.setConnectTimeout(3000);
+					conn.setRequestMethod("GET");
+					GZIPInputStream gis = (GZIPInputStream) conn.getContent();
+					int count;
+					byte data[] = new byte[1024];
+					while ((count = gis.read(data, 0, 1024)) != -1) {
+						String tmp = new String(data, 0, count);
+						response += tmp;
+					}
+					gis.close();
+					status = conn.getResponseCode();
+					conn.disconnect();
 				}
-				status = conn.getResponseCode();
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
 				Log.i("NetAccess:response", response);
@@ -143,11 +145,16 @@ public class NetAccess {
 				HttpResponse httpResponse;
 				synchronized (httpClient) {
 					httpResponse = httpClient.execute(request);
+					status = httpResponse.getStatusLine().getStatusCode();
+					HttpEntity entity = httpResponse.getEntity();
+					response = EntityUtils.toString(entity);
+					if (entity != null)
+						entity.consumeContent();
 				}
-				status = httpResponse.getStatusLine().getStatusCode();
-				response = EntityUtils.toString(httpResponse.getEntity());
 			} catch (Exception e) {
 				e.printStackTrace();
+			} finally {
+				
 			}
 
 			Map<String, Object> map = new HashMap<String, Object>();

@@ -63,7 +63,7 @@ public class User {
 		@Override
 		public void error(String content) {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 	}
@@ -79,6 +79,7 @@ public class User {
 		url += application.getString(R.string.url_login);
 		List<Update> updates = new ArrayList<Update>();
 		updates.add(update);
+		updates.add(new LoginUpdate());
 		network.getPostThread(url, nvps, updates).start();
 	}
 
@@ -98,21 +99,21 @@ public class User {
 
 		@Override
 		public void after(Map<String, Object> map) {
-			User.this.update.process(50);
-
 			// TODO Auto-generated method stub
+			User.this.update.process(50);
+			Book book = (Book)map.get("book");
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			nvps.add(new BasicNameValuePair("name", (String)map.get("name")));
-			nvps.add(new BasicNameValuePair("isbn", (String)map.get("isbn")));
-			nvps.add(new BasicNameValuePair("authors", (String)map.get("authors")));
-			nvps.add(new BasicNameValuePair("description", (String)map.get("description")));
-			nvps.add(new BasicNameValuePair("publisher", (String)map.get("publisher")));
+			Log.i("test book trans", book.getName());
+			nvps.add(new BasicNameValuePair("name", book.getName()));
+			nvps.add(new BasicNameValuePair("isbn", book.getIsbn()));
+			nvps.add(new BasicNameValuePair("authors", book.getAuthors()));
+			nvps.add(new BasicNameValuePair("description", book.getDescription()));
+			nvps.add(new BasicNameValuePair("publisher", book.getPublisher()));
 			nvps.add(new BasicNameValuePair("status", "¿É½è"));
 
 			NetAccess network = NetAccess.getInstance();
 			String url = application.getString(R.string.url_host);
 			url += application.getString(R.string.path_api);
-			url += username;
 			url += application.getString(R.string.action_book);
 			List<Update> updates = new ArrayList<Update>();
 			updates.add(new AddBookUpdate());
@@ -125,33 +126,33 @@ public class User {
 			User.this.update.error(content);
 		}
 	}
-	
-	private class AddBookUpdate implements Update{
+
+	private class AddBookUpdate implements Update {
 
 		@Override
 		public void before() {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
 		public void process(int value) {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
 		public void after(Map<String, Object> map) {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
 		public void error(String content) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 	}
 
 	public void addBook(String isbn, Update update) {
