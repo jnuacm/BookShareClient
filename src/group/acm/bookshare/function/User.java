@@ -2,6 +2,7 @@ package group.acm.bookshare.function;
 
 import group.acm.bookshare.R;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

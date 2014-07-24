@@ -62,14 +62,10 @@ public class Book implements Update {
 		this.update = update;
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.douban_url);
-		Log.i("h", "before app");
 		url += isbn;
 		url += application.getString(R.string.douban_form);
 		List<Update> updates = new ArrayList<Update>();
 		updates.add(this);
-		Log.i("url String:", url);
-		// url = "http://api.douban.com/book/subject/isbn/" + this.isbn +
-		// "?alt=json";
 		network.getDoubanThread(url, updates).start();
 	}
 
@@ -101,44 +97,37 @@ public class Book implements Update {
 	public void after(Map<String, Object> map) {
 		// TODO Auto-generated method stub
 		if (NetAccess.STATUS_SUCCESS != (Integer) map.get("status")) {
-			update.error("book get error.");
+			this.update.error("book get error.");
 			return;
 		}
 		Map<String, Object> tmap = new HashMap<String, Object>();
-		name = "";
-		authors = "";
-		description = "";
-		publisher = "";
+		this.name = "";
+		this.authors = "";
+		this.description = "";
+		this.publisher = "";
 		try {
 			JSONObject bookObj = new JSONObject((String) map.get("response"));
-			name = bookObj.getJSONObject("title").getString("$t");
+			this.name = bookObj.getJSONObject("title").getString("$t");
 			JSONArray array = bookObj.getJSONArray("author");
 			for (int i = 0; i < array.length(); i++) {
-				authors += (array.getJSONObject(i).getJSONObject("name")
+				this.authors += (array.getJSONObject(i).getJSONObject("name")
 						.getString("$t") + ",");
 			}
-			description = bookObj.getJSONObject("summary").getString("$t");
-			publisher = bookObj.getJSONArray("db:attribute").getJSONObject(5)
-					.getString("$t");
-			/*
-			 * map.get("name"))); (String)map.get("isbn")));
-			 * (String)map.get("authors"))); n (String)map.get("description")));
-			 * nvps.add(new BasicNameValuePair("publisher",
-			 * (String)map.get("publisher"))); nvps.add(new
-			 * BasicNameValuePair("status", (String)map.get("status"))
-			 */
+			this.description = bookObj.getJSONObject("summary").getString("$t");
+			this.publisher = bookObj.getJSONArray("db:attribute")
+					.getJSONObject(5).getString("$t");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		tmap.put("book", this);
-		update.after(tmap);
+		this.update.after(tmap);
 	}
 
 	@Override
 	public void error(String content) {
 		// TODO Auto-generated method stub
-		update.error(content);
+		this.update.error(content);
 	}
 }

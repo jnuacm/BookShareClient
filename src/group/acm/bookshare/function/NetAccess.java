@@ -19,6 +19,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
 import android.util.Log;
@@ -32,9 +33,13 @@ public class NetAccess {
 	public static final int STATUS_ERROR = 403;
 	private static final int STATUS_DEFAULT = 403;
 
-	private HttpClient httpClient = new DefaultHttpClient();
+	private HttpClient httpClient;
 
 	private static NetAccess internetaccess = new NetAccess();
+
+	private NetAccess() {
+		httpClient = new DefaultHttpClient();
+	}
 
 	// 获取实例对象的唯一方法
 	public static NetAccess getInstance() {
@@ -66,7 +71,7 @@ public class NetAccess {
 				HttpURLConnection conn = (HttpURLConnection) new URL(this.url)
 						.openConnection();
 				synchronized (conn) {
-					conn.setConnectTimeout(3000);
+					conn.setConnectTimeout(5000);
 					conn.setRequestMethod("GET");
 					GZIPInputStream gis = (GZIPInputStream) conn.getContent();
 					int count;
@@ -142,19 +147,17 @@ public class NetAccess {
 			int status = STATUS_DEFAULT;
 			try {
 				HttpUriRequest request = getRequest();
+				request.setHeader("charset", HTTP.UTF_8);
 				HttpResponse httpResponse;
 				synchronized (httpClient) {
 					httpResponse = httpClient.execute(request);
 					status = httpResponse.getStatusLine().getStatusCode();
 					HttpEntity entity = httpResponse.getEntity();
-					response = EntityUtils.toString(entity);
-					if (entity != null)
-						entity.consumeContent();
+					response = (entity != null ? EntityUtils.toString(entity,
+							HTTP.UTF_8) : "");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-			} finally {
-				
 			}
 
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -181,7 +184,9 @@ public class NetAccess {
 			// TODO Auto-generated method stub
 			HttpPost post = new HttpPost(url);
 			try {
-				post.setEntity(new UrlEncodedFormEntity(nvps));
+				HttpEntity entity = new UrlEncodedFormEntity(nvps, HTTP.UTF_8);
+				post.setEntity(entity);
+				// Log.i("before encode:",entity.getContentEncoding().toString());
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -213,7 +218,7 @@ public class NetAccess {
 			// TODO Auto-generated method stub
 			HttpPut put = new HttpPut(url);
 			try {
-				put.setEntity(new UrlEncodedFormEntity(nvps));
+				put.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
