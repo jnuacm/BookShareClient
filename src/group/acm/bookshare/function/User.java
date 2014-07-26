@@ -34,7 +34,6 @@ public class User {
 
 	private Application application;
 	private Handler mainHandler;
-	private Handler addBookHandler;
 
 	public User(Application application) {
 		this.application = application;
@@ -71,21 +70,23 @@ public class User {
 		this.mainHandler = mainHandler;
 		Log.i("User: addBook()", "success");
 		Book book = new Book(this.application);
-		this.addBookHandler = new Handler() {
-			public void handlerMessage(Message msg) {
+		book.getBookByIsbn(isbn, new Handler() {
+			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
-					msg.what = NetAccess.NETMSG_PROCESS;
+					Log.i("add wan book", "good");
+
+					Message tmsg = Message.obtain();
+					tmsg.what = NetAccess.NETMSG_PROCESS;
 					Bundle data = new Bundle();
 					data.putInt("time", 50);
-					msg.setData(data);
-					User.this.mainHandler.sendMessage(msg);
+					tmsg.setData(data);
+					User.this.mainHandler.sendMessage(tmsg);
 					addToDB(msg.getData());
 					break;
 				}
 			}
-		};
-		book.getBookByIsbn(isbn, addBookHandler);
+		});
 	}
 
 	public void addToDB(Bundle data) {
@@ -105,10 +106,11 @@ public class User {
 		url += application.getString(R.string.path_api);
 		url += application.getString(R.string.action_book);
 		List<Handler> handlers = new ArrayList<Handler>();
-		handlers.add(new Handler(){
-			public void handleMessage(Message msg){
-				switch (msg.what){
+		handlers.add(new Handler() {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
+					msg = Message.obtain(msg);
 					User.this.mainHandler.sendMessage(msg);
 					break;
 				}

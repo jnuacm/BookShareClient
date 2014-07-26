@@ -77,8 +77,10 @@ public class Book {
 					data.putString("description", Book.this.description);
 					data.putString("name", Book.this.name);
 					data.putString("publisher", Book.this.publisher);
+					msg = Message.obtain();
 					msg.what = NetAccess.NETMSG_AFTER;
 					msg.setData(data);
+					Log.i("before send message", "why");
 					Book.this.handler.sendMessage(msg);
 					break;
 				}
@@ -123,5 +125,6 @@ public class Book {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		Log.i("json to book",this.name);
 	}
 }

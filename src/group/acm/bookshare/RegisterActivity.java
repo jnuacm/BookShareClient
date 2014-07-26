@@ -53,9 +53,9 @@ public class RegisterActivity extends Activity {
 		area = "";
 		area = edittext.getText().toString();
 
-		username = "bb";
+		username = "÷‹¿œ ¶";
 		password = "123456";
-		email = "abc@qd.com";
+		email = "kk@qd.com";
 		area = "guangzhou";
 
 		if (username == "" || password == "" || email == "")
