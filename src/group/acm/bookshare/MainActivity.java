@@ -2,7 +2,6 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
-import group.acm.bookshare.function.Update;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +20,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -198,7 +199,23 @@ public class MainActivity extends Activity {
 			String isbn = data.getStringExtra("isbn");
 			Log.i("in onactivityresult", "go inside");
 			LocalApp localapp = (LocalApp) getApplication();
-			localapp.getUser().addBook(isbn, bookmanage);
+			localapp.getUser().addBook(isbn, new AddBookHandler());
+		}
+	}
+
+	private class AddBookHandler extends Handler {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case NetAccess.NETMSG_AFTER:
+				Bundle data = msg.getData();
+				if (data.getInt("status") == NetAccess.STATUS_SUCCESS)
+					Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_LONG)
+							.show();
+				else
+					Toast.makeText(MainActivity.this, "添加失败", Toast.LENGTH_LONG)
+							.show();
+				break;
+			}
 		}
 	}
 
@@ -206,7 +223,7 @@ public class MainActivity extends Activity {
 	/* !!!!!!!!!!!!!!!!!!!!!!!!!!以下是构造子页面的调用函数!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
-	private class BookListManage implements OnScrollListener, Update {
+	private class BookListManage implements OnScrollListener {
 
 		ListView mybookslistview;
 		SimpleAdapter bookAdapter;
@@ -376,35 +393,6 @@ public class MainActivity extends Activity {
 
 		private void showUpdate() {
 			bookAdapter.notifyDataSetChanged();
-		}
-
-		@Override
-		public void before() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void process(int value) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void after(Map<String, Object> map) {
-			// TODO Auto-generated method stub
-			if ((Integer) map.get("status") == NetAccess.STATUS_SUCCESS)
-				Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_LONG)
-						.show();
-			else
-				error("添加失败");
-		}
-
-		@Override
-		public void error(String content) {
-			// TODO Auto-generated method stub
-			Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG)
-					.show();
 		}
 	}
 

@@ -2,16 +2,19 @@ package group.acm.bookshare.function;
 
 import group.acm.bookshare.R;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.R.bool;
 import android.app.Application;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -30,7 +33,8 @@ public class User {
 	private List<String> friends;
 
 	private Application application;
-	private Update update;
+	private Handler mainHandler;
+	private Handler addBookHandler;
 
 	public User(Application application) {
 		this.application = application;
@@ -41,126 +45,76 @@ public class User {
 		this.password = password;
 	}
 
-	private class LoginUpdate implements Update {
-
-		@Override
-		public void before() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void process(int value) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void after(Map<String, Object> map) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void error(String content) {
-			// TODO Auto-generated method stub
-
-		}
-
-	}
-
-	public void login(Update update) {
+	public void login(Handler mainHandler) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		nvps.add(new BasicNameValuePair("username", username));
-		nvps.add(new BasicNameValuePair("password", password));
+		try {
+			nvps.add(new BasicNameValuePair("username", URLEncoder.encode(
+					username, "UTF-8")));
 
+			nvps.add(new BasicNameValuePair("password", URLEncoder.encode(
+					password, "UTF-8")));
+
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
 
 		url += application.getString(R.string.url_login);
-		List<Update> updates = new ArrayList<Update>();
-		updates.add(update);
-		updates.add(new LoginUpdate());
-		network.getPostThread(url, nvps, updates).start();
+		List<Handler> handlers = new ArrayList<Handler>();
+		handlers.add(mainHandler);
+		network.createPostThread(url, nvps, handlers);
 	}
 
-	private class GetBookUpdate implements Update {
-
-		@Override
-		public void before() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void process(int value) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void after(Map<String, Object> map) {
-			// TODO Auto-generated method stub
-			User.this.update.process(50);
-			Book book = (Book)map.get("book");
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			Log.i("test book trans", book.getName());
-			nvps.add(new BasicNameValuePair("name", book.getName()));
-			nvps.add(new BasicNameValuePair("isbn", book.getIsbn()));
-			nvps.add(new BasicNameValuePair("authors", book.getAuthors()));
-			nvps.add(new BasicNameValuePair("description", book.getDescription()));
-			nvps.add(new BasicNameValuePair("publisher", book.getPublisher()));
-			nvps.add(new BasicNameValuePair("status", "¿É½è"));
-
-			NetAccess network = NetAccess.getInstance();
-			String url = application.getString(R.string.url_host);
-			url += application.getString(R.string.path_api);
-			url += application.getString(R.string.action_book);
-			List<Update> updates = new ArrayList<Update>();
-			updates.add(new AddBookUpdate());
-			network.getPostThread(url, nvps, updates).start();
-		}
-
-		@Override
-		public void error(String content) {
-			// TODO Auto-generated method stub
-			User.this.update.error(content);
-		}
-	}
-
-	private class AddBookUpdate implements Update {
-
-		@Override
-		public void before() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void process(int value) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void after(Map<String, Object> map) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void error(String content) {
-			// TODO Auto-generated method stub
-
-		}
-
-	}
-
-	public void addBook(String isbn, Update update) {
+	public void addBook(String isbn, Handler mainHandler) {
+		this.mainHandler = mainHandler;
 		Log.i("User: addBook()", "success");
-		this.update = update;
 		Book book = new Book(this.application);
-		book.getBookByIsbn(isbn, new GetBookUpdate());
+		this.addBookHandler = new Handler() {
+			public void handlerMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_AFTER:
+					msg.what = NetAccess.NETMSG_PROCESS;
+					Bundle data = new Bundle();
+					data.putInt("time", 50);
+					msg.setData(data);
+					User.this.mainHandler.sendMessage(msg);
+					addToDB(msg.getData());
+					break;
+				}
+			}
+		};
+		book.getBookByIsbn(isbn, addBookHandler);
+	}
+
+	public void addToDB(Bundle data) {
+		// TODO Auto-generated method stub
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		Log.i("test book trans", data.getString("name"));
+		nvps.add(new BasicNameValuePair("name", data.getString("name")));
+		nvps.add(new BasicNameValuePair("isbn", data.getString("isbn")));
+		nvps.add(new BasicNameValuePair("authors", data.getString("authors")));
+		nvps.add(new BasicNameValuePair("description", data
+				.getString("description")));
+		nvps.add(new BasicNameValuePair("publisher", data
+				.getString("publisher")));
+		nvps.add(new BasicNameValuePair("status", "¿É½è"));
+		NetAccess network = NetAccess.getInstance();
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.path_api);
+		url += application.getString(R.string.action_book);
+		List<Handler> handlers = new ArrayList<Handler>();
+		handlers.add(new Handler(){
+			public void handleMessage(Message msg){
+				switch (msg.what){
+				case NetAccess.NETMSG_AFTER:
+					User.this.mainHandler.sendMessage(msg);
+					break;
+				}
+			}
+		});
+		network.createPostThread(url, nvps, handlers);
 	}
 
 	/*

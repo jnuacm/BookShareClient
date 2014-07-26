@@ -55,4 +55,5 @@
         android:layout_weight="1.0"
         android:flipInterval="30"
         android:persistentDrawingCache="animation" />
+
 </LinearLayout>

@@ -2,27 +2,28 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
-import group.acm.bookshare.function.Update;
 import group.acm.bookshare.function.User;
-
-import java.util.Map;
-
+import group.acm.bookshare.util.Utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
 
-public class LoginActivity extends Activity implements Update {
+public class LoginActivity extends Activity {
 	@SuppressLint("HandlerLeak")
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 	}
 
-	public void Login(View v) {
+	public void Login(View v) { // 登录回调函数
+		if (Utils.isQuickClick())
+			return;
 		String username, password;
 		// username = ((TextView)
 		// findViewById(R.id.USERNAME)).getText().toString();
@@ -36,13 +37,25 @@ public class LoginActivity extends Activity implements Update {
 		// ////////////////////////以上为测试代码//////////////////////////////////////////////
 		LocalApp localapp = (LocalApp) getApplication();
 		User user = localapp.getUser();
+		
 		user.setUser(username, password);
-		user.login(this);
+		Handler mainHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_BEFORE:
+					break;
+				case NetAccess.NETMSG_AFTER:
+					showResponse(msg.getData());
+					break;
+				}
+			}
+		};
+		user.login(mainHandler);
 	}
 
-	public void Register(View v)// 登录相应按钮
-	{
-
+	public void Register(View v) { // 注册回调函数
+		if (Utils.isQuickClick())
+			return;
 		Intent intent = new Intent();
 		intent.setClass(this, RegisterActivity.class);
 		startActivity(intent);
@@ -55,26 +68,13 @@ public class LoginActivity extends Activity implements Update {
 		return true;
 	}
 
-	@Override
-	public void before() {
+	public void showResponse(Bundle data) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public void process(int value) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void after(Map<String, Object> map) {
-		// TODO Auto-generated method stub
-		int status = (Integer) map.get("status");
-
+		int status = data.getInt("status");
 		if (status == NetAccess.STATUS_SUCCESS) {
 			Bundle retdata = new Bundle();
-			retdata.putString("response", (String) map.get("response"));
+			retdata.putString("response", data.getString("response"));
 
 			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 			intent.putExtras(retdata);
@@ -87,10 +87,9 @@ public class LoginActivity extends Activity implements Update {
 		}
 	}
 
-	@Override
 	public void error(String content) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

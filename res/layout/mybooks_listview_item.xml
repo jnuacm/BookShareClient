@@ -7,8 +7,8 @@
         android:id="@+id/mybookslistitem_bookimage"
         android:layout_width="40dp"
         android:layout_height="60dp"
-        android:layout_marginLeft="5dp"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="5dp" />
 
     <TextView
         android:id="@+id/mybookslistitem_bookname"

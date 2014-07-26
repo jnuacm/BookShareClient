@@ -3,18 +3,19 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Application;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
-public class Book implements Update {
+public class Book {
 	protected String isbn;
 	protected String name;
 	protected String authors;
@@ -26,7 +27,7 @@ public class Book implements Update {
 	protected List<String> lables;
 
 	protected Application application;
-	protected Update update;
+	protected Handler handler;
 
 	public Book(Application application) {
 		this.application = application;
@@ -56,17 +57,34 @@ public class Book implements Update {
 		return this.coverurl;
 	}
 
-	public void getBookByIsbn(String isbn, Update update) {
+	public void getBookByIsbn(String isbn, Handler handler) {
+		this.handler = handler;
 		Log.i("Book : getbookbyisbn()", "success");
 		this.isbn = isbn;
-		this.update = update;
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.douban_url);
 		url += isbn;
 		url += application.getString(R.string.douban_form);
-		List<Update> updates = new ArrayList<Update>();
-		updates.add(this);
-		network.getDoubanThread(url, updates).start();
+		List<Handler> handlers = new ArrayList<Handler>();
+		handlers.add(new Handler() {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_AFTER:
+					strToBook(msg.getData());
+					Bundle data = new Bundle();
+					data.putString("isbn", Book.this.isbn);
+					data.putString("authors", Book.this.authors);
+					data.putString("description", Book.this.description);
+					data.putString("name", Book.this.name);
+					data.putString("publisher", Book.this.publisher);
+					msg.what = NetAccess.NETMSG_AFTER;
+					msg.setData(data);
+					Book.this.handler.sendMessage(msg);
+					break;
+				}
+			}
+		});
+		network.createDoubanThread(url, handlers);
 	}
 
 	public int addComment(String username) {
@@ -81,32 +99,17 @@ public class Book implements Update {
 		return 0;
 	}
 
-	@Override
-	public void before() {
+	public void strToBook(Bundle data) {
 		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void process(int value) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void after(Map<String, Object> map) {
-		// TODO Auto-generated method stub
-		if (NetAccess.STATUS_SUCCESS != (Integer) map.get("status")) {
-			this.update.error("book get error.");
+		if (NetAccess.STATUS_SUCCESS != data.getInt("status")) {
 			return;
 		}
-		Map<String, Object> tmap = new HashMap<String, Object>();
 		this.name = "";
 		this.authors = "";
 		this.description = "";
 		this.publisher = "";
 		try {
-			JSONObject bookObj = new JSONObject((String) map.get("response"));
+			JSONObject bookObj = new JSONObject((String) data.get("response"));
 			this.name = bookObj.getJSONObject("title").getString("$t");
 			JSONArray array = bookObj.getJSONArray("author");
 			for (int i = 0; i < array.length(); i++) {
@@ -120,14 +123,5 @@ public class Book implements Update {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		tmap.put("book", this);
-		this.update.after(tmap);
-	}
-
-	@Override
-	public void error(String content) {
-		// TODO Auto-generated method stub
-		this.update.error(content);
 	}
 }

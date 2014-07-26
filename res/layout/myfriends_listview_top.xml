@@ -4,24 +4,20 @@
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
-    
     <ImageButton
-        android:id ="@+id/Group"
-        android:src = "@drawable/group"
+        android:id="@+id/Group"
         android:layout_width="fill_parent"
         android:layout_height="50dp"
-        android:contentDescription="@string/app_name"
         android:background="@color/transparent"
-        />
-   
-    
-	
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/group" />
+
     <ImageButton
-		android:layout_below="@id/Group"
-        android:src = "@drawable/newfriend"
         android:layout_width="fill_parent"
         android:layout_height="50dp"
+        android:layout_below="@id/Group"
+        android:background="@color/transparent"
         android:contentDescription="@string/app_name"
-        android:background="@color/transparent"/>
-	
+        android:src="@drawable/newfriend" />
+
 </RelativeLayout>

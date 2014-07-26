@@ -1,21 +1,18 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.NetAccess;
-import group.acm.bookshare.function.Update;
+import group.acm.bookshare.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
@@ -23,7 +20,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class RegisterActivity extends Activity implements Update {
+public class RegisterActivity extends Activity {
 	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +35,9 @@ public class RegisterActivity extends Activity implements Update {
 		return true;
 	}
 
-	public void confirm(View v) {
-		// 获取注册的内容
+	public void confirm(View v) { // 确定回调函数
+		if (Utils.isQuickClick())
+			return;
 		String username, password, email, area;
 
 		EditText edittext = (EditText) findViewById(R.id.registerusername);
@@ -55,10 +53,10 @@ public class RegisterActivity extends Activity implements Update {
 		area = "";
 		area = edittext.getText().toString();
 
-		username = "google";
+		username = "bb";
 		password = "123456";
 		email = "abc@qd.com";
-		area = "jnu";
+		area = "guangzhou";
 
 		if (username == "" || password == "" || email == "")
 			return;
@@ -79,44 +77,31 @@ public class RegisterActivity extends Activity implements Update {
 		url += RegisterActivity.this.getString(R.string.url_register);
 		NetAccess network = NetAccess.getInstance();
 
-		List<Update> updates = new ArrayList<Update>();
-		updates.add(this);
-		network.getPostThread(url, nvps, updates).start();
+		List<Handler> handlers = new ArrayList<Handler>();
+		handlers.add(new Handler() {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_BEFORE:
+					
+					break;
+				case NetAccess.NETMSG_AFTER:
+					Bundle data = msg.getData();
+					if (NetAccess.STATUS_SUCCESS == (data.getInt("status"))) {
+						Toast.makeText(RegisterActivity.this, "yes!success!",
+								Toast.LENGTH_LONG).show();
+					} else if (NetAccess.STATUS_ERROR == (data.getInt("status"))) {
+						Toast.makeText(RegisterActivity.this, "no!error!",
+								Toast.LENGTH_LONG).show();
+					}
+					break;
+				}
+			}
+		});
+		network.createPostThread(url, nvps, handlers);
 	}
 
 	public void cancel(View v) {
 		finish();
-	}
-
-	@Override
-	public void before() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void process(int value) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void after(Map<String, Object> map) {
-		// TODO Auto-generated method stub
-
-		if (NetAccess.STATUS_SUCCESS == ((Integer) map.get("status"))) {
-			Toast.makeText(RegisterActivity.this, "yes!success!",
-					Toast.LENGTH_LONG).show();
-		} else if (NetAccess.STATUS_ERROR == ((Integer) map.get("status"))) {
-			Toast.makeText(RegisterActivity.this, "no!error!",
-					Toast.LENGTH_LONG).show();
-		}
-	}
-
-	@Override
-	public void error(String content) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
