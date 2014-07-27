@@ -21,6 +21,7 @@ public class LoginActivity extends Activity {
 		setContentView(R.layout.activity_login);
 	}
 
+	@SuppressLint("HandlerLeak")
 	public void Login(View v) { // 登录回调函数
 		if (Utils.isQuickClick())
 			return;
@@ -32,25 +33,32 @@ public class LoginActivity extends Activity {
 
 		// ////////////////////////！！！注意！！！！///////////////////////////////////////////
 		// ////////////////////////以下为测试代码//////////////////////////////////////////////
-		username = "cc";
-		password = "123456";
+		username = "gg";
+		password = "1234";
 		// ////////////////////////以上为测试代码//////////////////////////////////////////////
 		LocalApp localapp = (LocalApp) getApplication();
 		User user = localapp.getUser();
-		
+
 		user.setUser(username, password);
-		Handler mainHandler = new Handler() {
+		Handler loginHandler = new Handler() {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_BEFORE:
+					findViewById(R.id.loginProgressBar).setVisibility(
+							View.VISIBLE);
 					break;
 				case NetAccess.NETMSG_AFTER:
 					showResponse(msg.getData());
 					break;
+				case NetAccess.NETMSG_ERROR:
+					Toast.makeText(LoginActivity.this,
+							msg.getData().getString("error"), Toast.LENGTH_LONG)
+							.show();
+					break;
 				}
 			}
 		};
-		user.login(mainHandler);
+		user.login(loginHandler);
 	}
 
 	public void Register(View v) { // 注册回调函数
@@ -70,7 +78,6 @@ public class LoginActivity extends Activity {
 
 	public void showResponse(Bundle data) {
 		// TODO Auto-generated method stub
-
 		int status = data.getInt("status");
 		if (status == NetAccess.STATUS_SUCCESS) {
 			Bundle retdata = new Bundle();
@@ -81,15 +88,10 @@ public class LoginActivity extends Activity {
 			startActivity(intent);
 			finish();
 		} else if (status == NetAccess.STATUS_ERROR) {
+			findViewById(R.id.loginProgressBar).setVisibility(View.INVISIBLE);
 			Toast.makeText(LoginActivity.this,
 					this.getString(R.string.login_error), Toast.LENGTH_LONG)
 					.show();
 		}
 	}
-
-	public void error(String content) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

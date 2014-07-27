@@ -2,8 +2,6 @@ package group.acm.bookshare.function;
 
 import group.acm.bookshare.R;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,26 +9,27 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.R.bool;
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.format.Time;
 import android.util.Log;
 
+@SuppressLint("HandlerLeak")
 public class User {
 	private String username;
 	private String password;
-	private Time registTime;
-	private String area;
-	private String group;
+	//private Time registTime;
+	//private String area;
+	//private String group;
 	// private Library mylibrary;
 	// private MsgManager msm;
 
-	private List<OwnerBook> ownBooks;
-	private List<OwnerBook> borrowedBooks;
+	//private List<OwnerBook> ownBooks;
+	//private List<OwnerBook> borrowedBooks;
 
-	private List<String> friends;
+	//private List<String> friends;
 
 	private Application application;
 	private Handler mainHandler;
@@ -46,24 +45,14 @@ public class User {
 
 	public void login(Handler mainHandler) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		try {
-			nvps.add(new BasicNameValuePair("username", URLEncoder.encode(
-					username, "UTF-8")));
+		nvps.add(new BasicNameValuePair("username", username));
+		nvps.add(new BasicNameValuePair("password", password));
 
-			nvps.add(new BasicNameValuePair("password", URLEncoder.encode(
-					password, "UTF-8")));
-
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
-
 		url += application.getString(R.string.url_login);
-		List<Handler> handlers = new ArrayList<Handler>();
-		handlers.add(mainHandler);
-		network.createPostThread(url, nvps, handlers);
+
+		NetAccess network = NetAccess.getInstance();
+		network.createPostThread(url, nvps, mainHandler);
 	}
 
 	public void addBook(String isbn, Handler mainHandler) {
@@ -74,15 +63,24 @@ public class User {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
-					Log.i("add wan book", "good");
-
-					Message tmsg = Message.obtain();
-					tmsg.what = NetAccess.NETMSG_PROCESS;
-					Bundle data = new Bundle();
-					data.putInt("time", 50);
-					tmsg.setData(data);
-					User.this.mainHandler.sendMessage(tmsg);
-					addToDB(msg.getData());
+					Bundle repData = msg.getData();
+					if (repData.getInt("status") == NetAccess.STATUS_ERROR) {
+						Message tmsg = Message.obtain();
+						tmsg.what = NetAccess.NETMSG_AFTER;
+						Bundle data = new Bundle();
+						data.putInt("status", NetAccess.STATUS_ERROR);
+						data.putString("response", repData.getString("response"));
+						tmsg.setData(data);
+						User.this.mainHandler.sendMessage(tmsg);
+					} else {
+						Message tmsg = Message.obtain();
+						tmsg.what = NetAccess.NETMSG_PROCESS;
+						Bundle data = new Bundle();
+						data.putInt("time", 50);
+						tmsg.setData(data);
+						User.this.mainHandler.sendMessage(tmsg);
+						addToDB(repData);
+					}
 					break;
 				}
 			}
@@ -92,21 +90,21 @@ public class User {
 	public void addToDB(Bundle data) {
 		// TODO Auto-generated method stub
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		Log.i("test book trans", data.getString("name"));
+
 		nvps.add(new BasicNameValuePair("name", data.getString("name")));
 		nvps.add(new BasicNameValuePair("isbn", data.getString("isbn")));
-		nvps.add(new BasicNameValuePair("authors", data.getString("authors")));
+		nvps.add(new BasicNameValuePair("author", data.getString("authors")));
 		nvps.add(new BasicNameValuePair("description", data
 				.getString("description")));
 		nvps.add(new BasicNameValuePair("publisher", data
 				.getString("publisher")));
 		nvps.add(new BasicNameValuePair("status", "¿É½è"));
+
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
 		url += application.getString(R.string.path_api);
 		url += application.getString(R.string.action_book);
-		List<Handler> handlers = new ArrayList<Handler>();
-		handlers.add(new Handler() {
+		Handler handler = new Handler() {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
@@ -115,8 +113,8 @@ public class User {
 					break;
 				}
 			}
-		});
-		network.createPostThread(url, nvps, handlers);
+		};
+		network.createPostThread(url, nvps, handler);
 	}
 
 	/*

@@ -14,7 +14,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
@@ -35,6 +34,7 @@ public class RegisterActivity extends Activity {
 		return true;
 	}
 
+	@SuppressLint("HandlerLeak")
 	public void confirm(View v) { // 确定回调函数
 		if (Utils.isQuickClick())
 			return;
@@ -53,18 +53,13 @@ public class RegisterActivity extends Activity {
 		area = "";
 		area = edittext.getText().toString();
 
-		username = "周老师";
-		password = "123456";
+		username = "amy";
+		password = "12345";
 		email = "kk@qd.com";
-		area = "guangzhou";
-
+		area = "shaoguan";
+		
 		if (username == "" || password == "" || email == "")
 			return;
-
-		Log.i("username", username);
-		Log.i("password", password);
-		Log.i("email", email);
-		Log.i("area", area);
 
 		// 访问网络
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -77,12 +72,11 @@ public class RegisterActivity extends Activity {
 		url += RegisterActivity.this.getString(R.string.url_register);
 		NetAccess network = NetAccess.getInstance();
 
-		List<Handler> handlers = new ArrayList<Handler>();
-		handlers.add(new Handler() {
+		Handler handler = new Handler() {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_BEFORE:
-					
+
 					break;
 				case NetAccess.NETMSG_AFTER:
 					Bundle data = msg.getData();
@@ -96,8 +90,8 @@ public class RegisterActivity extends Activity {
 					break;
 				}
 			}
-		});
-		network.createPostThread(url, nvps, handlers);
+		};
+		network.createPostThread(url, nvps, handler);
 	}
 
 	public void cancel(View v) {

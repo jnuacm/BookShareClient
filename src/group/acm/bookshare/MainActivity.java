@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -43,6 +44,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+@SuppressLint("HandlerLeak")
 public class MainActivity extends Activity {
 
 	private LayoutInflater layout_in_flater;
@@ -110,7 +112,6 @@ public class MainActivity extends Activity {
 		matrix.setScale((float) (screenW / (3.0 * bmpW)), (float) 1.0);
 		bmpW = dm.widthPixels / 3;
 		underlined.setImageMatrix(matrix);// 设置动画初始位置
-
 	}
 
 	private void InitTextView() {
@@ -122,7 +123,6 @@ public class MainActivity extends Activity {
 		int j = 0;
 		for (TextView i : textViews)
 			i.setOnClickListener(new MyOnClickListener(j++));
-
 	}
 
 	private class MyOnClickListener implements OnClickListener {
@@ -134,9 +134,7 @@ public class MainActivity extends Activity {
 
 		public void onClick(View v) {
 			viewPager.setCurrentItem(index);
-
 		}
-
 	}
 
 	public class MyViewPagerAdapter extends PagerAdapter {
@@ -193,6 +191,10 @@ public class MainActivity extends Activity {
 
 	}
 
+	public void showToast(String content) {
+		Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG).show();
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
@@ -209,11 +211,14 @@ public class MainActivity extends Activity {
 			case NetAccess.NETMSG_AFTER:
 				Bundle data = msg.getData();
 				if (data.getInt("status") == NetAccess.STATUS_SUCCESS)
-					Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_LONG)
-							.show();
+					MainActivity.this.showToast("添加成功");
 				else
-					Toast.makeText(MainActivity.this, "添加失败", Toast.LENGTH_LONG)
-							.show();
+					MainActivity.this.showToast("添加失败:"
+							+ data.getString("response"));
+				break;
+			case NetAccess.NETMSG_ERROR:
+				MainActivity.this
+						.showToast(msg.getData().getString("response"));
 				break;
 			}
 		}
@@ -271,10 +276,6 @@ public class MainActivity extends Activity {
 			return mybookslistview;
 		}
 
-		public void showToast(String content) {
-			Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG);
-		}
-
 		private void initBookList() {
 			bookList = getBookData();
 			bookAdapter = new SimpleAdapter(MainActivity.this, bookList,
@@ -327,7 +328,6 @@ public class MainActivity extends Activity {
 
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject item = jsonarray.getJSONObject(i);
-					String imageUrl = "";
 					String bookname = item.getString("name");
 					String status = item.getString("status");
 
@@ -483,17 +483,7 @@ public class MainActivity extends Activity {
 		}
 
 		private List<Map<String, Object>> getFriendData() {
-			List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
-
-			Map<String, Object> map;
-			for (int i = 0; i < listshowsize; i++) {
-				map = new HashMap<String, Object>();
-				map.put("image", R.drawable.friend1);
-				map.put("friendname", "好友名" + i);
-				ret.add(map);
-			}
-
-			return ret;
+			return new ArrayList<Map<String, Object>>();
 		}
 
 		private void loadFriendData() {

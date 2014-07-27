@@ -1,12 +1,12 @@
 package group.acm.bookshare.function;
 
-import java.io.UnsupportedEncodingException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -26,17 +26,16 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-/*
- * 此类负责访问网络，利用Singleton模式保证HttpClient只会产生一个实例对象
- */
+//此类负责访问网络，利用Singleton模式保证HttpClient只会产生一个实例对象
 public class NetAccess {
 	public static final int STATUS_SUCCESS = 200;
 	public static final int STATUS_ERROR = 403;
+	private static final int STATUS_DEFAULT = STATUS_ERROR;
+
 	public static final int NETMSG_BEFORE = 10;
 	public static final int NETMSG_PROCESS = 20;
 	public static final int NETMSG_AFTER = 30;
 	public static final int NETMSG_ERROR = 40;
-	private static final int STATUS_DEFAULT = 403;
 
 	private HttpClient httpClient;
 
@@ -51,22 +50,22 @@ public class NetAccess {
 		return internetaccess;
 	}
 
-	public void createDoubanThread(String url, List<Handler> handlers) {
-		new DoubanThread(url, handlers).start();
+	public void createDoubanThread(String url, Handler handler) {
+		new DoubanThread(url, handler).start();
 	}
 
+	// 单独线程从豆瓣获取图书信息(直接用httpClient会出现500错误)
 	public class DoubanThread extends Thread {
 		String url;
-		List<Handler> handlers;
+		Handler handler;
 
-		public DoubanThread(String url, List<Handler> handlers) {
+		public DoubanThread(String url, Handler handler) {
 			this.url = url;
-			this.handlers = handlers;
+			this.handler = handler;
 		}
 
 		public void run() {
-			for (int i = 0; i < handlers.size(); i++)
-				handlers.get(i).sendEmptyMessage(NetAccess.NETMSG_BEFORE);
+			handler.sendEmptyMessage(NetAccess.NETMSG_BEFORE);
 			int status = STATUS_DEFAULT;
 			String response = "";
 
@@ -76,58 +75,62 @@ public class NetAccess {
 				synchronized (conn) {
 					conn.setConnectTimeout(5000);
 					conn.setRequestMethod("GET");
-					conn.setRequestProperty("charset", HTTP.UTF_8);
 					GZIPInputStream gis = (GZIPInputStream) conn.getContent();
-					int count;
-					byte data[] = new byte[1024];
-					while ((count = gis.read(data, 0, 1024)) != -1) {
-						String tmp = new String(data, 0, count, HTTP.UTF_8);
+					BufferedReader br = new BufferedReader(
+							new InputStreamReader(gis));
+					Log.i("douban response", conn.getContentType());
+					String tmp;
+					while ((tmp = br.readLine()) != null) {
 						response += tmp;
 					}
 					gis.close();
 					status = conn.getResponseCode();
 					conn.disconnect();
 				}
+
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
 				Log.i("NetAccess:response", response);
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				Message msg = Message.obtain();
+				msg.what = NetAccess.NETMSG_ERROR;
+				Bundle data = new Bundle();
+				data.putString("error", e.toString());
+				msg.setData(data);
+				handler.sendMessage(msg);
 			}
 
 			Bundle data = new Bundle();
 			data.putInt("status", status);
 			data.putString("response", response);
 
-			for (int i = 0; i < handlers.size(); i++) {
-				Message msg = Message.obtain();
-				msg.what = NetAccess.NETMSG_AFTER;
-				msg.setData(data);
-				handlers.get(i).sendMessage(msg);
-			}
+			Message msg = Message.obtain();
+			msg.what = NetAccess.NETMSG_AFTER;
+			msg.setData(data);
+			handler.sendMessage(msg);
 		}
 	}
 
 	public void createPostThread(String url, List<NameValuePair> nvps,
-			List<Handler> handlers) {
-		PostThread thread = new PostThread(url, nvps, handlers);
+			Handler handler) {
+		PostThread thread = new PostThread(url, nvps, handler);
 		thread.start();
 	}
 
-	public void createGetThread(String url, List<Handler> handlers) {
-		GetThread thread = new GetThread(url, handlers);
+	public void createGetThread(String url, Handler handler) {
+		GetThread thread = new GetThread(url, handler);
 		thread.start();
 	}
 
 	public void createPutThread(String url, List<NameValuePair> nvps,
-			List<Handler> handlers) {
-		PutThread thread = new PutThread(url, nvps, handlers);
+			Handler handler) {
+		PutThread thread = new PutThread(url, nvps, handler);
 		thread.start();
 	}
 
-	public void createDeleteThread(String url, List<Handler> handlers) {
-		DeleteThread thread = new DeleteThread(url, handlers);
+	public void createDeleteThread(String url, Handler handler) {
+		DeleteThread thread = new DeleteThread(url, handler);
 		thread.start();
 	}
 
@@ -135,45 +138,36 @@ public class NetAccess {
 	public abstract class NetThread extends Thread {
 		protected String url;
 		protected List<NameValuePair> nvps;
-		protected List<Handler> handlers;
+		protected Handler handler;
 
-		private NetThread(String url, List<NameValuePair> nvps,
-				List<Handler> handlers) {
+		private NetThread(String url, List<NameValuePair> nvps, Handler handler) {
 			this.url = url;
 			this.nvps = nvps;
-			this.handlers = handlers;
+			this.handler = handler;
 		}
 
-		protected abstract HttpUriRequest getRequest();
+		protected abstract HttpUriRequest getRequest() throws Exception;
 
 		public void run() {
-			for (int i = 0; i < handlers.size(); i++) {
-				handlers.get(i).sendEmptyMessage(NetAccess.NETMSG_BEFORE);
-			}
-
+			handler.sendEmptyMessage(NetAccess.NETMSG_BEFORE);
 			String response = "";
 			int status = STATUS_DEFAULT;
 			try {
 				HttpUriRequest request = getRequest();
-				/*request.setHeader(
-						new String("Content-Type".getBytes(), "UTF-8"),
-						new String("text/html; charset=utf-8".getBytes(),
-								"UTF-8"));*/
 				HttpResponse httpResponse;
 				synchronized (httpClient) {
-					Header[] heads = request.getAllHeaders();
-					for (int i = 0; i < heads.length; i++)
-						Log.i("request header:", heads[i].toString());
 					httpResponse = httpClient.execute(request);
-					heads = httpResponse.getAllHeaders();
-					for (int i = 0; i < heads.length; i++)
-						Log.i("response header:", heads[i].toString());
-					status = httpResponse.getStatusLine().getStatusCode();
-					HttpEntity entity = httpResponse.getEntity();
-					response = (entity != null ? EntityUtils.toString(entity) : "");
 				}
+				status = httpResponse.getStatusLine().getStatusCode();
+				HttpEntity entity = httpResponse.getEntity();
+				response = (entity != null ? EntityUtils.toString(entity) : "");
 			} catch (Exception e) {
-				e.printStackTrace();
+				Message msg = Message.obtain();
+				msg.what = NetAccess.NETMSG_ERROR;
+				Bundle data = new Bundle();
+				data.putString("error", e.toString());
+				msg.setData(data);
+				handler.sendMessage(msg);
 			}
 
 			Bundle data = new Bundle();
@@ -182,43 +176,34 @@ public class NetAccess {
 
 			Log.i("NetAccess:url", url);
 			Log.i("NetAccess:status", Integer.toString(status));
-			Log.i("NetAccess:response", "rp:"+response);
+			Log.i("NetAccess:response", response);
 
-			for (int i = 0; i < handlers.size(); i++) {
-				Message msg = Message.obtain();
-				msg.what = NetAccess.NETMSG_AFTER;
-				msg.setData(data);
-				handlers.get(i).sendMessage(msg);
-			}
+			Message msg = Message.obtain();
+			msg.what = NetAccess.NETMSG_AFTER;
+			msg.setData(data);
+			handler.sendMessage(msg);
 		}
 	}
 
 	// /////////////////////四种访问方法分别对应四种线程////////////////////////////////
 	public class PostThread extends NetThread {
-		private PostThread(String url, List<NameValuePair> nvps,
-				List<Handler> handlers) {
-			super(url, nvps, handlers);
+		private PostThread(String url, List<NameValuePair> nvps, Handler handler) {
+			super(url, nvps, handler);
 		}
 
 		@Override
-		protected HttpUriRequest getRequest() {
+		protected HttpUriRequest getRequest() throws Exception {
 			// TODO Auto-generated method stub
 			HttpPost post = new HttpPost(url);
-			try {
-				HttpEntity entity = new UrlEncodedFormEntity(nvps);
-				post.setEntity(entity);
-				// Log.i("before encode:",entity.getContentEncoding().toString());
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			HttpEntity entity = new UrlEncodedFormEntity(nvps, HTTP.UTF_8);
+			post.setEntity(entity);
 			return post;
 		}
 	}
 
 	public class GetThread extends NetThread {
-		private GetThread(String url, List<Handler> handlers) {
-			super(url, null, handlers);
+		private GetThread(String url, Handler handler) {
+			super(url, null, handler);
 		}
 
 		@Override
@@ -230,28 +215,22 @@ public class NetAccess {
 	}
 
 	public class PutThread extends NetThread {
-		private PutThread(String url, List<NameValuePair> nvps,
-				List<Handler> handlers) {
-			super(url, nvps, handlers);
+		private PutThread(String url, List<NameValuePair> nvps, Handler handler) {
+			super(url, nvps, handler);
 		}
 
 		@Override
-		protected HttpUriRequest getRequest() {
+		protected HttpUriRequest getRequest() throws Exception {
 			// TODO Auto-generated method stub
 			HttpPut put = new HttpPut(url);
-			try {
-				put.setEntity(new UrlEncodedFormEntity(nvps));
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			put.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 			return put;
 		}
 	}
 
 	public class DeleteThread extends NetThread {
-		private DeleteThread(String url, List<Handler> handlers) {
-			super(url, null, handlers);
+		private DeleteThread(String url, Handler handler) {
+			super(url, null, handler);
 		}
 
 		@Override
