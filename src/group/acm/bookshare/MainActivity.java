@@ -250,9 +250,9 @@ public class MainActivity extends Activity {
 
 		ListView mybookslistview;
 		SimpleAdapter bookAdapter;
-		List<Map<String, Object>> bookList;
-		List<Map<String, Object>> ownList;
-		List<Map<String, Object>> borrowedList;
+		List<Map<String, Object>> bookList = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> ownList = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> borrowedList = new ArrayList<Map<String, Object>>();
 
 		private boolean isFirstRow = false;
 		private boolean isLastRow = false;
@@ -260,7 +260,6 @@ public class MainActivity extends Activity {
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem,
 				int visibleItemCount, int totalItemCount) {
-			// TODO Auto-generated method stub
 			if (firstVisibleItem + visibleItemCount == totalItemCount
 					&& totalItemCount > 0) {
 				isLastRow = true;
@@ -272,21 +271,15 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void onScrollStateChanged(AbsListView view, int scrollState) {
-			// TODO Auto-generated method stub
-
-			if (isLastRow
+			if (isFirstRow
 					&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-
-				bookmanage.loadBookData();
-				bookmanage.showUpdate();
-				isLastRow = false;
-
-			} else if (isFirstRow
-					&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-
+				Log.i("onscrollstatechanged", "firstrow");
 				bookmanage.reload();
-				bookmanage.showUpdate();
 				isFirstRow = false;
+			} else if (isLastRow
+					&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+				isLastRow = false;
+				Log.i("onscrollstatechanged", "lastrow");
 
 			}
 		}
@@ -297,7 +290,7 @@ public class MainActivity extends Activity {
 		}
 
 		private void initBookList() {
-			getBookData();
+			addBookDataToList(getIntent().getStringExtra("response"));
 			User user = ((LocalApp) getApplication()).getUser();
 			user.setOwnBooks(ownList);
 			user.setBorrowedBooks(borrowedList);
@@ -338,48 +331,51 @@ public class MainActivity extends Activity {
 				}
 			});
 
-			mybookslistview
-					.setOnItemLongClickListener(new OnItemLongClickListener() {
-						@Override
-						public boolean onItemLongClick(AdapterView<?> parent,
-								View view, int position, long id) {
-							if (0 == position)
-								return false;
-
-							new AlertDialog.Builder(MainActivity.this)
-									.setTitle("Confirm!")
-									.setMessage(
-											"Are you sure to delete this book?")
-									.setPositiveButton(
-											"Yes",
-											new DialogInterface.OnClickListener() {
-
-												@Override
-												public void onClick(
-														DialogInterface dialog,
-														int which) {
-
-												}
-
-											}).setNegativeButton("No", null)
-									.show();
-
-							return false;
-						}
-
-					});
+			mybookslistview.setOnItemLongClickListener(new JudgeListener());
 
 			mybookslistview.setOnScrollListener(this);
 		}
 
-		private void getBookData() {
+		private class JudgeListener implements OnItemLongClickListener {
+			private int position;
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				this.position = position;
+				if (0 == position)
+					return false;
+
+				new AlertDialog.Builder(MainActivity.this)
+						.setTitle("Confirm!")
+						.setMessage("Are you sure to delete this book?")
+						.setPositiveButton("Yes",
+								new DialogInterface.OnClickListener() {
+
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										((LocalApp) getApplication())
+												.getUser()
+												.deleteBook(
+														JudgeListener.this.position - 1);
+										bookmanage.bookList
+												.remove(JudgeListener.this.position - 1);
+										bookmanage.bookAdapter
+												.notifyDataSetChanged();
+									}
+
+								}).setNegativeButton("No", null).show();
+
+				return true;
+			}
+		}
+
+		private void addBookDataToList(String response) {
+			this.bookList.clear();
+			this.ownList.clear();
+			this.borrowedList.clear();
 			Map<String, Object> map = new HashMap<String, Object>();
-			this.bookList = new ArrayList<Map<String, Object>>();
-			this.ownList = new ArrayList<Map<String, Object>>();
-			this.borrowedList = new ArrayList<Map<String, Object>>();
-
-			String response = getIntent().getStringExtra("response");
-
 			JSONObject jsonobj;
 			try {
 				jsonobj = new JSONObject(response);
@@ -400,7 +396,7 @@ public class MainActivity extends Activity {
 					omap.put("isbn", item.getString("isbn"));
 					omap.put("name", item.getString("name"));
 					omap.put("coverurl", "");
-					omap.put("authors", item.getString("authors"));
+					omap.put("authors", item.getString("author"));
 					omap.put("description", item.getString("description"));
 					omap.put("owner", ((LocalApp) getApplication()).getUser()
 							.getUserName());
@@ -458,19 +454,30 @@ public class MainActivity extends Activity {
 		}
 
 		private void reload() {
-			bookList.clear();
-			Map<String, Object> map;
-			for (int i = 0; i < 10; i++) {
-
-				map = new HashMap<String, Object>();
-				map.put("image", R.drawable.default_book_big);
-				map.put("bookname", "get book name");
-				if (i % 2 == 0)
-					map.put("state", "mine");
-				else
-					map.put("state", "other");
-				bookList.add(map);
-			}
+			NetAccess net = NetAccess.getInstance();
+			String url = MainActivity.this.getApplication().getResources()
+					.getString(R.string.url_host);
+			url += MainActivity.this.getApplication().getResources()
+					.getString(R.string.url_get_allbook);
+			Log.i("reload", "before thread");
+			net.createGetThread(url, new Handler() {
+				public void handleMessage(Message msg) {
+					switch (msg.what) {
+					case NetAccess.NETMSG_AFTER:
+						if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+							addBookDataToList(msg.getData().getString(
+									"response"));
+							User user = ((LocalApp) getApplication()).getUser();
+							user.setOwnBooks(ownList);
+							user.setBorrowedBooks(borrowedList);
+							bookmanage.showUpdate();
+						}
+						break;
+					case NetAccess.NETMSG_ERROR:
+						break;
+					}
+				}
+			});
 		}
 
 		private void showUpdate() {

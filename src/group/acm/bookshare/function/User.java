@@ -136,6 +136,10 @@ public class User {
 		network.createPostThread(url, nvps, handler);
 	}
 
+	public boolean deleteBook(int position){
+		
+		return true;
+	}
 	/*
 	 * public bool deleteBook(MyBook obj) { return null; }
 	 */
