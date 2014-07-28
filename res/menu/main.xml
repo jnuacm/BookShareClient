@@ -1,9 +1,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_sort"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="@string/action_sort"/>
+    <item
+        android:id="@+id/action_check_own"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_check_own"/>
+    <item
+        android:id="@+id/action_check_borrow"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_check_borrow"/>
 
 </menu>

@@ -30,7 +30,10 @@
     <string name="register_password_hint">密码</string>
     <string name="register_email_hint">E-mail</string>
     <string name="register_area_hint">地区</string>
-
+    <!-- MainActivity -->
+    <string name="action_check_own">查看自己的书</string>
+    <string name="action_check_borrow">查看借来的书</string>
+    <string name="action_sort">排序</string>
     <!-- url resources -->
     <string name="url_host">http://192.168.1.10/</string>
     <string name="url_login">bookshareyii/index.php/api/login</string>

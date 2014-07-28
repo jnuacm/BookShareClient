@@ -4,6 +4,7 @@ import group.acm.bookshare.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -20,16 +21,16 @@ import android.util.Log;
 public class User {
 	private String username;
 	private String password;
-	//private Time registTime;
-	//private String area;
-	//private String group;
+	// private Time registTime;
+	// private String area;
+	// private String group;
 	// private Library mylibrary;
 	// private MsgManager msm;
 
-	//private List<OwnerBook> ownBooks;
-	//private List<OwnerBook> borrowedBooks;
+	private List<OwnerBook> ownBooks;
+	private List<OwnerBook> borrowedBooks;
 
-	//private List<String> friends;
+	// private List<String> friends;
 
 	private Application application;
 	private Handler mainHandler;
@@ -41,6 +42,23 @@ public class User {
 	public void setUser(String username, String password) {
 		this.username = username;
 		this.password = password;
+	}
+	
+	public String getUserName(){
+		return username;
+	}
+
+	public void setOwnBooks(List<Map<String, Object>> ownBooks) {
+
+		this.ownBooks = new ArrayList<OwnerBook>();
+		for (Map<String, Object> i : ownBooks)
+			this.ownBooks.add(new OwnerBook(i));
+	}
+
+	public void setBorrowedBooks(List<Map<String, Object>> borrowedBooks) {
+		this.borrowedBooks = new ArrayList<OwnerBook>();
+		for (Map<String, Object> i : borrowedBooks)
+			this.borrowedBooks.add(new OwnerBook(i));
 	}
 
 	public void login(Handler mainHandler) {
@@ -69,7 +87,8 @@ public class User {
 						tmsg.what = NetAccess.NETMSG_AFTER;
 						Bundle data = new Bundle();
 						data.putInt("status", NetAccess.STATUS_ERROR);
-						data.putString("response", repData.getString("response"));
+						data.putString("response",
+								repData.getString("response"));
 						tmsg.setData(data);
 						User.this.mainHandler.sendMessage(tmsg);
 					} else {

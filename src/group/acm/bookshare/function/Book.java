@@ -29,6 +29,10 @@ public class Book {
 	protected Application application;
 	protected Handler handler;
 
+	public Book() {
+
+	}
+
 	public Book(Application application) {
 		this.application = application;
 	}
@@ -88,7 +92,7 @@ public class Book {
 
 					Bundle data = new Bundle();
 					data.putInt("status", NetAccess.STATUS_SUCCESS);
-					
+
 					data.putString("isbn", Book.this.isbn);
 					data.putString("authors", Book.this.authors);
 					data.putString("description", Book.this.description);

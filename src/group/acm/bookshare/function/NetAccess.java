@@ -18,6 +18,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
@@ -43,6 +44,8 @@ public class NetAccess {
 
 	private NetAccess() {
 		httpClient = new DefaultHttpClient();
+		httpClient.getParams().setParameter(
+				CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);
 	}
 
 	// 获取实例对象的唯一方法

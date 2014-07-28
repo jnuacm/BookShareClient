@@ -2,6 +2,7 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,12 +15,12 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -29,6 +30,8 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -38,6 +41,7 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -89,10 +93,24 @@ public class MainActivity extends Activity {
 		textViews.get(currIndex).setTextColor(Color.rgb(50, 189, 189));
 	}
 
-	@SuppressWarnings("unused")
-	private BitmapDrawable BitmapDrawable(Bitmap btm1) {
-		// TODO Auto-generated method stub
-		return null;
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_sort:
+			break;
+		case R.id.action_check_own:
+			break;
+		case R.id.action_check_borrow:
+			break;
+		}
+		return false;
 	}
 
 	private void InitImageView() {
@@ -233,6 +251,8 @@ public class MainActivity extends Activity {
 		ListView mybookslistview;
 		SimpleAdapter bookAdapter;
 		List<Map<String, Object>> bookList;
+		List<Map<String, Object>> ownList;
+		List<Map<String, Object>> borrowedList;
 
 		private boolean isFirstRow = false;
 		private boolean isLastRow = false;
@@ -277,7 +297,10 @@ public class MainActivity extends Activity {
 		}
 
 		private void initBookList() {
-			bookList = getBookData();
+			getBookData();
+			User user = ((LocalApp) getApplication()).getUser();
+			user.setOwnBooks(ownList);
+			user.setBorrowedBooks(borrowedList);
 			bookAdapter = new SimpleAdapter(MainActivity.this, bookList,
 					R.layout.mybooks_listview_item, new String[] { "image",
 							"bookname", "state" }, new int[] {
@@ -290,6 +313,16 @@ public class MainActivity extends Activity {
 			mybookslistview = (ListView) view
 					.findViewById(R.id.mybookslistview);
 
+			setListener();
+
+			mybookslistview.addHeaderView(LayoutInflater
+					.from(MainActivity.this).inflate(
+							R.layout.mybooks_listview_top, null));
+			mybookslistview.setAdapter(bookAdapter);
+
+		}
+
+		private void setListener() {
 			mybookslistview.setOnItemClickListener(new OnItemClickListener() {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
@@ -305,19 +338,45 @@ public class MainActivity extends Activity {
 				}
 			});
 
+			mybookslistview
+					.setOnItemLongClickListener(new OnItemLongClickListener() {
+						@Override
+						public boolean onItemLongClick(AdapterView<?> parent,
+								View view, int position, long id) {
+							if (0 == position)
+								return false;
+
+							new AlertDialog.Builder(MainActivity.this)
+									.setTitle("Confirm!")
+									.setMessage(
+											"Are you sure to delete this book?")
+									.setPositiveButton(
+											"Yes",
+											new DialogInterface.OnClickListener() {
+
+												@Override
+												public void onClick(
+														DialogInterface dialog,
+														int which) {
+
+												}
+
+											}).setNegativeButton("No", null)
+									.show();
+
+							return false;
+						}
+
+					});
+
 			mybookslistview.setOnScrollListener(this);
-
-			mybookslistview.addHeaderView(LayoutInflater
-					.from(MainActivity.this).inflate(
-							R.layout.mybooks_listview_top, null));
-
-			mybookslistview.setAdapter(bookAdapter);
-
 		}
 
-		private List<Map<String, Object>> getBookData() {
-			List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+		private void getBookData() {
 			Map<String, Object> map = new HashMap<String, Object>();
+			this.bookList = new ArrayList<Map<String, Object>>();
+			this.ownList = new ArrayList<Map<String, Object>>();
+			this.borrowedList = new ArrayList<Map<String, Object>>();
 
 			String response = getIntent().getStringExtra("response");
 
@@ -335,7 +394,20 @@ public class MainActivity extends Activity {
 					map.put("image", R.drawable.book1);
 					map.put("bookname", bookname);
 					map.put("status", status);
-					ret.add(map);
+					this.bookList.add(map);
+
+					Map<String, Object> omap = new HashMap<String, Object>();
+					omap.put("isbn", item.getString("isbn"));
+					omap.put("name", item.getString("name"));
+					omap.put("coverurl", "");
+					omap.put("authors", item.getString("authors"));
+					omap.put("description", item.getString("description"));
+					omap.put("owner", ((LocalApp) getApplication()).getUser()
+							.getUserName());
+					omap.put("holder", ((LocalApp) getApplication()).getUser()
+							.getUserName());
+					omap.put("status", item.getString("status"));
+					this.ownList.add(omap);
 				}
 
 				jsonarray = jsonobj.getJSONArray("borrowed_book");
@@ -349,14 +421,24 @@ public class MainActivity extends Activity {
 					map.put("image", R.drawable.book1);
 					map.put("bookname", bookname);
 					map.put("status", status);
-					ret.add(map);
+					this.bookList.add(map);
+
+					Map<String, Object> omap = new HashMap<String, Object>();
+					omap.put("isbn", item.getString("isbn"));
+					omap.put("name", item.getString("name"));
+					omap.put("coverurl", "");
+					omap.put("authors", item.getString("author"));
+					omap.put("description", item.getString("description"));
+					omap.put("owner", "");
+					omap.put("holder", ((LocalApp) getApplication()).getUser()
+							.getUserName());
+					omap.put("status", item.getString("status"));
+					this.borrowedList.add(omap);
 				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-			return ret;
 		}
 
 		private void loadBookData() {
