@@ -1,5 +1,7 @@
 package group.acm.bookshare.function;
 
+import group.acm.bookshare.util.Utils;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -179,7 +181,7 @@ public class NetAccess {
 
 			Log.i("NetAccess:url", url);
 			Log.i("NetAccess:status", Integer.toString(status));
-			Log.i("NetAccess:response", response);
+			Log.i("NetAccess:response", Utils.decode(response));
 
 			Message msg = Message.obtain();
 			msg.what = NetAccess.NETMSG_AFTER;

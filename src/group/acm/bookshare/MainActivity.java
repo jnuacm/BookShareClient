@@ -228,9 +228,10 @@ public class MainActivity extends Activity {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				Bundle data = msg.getData();
-				if (data.getInt("status") == NetAccess.STATUS_SUCCESS)
+				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
+					bookmanage.reload(data.getString("response"));
 					MainActivity.this.showToast("添加成功");
-				else
+				} else
 					MainActivity.this.showToast("添加失败:"
 							+ data.getString("response"));
 				break;
@@ -260,6 +261,10 @@ public class MainActivity extends Activity {
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem,
 				int visibleItemCount, int totalItemCount) {
+			if (visibleItemCount >= totalItemCount) {
+				isLastRow = false;
+				return;
+			}
 			if (firstVisibleItem + visibleItemCount == totalItemCount
 					&& totalItemCount > 0) {
 				isLastRow = true;
@@ -336,6 +341,28 @@ public class MainActivity extends Activity {
 			mybookslistview.setOnScrollListener(this);
 		}
 
+		private class DeleteBookHandler extends Handler {
+
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_BEFORE:
+					break;
+				case NetAccess.NETMSG_AFTER:
+					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+						bookmanage.reload(msg.getData().getString("response"));
+						bookmanage.bookAdapter.notifyDataSetChanged();
+						MainActivity.this.showToast("删书成功");
+					} else
+						MainActivity.this.showToast("删书失败");
+					break;
+				case NetAccess.NETMSG_ERROR:
+					MainActivity.this.showToast(msg.getData()
+							.getString("error"));
+					break;
+				}
+			}
+		}
+
 		private class JudgeListener implements OnItemLongClickListener {
 			private int position;
 
@@ -358,11 +385,9 @@ public class MainActivity extends Activity {
 										((LocalApp) getApplication())
 												.getUser()
 												.deleteBook(
-														JudgeListener.this.position - 1);
-										bookmanage.bookList
-												.remove(JudgeListener.this.position - 1);
-										bookmanage.bookAdapter
-												.notifyDataSetChanged();
+														bookmanage.bookList
+																.get(JudgeListener.this.position - 1),
+														new DeleteBookHandler());
 									}
 
 								}).setNegativeButton("No", null).show();
@@ -383,16 +408,21 @@ public class MainActivity extends Activity {
 
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject item = jsonarray.getJSONObject(i);
+					String id = item.getString("id");
+					String isbn = item.getString("isbn");
 					String bookname = item.getString("name");
 					String status = item.getString("status");
 
 					map = new HashMap<String, Object>();
+					map.put("id", id);
+					map.put("isbn", isbn);
 					map.put("image", R.drawable.book1);
 					map.put("bookname", bookname);
 					map.put("status", status);
 					this.bookList.add(map);
 
 					Map<String, Object> omap = new HashMap<String, Object>();
+					omap.put("id", item.getString("id"));
 					omap.put("isbn", item.getString("isbn"));
 					omap.put("name", item.getString("name"));
 					omap.put("coverurl", "");
@@ -414,12 +444,15 @@ public class MainActivity extends Activity {
 					String status = item.getString("status");
 
 					map = new HashMap<String, Object>();
+					map.put("id", item.getString("id"));
+					map.put("isbn", item.getString("isbn"));
 					map.put("image", R.drawable.book1);
 					map.put("bookname", bookname);
 					map.put("status", status);
 					this.bookList.add(map);
 
 					Map<String, Object> omap = new HashMap<String, Object>();
+					omap.put("id", item.getString("id"));
 					omap.put("isbn", item.getString("isbn"));
 					omap.put("name", item.getString("name"));
 					omap.put("coverurl", "");
@@ -455,10 +488,13 @@ public class MainActivity extends Activity {
 
 		private void reload() {
 			NetAccess net = NetAccess.getInstance();
-			String url = MainActivity.this.getApplication().getResources()
-					.getString(R.string.url_host);
-			url += MainActivity.this.getApplication().getResources()
-					.getString(R.string.url_get_allbook);
+			String url = getApplication().getResources().getString(
+					R.string.url_host);
+			url += getApplication().getResources().getString(
+					R.string.url_get_book);
+			url += ((LocalApp) getApplication()).getUser().getUserName();
+			url += getApplication().getResources().getString(
+					R.string.action_book);
 			Log.i("reload", "before thread");
 			net.createGetThread(url, new Handler() {
 				public void handleMessage(Message msg) {
@@ -478,6 +514,14 @@ public class MainActivity extends Activity {
 					}
 				}
 			});
+		}
+
+		public void reload(String response) {
+			addBookDataToList(response);
+			User user = ((LocalApp) getApplication()).getUser();
+			user.setOwnBooks(ownList);
+			user.setBorrowedBooks(borrowedList);
+			bookAdapter.notifyDataSetChanged();
 		}
 
 		private void showUpdate() {
@@ -568,7 +612,6 @@ public class MainActivity extends Activity {
 					MainActivity.this).inflate(R.layout.myfriends_listview_top,
 					null));
 			myfriendslistview.setAdapter(friendAdapter);
-
 		}
 
 		private List<Map<String, Object>> getFriendData() {

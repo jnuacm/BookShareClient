@@ -43,22 +43,22 @@ public class User {
 		this.username = username;
 		this.password = password;
 	}
-	
-	public String getUserName(){
+
+	public String getUserName() {
 		return username;
 	}
 
 	public void setOwnBooks(List<Map<String, Object>> ownBooks) {
 
 		this.ownBooks = new ArrayList<OwnerBook>();
-		for (Map<String, Object> i : ownBooks)
-			this.ownBooks.add(new OwnerBook(i));
+		for (Map<String, Object> item : ownBooks)
+			this.ownBooks.add(new OwnerBook(item));
 	}
 
 	public void setBorrowedBooks(List<Map<String, Object>> borrowedBooks) {
 		this.borrowedBooks = new ArrayList<OwnerBook>();
-		for (Map<String, Object> i : borrowedBooks)
-			this.borrowedBooks.add(new OwnerBook(i));
+		for (Map<String, Object> item : borrowedBooks)
+			this.borrowedBooks.add(new OwnerBook(item));
 	}
 
 	public void login(Handler mainHandler) {
@@ -136,10 +136,16 @@ public class User {
 		network.createPostThread(url, nvps, handler);
 	}
 
-	public boolean deleteBook(int position){
-		
+	public boolean deleteBook(Map<String, Object> book, Handler handler) {
+		NetAccess net = NetAccess.getInstance();
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources().getString(R.string.url_delete_book);
+		url += (String) book.get("id");
+		net.createDeleteThread(url, handler);
+		//net.createPostThread(url,new ArrayList<NameValuePair>(), handler);
 		return true;
 	}
+
 	/*
 	 * public bool deleteBook(MyBook obj) { return null; }
 	 */

@@ -16,6 +16,8 @@ import android.os.Message;
 
 @SuppressLint("HandlerLeak")
 public class Book {
+	public static String DEFAULT_BOOK_IMAGE_URL = "http://pica.nipic.com/2008-05-03/200853124434763_2.jpg";
+
 	protected String isbn = "";
 	protected String name = "";
 	protected String authors = "";
@@ -133,7 +135,7 @@ public class Book {
 		JSONArray array = bookObj.getJSONArray("author");
 		for (int i = 0; i < array.length(); i++) {
 			this.authors += (array.getJSONObject(i).getJSONObject("name")
-					.getString("$t") + ",");
+					.getString("$t") + " ");
 		}
 		this.description = bookObj.getJSONObject("summary").getString("$t");
 		this.publisher = bookObj.getJSONArray("db:attribute").getJSONObject(5)

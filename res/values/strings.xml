@@ -38,10 +38,12 @@
     <string name="url_host">http://192.168.1.10/</string>
     <string name="url_login">bookshareyii/index.php/api/login</string>
     <string name="url_register">bookshareyii/index.php/api/register</string>
+    <string name="url_get_book">bookshareyii/index.php/api/user/</string>
+    <string name="url_delete_book">bookshareyii/index.php/api/book/</string>
     <string name="path_api">bookshareyii/index.php/api</string>
-    <string name="action_book">/book</string>
-    <string name="action_ownbook">/ownbook</string>
-    <string name="action_borrowedbook">/borrowedbook</string>
+    <string name="action_book">/book/</string>
+    <string name="action_ownbook">/ownbook/</string>
+    <string name="action_borrowedbook">/borrowedbook/</string>
 
     <!-- douban url -->
     <string name="douban_url">http://api.douban.com/book/subject/isbn/</string>

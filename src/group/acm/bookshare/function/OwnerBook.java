@@ -13,9 +13,11 @@ public class OwnerBook extends Book {
 	protected String owner;
 	protected String holder;
 	protected String status;
+	protected String id;
 
 	public OwnerBook(Map<String, Object> data) {
 		super();
+		this.id = (String)data.get("id");
 		this.isbn = (String)data.get("isbn");
 		this.name = (String)data.get("name");
 		this.coverurl = (String)data.get("coverurl");
