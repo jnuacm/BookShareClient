@@ -3,6 +3,8 @@ package group.acm.bookshare.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.os.Handler;
+
 public class Utils {
 	private static boolean first = true;
 	private static long lastTime;
@@ -50,5 +52,9 @@ public class Utils {
 			lastTime = time;
 			return false;
 		}
+	}
+	
+	public static void getBitmap(String url, Handler handler){
+		
 	}
 }

@@ -27,6 +27,7 @@ public class User {
 	// private Library mylibrary;
 	// private MsgManager msm;
 
+	private List<Map<String, Object>> books;
 	private List<OwnerBook> ownBooks;
 	private List<OwnerBook> borrowedBooks;
 
@@ -46,6 +47,10 @@ public class User {
 
 	public String getUserName() {
 		return username;
+	}
+
+	public void setBooks(List<Map<String, Object>> books) {
+		this.books = books;
 	}
 
 	public void setOwnBooks(List<Map<String, Object>> ownBooks) {
@@ -142,7 +147,7 @@ public class User {
 		url += application.getResources().getString(R.string.url_delete_book);
 		url += (String) book.get("id");
 		net.createDeleteThread(url, handler);
-		//net.createPostThread(url,new ArrayList<NameValuePair>(), handler);
+		// net.createPostThread(url,new ArrayList<NameValuePair>(), handler);
 		return true;
 	}
 

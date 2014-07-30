@@ -3,6 +3,7 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.util.Utils;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -24,10 +25,13 @@ import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.ImageView;
 
 //此类负责访问网络，利用Singleton模式保证HttpClient只会产生一个实例对象
 public class NetAccess {
@@ -53,10 +57,6 @@ public class NetAccess {
 	// 获取实例对象的唯一方法
 	public static NetAccess getInstance() {
 		return internetaccess;
-	}
-
-	public void createDoubanThread(String url, Handler handler) {
-		new DoubanThread(url, handler).start();
 	}
 
 	// 单独线程从豆瓣获取图书信息(直接用httpClient会出现500错误)
@@ -115,6 +115,44 @@ public class NetAccess {
 			msg.setData(data);
 			handler.sendMessage(msg);
 		}
+	}
+
+	public class BitmapThread extends Thread {
+		String url;
+		ImageView view;
+
+		public BitmapThread(String url, ImageView view) {
+			this.url = url;
+			this.view = view;
+		}
+
+		public void run() {
+			try {
+				HttpURLConnection conn = (HttpURLConnection) new URL(this.url)
+						.openConnection();
+				synchronized (conn) {
+					conn.setConnectTimeout(3000);
+					conn.setRequestMethod("GET");
+					conn.connect();
+					InputStream is = conn.getInputStream();
+					Bitmap bitmap = BitmapFactory.decodeStream(is);
+					view.setImageBitmap(bitmap);
+					is.close();
+					conn.disconnect();
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void createBitmapThread(String url, Handler handler) {
+
+	}
+
+	public void createDoubanThread(String url, Handler handler) {
+		new DoubanThread(url, handler).start();
 	}
 
 	public void createPostThread(String url, List<NameValuePair> nvps,

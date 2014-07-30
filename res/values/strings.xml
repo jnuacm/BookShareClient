@@ -3,26 +3,15 @@
 
     <string name="app_name">BookShare</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="title_activity_body">BodyActivity</string>
-    <string name="title_activity_register">RegisterActivity</string>
-    <string name="title_activity_home">HomeActivity</string>
-    <string name="title_activity_browse">BrowseActivity</string>
-    <string name="title_CaptureActivity">CaptureActivity</string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_welcome">WelcomeActivity</string>
-    <string name="title_activity_book_information">BookInformationActivity</string>
-    <string name="title_activity_friends_information">FriendsInformationActivity</string>
-    <string name="add_book">添加</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="login_error">account/password is not correct!</string>
     <!-- LoginActivity -->
     <string name="login_logo_image">LOGO</string>
     <string name="login_register_button">注册</string>
     <string name="login_login_button">登录</string>
     <string name="login_username_hint">Username</string>
     <string name="login_password_hint">Password</string>
+    <string name="login_error">account/password is not correct!</string>
     <!-- RegisterActivity -->
     <string name="register_confirm_button">确认</string>
     <string name="register_cancel_button">取消</string>
@@ -30,10 +19,13 @@
     <string name="register_password_hint">密码</string>
     <string name="register_email_hint">E-mail</string>
     <string name="register_area_hint">地区</string>
-    <!-- MainActivity -->
+    <!-- MainActivity-book listview -->
     <string name="action_check_own">查看自己的书</string>
     <string name="action_check_borrow">查看借来的书</string>
     <string name="action_sort">排序</string>
+    <string name="add_book">添加</string>
+    <!-- MainActivity-inform listview -->
+    <string name= "refresh">刷新</string>
     <!-- url resources -->
     <string name="url_host">http://192.168.1.10/</string>
     <string name="url_login">bookshareyii/index.php/api/login</string>

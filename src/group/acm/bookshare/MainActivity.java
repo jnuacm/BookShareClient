@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -42,6 +43,8 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -50,8 +53,6 @@ import android.widget.Toast;
 
 @SuppressLint("HandlerLeak")
 public class MainActivity extends Activity {
-
-	private LayoutInflater layout_in_flater;
 	private ImageView underlined;
 
 	public static final int SCANREQUEST_ADDBOOK = 1;
@@ -67,20 +68,19 @@ public class MainActivity extends Activity {
 
 	private BookListManage bookmanage = new BookListManage();
 	private FriendListManage friendmanage = new FriendListManage();
+	private InformListManage informmanage = new InformListManage();
 
 	int listshowsize = 10;
 
-	@SuppressWarnings("static-access")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		layout_in_flater = getLayoutInflater().from(this);
 		viewList = new ArrayList<View>();
 		viewList.add(bookmanage.getView());
 		viewList.add(friendmanage.getView());
-		viewList.add(layout_in_flater.inflate(R.layout.view03, null));
+		viewList.add(informmanage.getView());
 
 		/* 以下是显示翻页部分 */
 		viewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -157,6 +157,7 @@ public class MainActivity extends Activity {
 
 	public class MyViewPagerAdapter extends PagerAdapter {
 		private List<View> mListViews;
+		private boolean isCreated[] = { false, false, false };
 
 		public MyViewPagerAdapter(List<View> mListViews) {
 			this.mListViews = mListViews;// 构造方法，参数是我们的页卡，这样比较方便。
@@ -164,13 +165,18 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void destroyItem(ViewGroup container, int position, Object object) {
-			container.removeView(mListViews.get(position));// 删除页卡
+			// container.removeView(mListViews.get(position));// 删除页卡
 		}
 
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) { // 这个方法用来实例化页卡
-			container.addView(mListViews.get(position), 0);// 添加页卡
-			return mListViews.get(position);
+			if (isCreated[position]) {
+				return mListViews.get(position);
+			} else {
+				container.addView(mListViews.get(position), position);// 添加页卡
+				isCreated[position] = true;
+				return mListViews.get(position);
+			}
 		}
 
 		@Override
@@ -219,27 +225,7 @@ public class MainActivity extends Activity {
 			String isbn = data.getStringExtra("isbn");
 			Log.i("in onactivityresult", "go inside");
 			LocalApp localapp = (LocalApp) getApplication();
-			localapp.getUser().addBook(isbn, new AddBookHandler());
-		}
-	}
-
-	private class AddBookHandler extends Handler {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				Bundle data = msg.getData();
-				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
-					bookmanage.reload(data.getString("response"));
-					MainActivity.this.showToast("添加成功");
-				} else
-					MainActivity.this.showToast("添加失败:"
-							+ data.getString("response"));
-				break;
-			case NetAccess.NETMSG_ERROR:
-				MainActivity.this
-						.showToast(msg.getData().getString("response"));
-				break;
-			}
+			localapp.getUser().addBook(isbn, bookmanage.getAddBookHandler());
 		}
 	}
 
@@ -247,7 +233,8 @@ public class MainActivity extends Activity {
 	/* !!!!!!!!!!!!!!!!!!!!!!!!!!以下是构造子页面的调用函数!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
-	private class BookListManage implements OnScrollListener {
+	// BookListManage负责对书本列表的界面、动作交互进行管理
+	private class BookListManage {
 
 		ListView mybookslistview;
 		SimpleAdapter bookAdapter;
@@ -255,43 +242,130 @@ public class MainActivity extends Activity {
 		List<Map<String, Object>> ownList = new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> borrowedList = new ArrayList<Map<String, Object>>();
 
-		private boolean isFirstRow = false;
-		private boolean isLastRow = false;
-
-		@Override
-		public void onScroll(AbsListView view, int firstVisibleItem,
-				int visibleItemCount, int totalItemCount) {
-			if (visibleItemCount >= totalItemCount) {
-				isLastRow = false;
-				return;
-			}
-			if (firstVisibleItem + visibleItemCount == totalItemCount
-					&& totalItemCount > 0) {
-				isLastRow = true;
-			}
-			if (0 == firstVisibleItem && totalItemCount > 0) {
-				isFirstRow = true;
-			}
-		}
-
-		@Override
-		public void onScrollStateChanged(AbsListView view, int scrollState) {
-			if (isFirstRow
-					&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-				Log.i("onscrollstatechanged", "firstrow");
-				bookmanage.reload();
-				isFirstRow = false;
-			} else if (isLastRow
-					&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-				isLastRow = false;
-				Log.i("onscrollstatechanged", "lastrow");
-
-			}
-		}
+		/*
+		 * 刷新代码 private boolean isFirstRow = false; private boolean isLastRow =
+		 * false;
+		 * 
+		 * @Override public void onScroll(AbsListView view, int
+		 * firstVisibleItem, int visibleItemCount, int totalItemCount) { if
+		 * (visibleItemCount >= totalItemCount) { isLastRow = false; return; }
+		 * if (firstVisibleItem + visibleItemCount == totalItemCount &&
+		 * totalItemCount > 0) { isLastRow = true; } if (0 == firstVisibleItem
+		 * && totalItemCount > 0) { isFirstRow = true; } }
+		 * 
+		 * @Override public void onScrollStateChanged(AbsListView view, int
+		 * scrollState) { if (isFirstRow && scrollState ==
+		 * AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+		 * Log.i("onscrollstatechanged", "firstrow"); // bookmanage.reload();
+		 * isFirstRow = false; } else if (isLastRow && scrollState ==
+		 * AbsListView.OnScrollListener.SCROLL_STATE_IDLE) { isLastRow = false;
+		 * Log.i("onscrollstatechanged", "lastrow");
+		 * 
+		 * } }
+		 */
 
 		private View getView() {
 			initBookList();
 			return mybookslistview;
+		}
+
+		private Handler getAddBookHandler() {
+			return new AddBookHandler();
+		}
+
+		private class AddBookHandler extends Handler {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_AFTER:
+					Bundle data = msg.getData();
+					if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
+						bookmanage.reload(data.getString("response"));
+						MainActivity.this.showToast("添加成功");
+					} else
+						MainActivity.this.showToast("添加失败:"
+								+ data.getString("response"));
+					break;
+				case NetAccess.NETMSG_ERROR:
+					MainActivity.this.showToast(msg.getData().getString(
+							"response"));
+					break;
+				}
+			}
+		}
+
+		public class BookListAdapter extends BaseAdapter {
+			private Context context;
+			private LayoutInflater inflater;
+			private List<? extends Map<String, ?>> data;
+			private int resource;
+			private String[] from;
+			private int[] to;
+
+			public BookListAdapter(Context context,
+					List<? extends Map<String, ?>> data, int resource,
+					String[] from, int[] to) {
+				this.context = context;
+				this.data = data;
+				this.resource = resource;
+				this.from = from;
+				this.to = to;
+				inflater = LayoutInflater.from(this.context);
+			}
+
+			@Override
+			public int getCount() {
+				// TODO Auto-generated method stub
+				return data.size();
+			}
+
+			@Override
+			public Object getItem(int position) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public long getItemId(int position) {
+				// TODO Auto-generated method stub
+				return position;
+			}
+
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+				// TODO Auto-generated method stub
+				ViewHolder holder;
+				if (convertView == null) {
+					convertView = inflater.inflate(
+							R.layout.mybooks_listview_item, null);
+					holder = new ViewHolder();
+					int url = (Integer) data.get(position).get("coverurl");
+					String name = (String) data.get(position).get("bookname");
+					String state = (String) data.get(position).get("state");
+					holder.cover = (ImageView) convertView
+							.findViewById(R.id.mybookslistitem_bookimage);
+
+					holder.cover.setImageResource(url);
+					holder.name = (TextView) convertView
+							.findViewById(R.id.mybookslistitem_bookname);
+					holder.name.setText(name);
+
+					holder.state = (TextView) convertView
+							.findViewById(R.id.mybookslistitem_bookstate);
+					holder.state.setText(state);
+
+					convertView.setTag(holder);
+				} else {
+					holder = (ViewHolder) convertView.getTag();
+				}
+				return convertView;
+			}
+
+			public final class ViewHolder {
+				public ImageView cover;
+				public TextView name;
+				public TextView state;
+			}
+
 		}
 
 		private void initBookList() {
@@ -300,14 +374,14 @@ public class MainActivity extends Activity {
 			user.setOwnBooks(ownList);
 			user.setBorrowedBooks(borrowedList);
 			bookAdapter = new SimpleAdapter(MainActivity.this, bookList,
-					R.layout.mybooks_listview_item, new String[] { "image",
+					R.layout.mybooks_listview_item, new String[] { "coverurl",
 							"bookname", "state" }, new int[] {
 							R.id.mybookslistitem_bookimage,
 							R.id.mybookslistitem_bookname,
 							R.id.mybookslistitem_bookstate });
 
 			View view = LayoutInflater.from(MainActivity.this).inflate(
-					R.layout.activity_submain1, null);
+					R.layout.activity_submain_book, null);
 			mybookslistview = (ListView) view
 					.findViewById(R.id.mybookslistview);
 
@@ -337,8 +411,6 @@ public class MainActivity extends Activity {
 			});
 
 			mybookslistview.setOnItemLongClickListener(new JudgeListener());
-
-			mybookslistview.setOnScrollListener(this);
 		}
 
 		private class DeleteBookHandler extends Handler {
@@ -411,13 +483,14 @@ public class MainActivity extends Activity {
 					String id = item.getString("id");
 					String isbn = item.getString("isbn");
 					String bookname = item.getString("name");
+					String coverurl = "";
 					String status = item.getString("status");
 
 					map = new HashMap<String, Object>();
 					map.put("id", id);
 					map.put("isbn", isbn);
-					map.put("image", R.drawable.book1);
 					map.put("bookname", bookname);
+					map.put("coverurl", R.drawable.default_book_big);
 					map.put("status", status);
 					this.bookList.add(map);
 
@@ -425,7 +498,7 @@ public class MainActivity extends Activity {
 					omap.put("id", item.getString("id"));
 					omap.put("isbn", item.getString("isbn"));
 					omap.put("name", item.getString("name"));
-					omap.put("coverurl", "");
+					omap.put("coverurl", coverurl);
 					omap.put("authors", item.getString("author"));
 					omap.put("description", item.getString("description"));
 					omap.put("owner", ((LocalApp) getApplication()).getUser()
@@ -441,13 +514,14 @@ public class MainActivity extends Activity {
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject item = jsonarray.getJSONObject(i);
 					String bookname = item.getString("name");
+					String coverurl = "";
 					String status = item.getString("status");
 
 					map = new HashMap<String, Object>();
 					map.put("id", item.getString("id"));
 					map.put("isbn", item.getString("isbn"));
-					map.put("image", R.drawable.book1);
 					map.put("bookname", bookname);
+					map.put("coverurl", R.drawable.default_book_big);
 					map.put("status", status);
 					this.bookList.add(map);
 
@@ -455,7 +529,7 @@ public class MainActivity extends Activity {
 					omap.put("id", item.getString("id"));
 					omap.put("isbn", item.getString("isbn"));
 					omap.put("name", item.getString("name"));
-					omap.put("coverurl", "");
+					omap.put("coverurl", coverurl);
 					omap.put("authors", item.getString("author"));
 					omap.put("description", item.getString("description"));
 					omap.put("owner", "");
@@ -585,7 +659,7 @@ public class MainActivity extends Activity {
 							R.id.myfriendslistitem_friendname });
 
 			View view = LayoutInflater.from(MainActivity.this).inflate(
-					R.layout.activity_submain2, null);
+					R.layout.activity_submain_friend, null);
 			myfriendslistview = (ListView) view
 					.findViewById(R.id.myfirendslistview);
 
@@ -641,6 +715,57 @@ public class MainActivity extends Activity {
 
 		private void showUpdate() {
 			friendAdapter.notifyDataSetChanged();
+		}
+	}
+
+	private class InformListManage {
+		ListView informlistview;
+		SimpleAdapter informAdapter;
+		List<Map<String, Object>> informList = new ArrayList<Map<String, Object>>();
+
+		private void initInformList() {
+			informList = new ArrayList<Map<String, Object>>();
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("text", "hehe");
+			informList.add(map);
+			informAdapter = new SimpleAdapter(MainActivity.this, informList,
+					R.layout.inform_listview_item, new String[] { "text" },
+					new int[] { R.id.informlistviewitem_text });
+
+			informlistview = (ListView) LayoutInflater.from(MainActivity.this)
+					.inflate(R.layout.activity_submain_inform, null);
+
+			View head = LayoutInflater.from(MainActivity.this).inflate(
+					R.layout.inform_listview_top, null);
+			Button refresh = (Button) head.findViewById(R.id.button_refresh);
+			refresh.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					Log.i("button1", "in top");
+					Toast.makeText(MainActivity.this, "refresh",
+							Toast.LENGTH_SHORT).show();
+				}
+			});
+
+			Button button2 = (Button) head.findViewById(R.id.button2);
+			button2.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					Log.i("button2", "in top");
+					Toast.makeText(MainActivity.this, "button2",
+							Toast.LENGTH_SHORT).show();
+				}
+			});
+
+			informlistview.addHeaderView(head);
+			informlistview.setAdapter(informAdapter);
+		}
+
+		private View getView() {
+			initInformList();
+			return informlistview;
 		}
 	}
 }
