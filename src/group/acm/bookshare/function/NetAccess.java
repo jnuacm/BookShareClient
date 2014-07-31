@@ -44,6 +44,8 @@ public class NetAccess {
 	public static final int NETMSG_AFTER = 30;
 	public static final int NETMSG_ERROR = 40;
 
+	public static final String URL_HOST = "http://192.168.1.10/";
+
 	private HttpClient httpClient;
 
 	private static NetAccess internetaccess = new NetAccess();

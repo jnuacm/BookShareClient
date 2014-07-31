@@ -25,7 +25,7 @@
     <string name="action_sort">排序</string>
     <string name="add_book">添加</string>
     <!-- MainActivity-inform listview -->
-    <string name= "refresh">刷新</string>
+    <string name="refresh">刷新</string>
     <!-- url resources -->
     <string name="url_host">http://192.168.1.10/</string>
     <string name="url_login">bookshareyii/index.php/api/login</string>

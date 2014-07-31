@@ -33,8 +33,11 @@ public class User {
 
 	// private List<String> friends;
 
+	private List<Inform> sendList;
+	private List<Inform> receiveList;
+
 	private Application application;
-	private Handler mainHandler;
+	private Handler handler;
 
 	public User(Application application) {
 		this.application = application;
@@ -78,8 +81,8 @@ public class User {
 		network.createPostThread(url, nvps, mainHandler);
 	}
 
-	public void addBook(String isbn, Handler mainHandler) {
-		this.mainHandler = mainHandler;
+	public void addBook(String isbn, Handler handler) {
+		this.handler = handler;
 		Log.i("User: addBook()", "success");
 		Book book = new Book(this.application);
 		book.getBookByIsbn(isbn, new Handler() {
@@ -95,14 +98,14 @@ public class User {
 						data.putString("response",
 								repData.getString("response"));
 						tmsg.setData(data);
-						User.this.mainHandler.sendMessage(tmsg);
+						User.this.handler.sendMessage(tmsg);
 					} else {
 						Message tmsg = Message.obtain();
 						tmsg.what = NetAccess.NETMSG_PROCESS;
 						Bundle data = new Bundle();
 						data.putInt("time", 50);
 						tmsg.setData(data);
-						User.this.mainHandler.sendMessage(tmsg);
+						User.this.handler.sendMessage(tmsg);
 						addToDB(repData);
 					}
 					break;
@@ -133,7 +136,7 @@ public class User {
 				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
 					msg = Message.obtain(msg);
-					User.this.mainHandler.sendMessage(msg);
+					User.this.handler.sendMessage(msg);
 					break;
 				}
 			}
@@ -149,6 +152,31 @@ public class User {
 		net.createDeleteThread(url, handler);
 		// net.createPostThread(url,new ArrayList<NameValuePair>(), handler);
 		return true;
+	}
+
+	public void getBookList(Handler handler) {
+		NetAccess net = NetAccess.getInstance();
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources().getString(R.string.url_get_book);
+		url += username;
+		url += application.getResources().getString(R.string.action_book);
+		net.createGetThread(url, handler);
+	}
+
+	public void getSendInformList(Handler handler) {
+		String url = NetAccess.URL_HOST + Inform.URL_GETSEND_INFORM;
+		url += username;
+
+		NetAccess net = NetAccess.getInstance();
+		net.createGetThread(url, handler);
+	}
+
+	public void getReceiveInformList(Handler handler) {
+		String url = NetAccess.URL_HOST + Inform.URL_GETRECEIVE_INFORM;
+		url += username;
+
+		NetAccess net = NetAccess.getInstance();
+		net.createGetThread(url, handler);
 	}
 
 	/*

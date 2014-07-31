@@ -53,10 +53,9 @@ import android.widget.Toast;
 
 @SuppressLint("HandlerLeak")
 public class MainActivity extends Activity {
-	private ImageView underlined;
-
 	public static final int SCANREQUEST_ADDBOOK = 1;
 
+	private ImageView underlined;
 	private int offset = 0;// ¶¯»­Í¼Æ¬Æ«ÒÆÁ¿
 	private int currIndex = 0;// µ±Ç°Ò³¿¨±àºÅ
 	private int bmpW;// ¶¯»­Í¼Æ¬¿í¶È
@@ -65,6 +64,8 @@ public class MainActivity extends Activity {
 
 	private List<View> viewList;
 	private ViewPager viewPager;// viewpager
+
+	private User localUser;
 
 	private BookListManage bookmanage = new BookListManage();
 	private FriendListManage friendmanage = new FriendListManage();
@@ -76,6 +77,8 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		localUser = ((LocalApp) getApplication()).getUser();
 
 		viewList = new ArrayList<View>();
 		viewList.add(bookmanage.getView());
@@ -224,8 +227,7 @@ public class MainActivity extends Activity {
 		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
 			String isbn = data.getStringExtra("isbn");
 			Log.i("in onactivityresult", "go inside");
-			LocalApp localapp = (LocalApp) getApplication();
-			localapp.getUser().addBook(isbn, bookmanage.getAddBookHandler());
+			localUser.addBook(isbn, bookmanage.getAddBookHandler());
 		}
 	}
 
@@ -370,9 +372,8 @@ public class MainActivity extends Activity {
 
 		private void initBookList() {
 			addBookDataToList(getIntent().getStringExtra("response"));
-			User user = ((LocalApp) getApplication()).getUser();
-			user.setOwnBooks(ownList);
-			user.setBorrowedBooks(borrowedList);
+			localUser.setOwnBooks(ownList);
+			localUser.setBorrowedBooks(borrowedList);
 			bookAdapter = new SimpleAdapter(MainActivity.this, bookList,
 					R.layout.mybooks_listview_item, new String[] { "coverurl",
 							"bookname", "state" }, new int[] {
@@ -454,12 +455,10 @@ public class MainActivity extends Activity {
 									@Override
 									public void onClick(DialogInterface dialog,
 											int which) {
-										((LocalApp) getApplication())
-												.getUser()
-												.deleteBook(
-														bookmanage.bookList
-																.get(JudgeListener.this.position - 1),
-														new DeleteBookHandler());
+										localUser.deleteBook(
+												bookmanage.bookList
+														.get(JudgeListener.this.position - 1),
+												new DeleteBookHandler());
 									}
 
 								}).setNegativeButton("No", null).show();
@@ -501,10 +500,8 @@ public class MainActivity extends Activity {
 					omap.put("coverurl", coverurl);
 					omap.put("authors", item.getString("author"));
 					omap.put("description", item.getString("description"));
-					omap.put("owner", ((LocalApp) getApplication()).getUser()
-							.getUserName());
-					omap.put("holder", ((LocalApp) getApplication()).getUser()
-							.getUserName());
+					omap.put("owner", localUser.getUserName());
+					omap.put("holder", localUser.getUserName());
 					omap.put("status", item.getString("status"));
 					this.ownList.add(omap);
 				}
@@ -533,8 +530,7 @@ public class MainActivity extends Activity {
 					omap.put("authors", item.getString("author"));
 					omap.put("description", item.getString("description"));
 					omap.put("owner", "");
-					omap.put("holder", ((LocalApp) getApplication()).getUser()
-							.getUserName());
+					omap.put("holder", localUser.getUserName());
 					omap.put("status", item.getString("status"));
 					this.borrowedList.add(omap);
 				}
@@ -561,25 +557,15 @@ public class MainActivity extends Activity {
 		}
 
 		private void reload() {
-			NetAccess net = NetAccess.getInstance();
-			String url = getApplication().getResources().getString(
-					R.string.url_host);
-			url += getApplication().getResources().getString(
-					R.string.url_get_book);
-			url += ((LocalApp) getApplication()).getUser().getUserName();
-			url += getApplication().getResources().getString(
-					R.string.action_book);
-			Log.i("reload", "before thread");
-			net.createGetThread(url, new Handler() {
+			localUser.getBookList(new Handler() {
 				public void handleMessage(Message msg) {
 					switch (msg.what) {
 					case NetAccess.NETMSG_AFTER:
 						if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
 							addBookDataToList(msg.getData().getString(
 									"response"));
-							User user = ((LocalApp) getApplication()).getUser();
-							user.setOwnBooks(ownList);
-							user.setBorrowedBooks(borrowedList);
+							localUser.setOwnBooks(ownList);
+							localUser.setBorrowedBooks(borrowedList);
 							bookmanage.showUpdate();
 						}
 						break;
@@ -592,9 +578,8 @@ public class MainActivity extends Activity {
 
 		public void reload(String response) {
 			addBookDataToList(response);
-			User user = ((LocalApp) getApplication()).getUser();
-			user.setOwnBooks(ownList);
-			user.setBorrowedBooks(borrowedList);
+			localUser.setOwnBooks(ownList);
+			localUser.setBorrowedBooks(borrowedList);
 			bookAdapter.notifyDataSetChanged();
 		}
 
@@ -725,12 +710,13 @@ public class MainActivity extends Activity {
 
 		private void initInformList() {
 			informList = new ArrayList<Map<String, Object>>();
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("text", "hehe");
-			informList.add(map);
 			informAdapter = new SimpleAdapter(MainActivity.this, informList,
-					R.layout.inform_listview_item, new String[] { "text" },
-					new int[] { R.id.informlistviewitem_text });
+					R.layout.inform_listview_item, new String[] { "title",
+							"content", "confirm", "cancel" }, new int[] {
+							R.id.informlistviewitem_title,
+							R.id.informlistviewitem_content,
+							R.id.informlistviewitem_confirm,
+							R.id.informlistviewitem_cancel });
 
 			informlistview = (ListView) LayoutInflater.from(MainActivity.this)
 					.inflate(R.layout.activity_submain_inform, null);
@@ -742,9 +728,37 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					Log.i("button1", "in top");
-					Toast.makeText(MainActivity.this, "refresh",
-							Toast.LENGTH_SHORT).show();
+					localUser.getSendInformList(new Handler() {
+						public void handleMessage(Message msg) {
+							switch (msg.what) {
+							case NetAccess.NETMSG_AFTER:
+								if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+									addSendDataToList(msg.getData().getString(
+											"response"));
+									localUser
+											.getReceiveInformList(new Handler() {
+												public void handleMessage(
+														Message msg) {
+													switch (msg.what) {
+													case NetAccess.NETMSG_AFTER:
+														if (msg.getData()
+																.getInt("status") == NetAccess.STATUS_SUCCESS) {
+															addReceiveDataToList(msg
+																	.getData()
+																	.getString(
+																			"response"));
+															informmanage.informAdapter
+																	.notifyDataSetChanged();
+														}
+														break;
+													}
+												}
+											});
+								}
+								break;
+							}
+						}
+					});
 				}
 			});
 
@@ -753,7 +767,6 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					Log.i("button2", "in top");
 					Toast.makeText(MainActivity.this, "button2",
 							Toast.LENGTH_SHORT).show();
 				}
@@ -761,6 +774,48 @@ public class MainActivity extends Activity {
 
 			informlistview.addHeaderView(head);
 			informlistview.setAdapter(informAdapter);
+		}
+
+		private void addSendDataToList(String response) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			JSONObject jsonobj;
+			try {
+				jsonobj = new JSONObject(response);
+				JSONArray jsonarray = jsonobj.getJSONArray("own_book");
+
+				for (int i = 0; i < jsonarray.length(); i++) {
+					JSONObject item = jsonarray.getJSONObject(i);
+					String status = item.getString("status");
+
+					map = new HashMap<String, Object>();
+					map.put("status", status);
+					this.informList.add(map);
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		private void addReceiveDataToList(String response) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			JSONObject jsonobj;
+			try {
+				jsonobj = new JSONObject(response);
+				JSONArray jsonarray = jsonobj.getJSONArray("own_book");
+
+				for (int i = 0; i < jsonarray.length(); i++) {
+					JSONObject item = jsonarray.getJSONObject(i);
+					String status = item.getString("status");
+
+					map = new HashMap<String, Object>();
+					map.put("status", status);
+					this.informList.add(map);
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		private View getView() {
