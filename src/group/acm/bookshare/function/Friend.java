@@ -11,6 +11,7 @@ public class Friend {
 	protected String name = "";
 	protected String email = "";
 	protected String area = "";
+	protected int is_group = 0;
 	
 	protected Application application;
 	
@@ -23,6 +24,7 @@ public class Friend {
 		//this.image = (String)data.get("image");
 		this.email = (String)data.get("email");
 		this.area = (String)data.get("area");
+		this.is_group = Integer.parseInt((String)data.get("is_group"));
 	}
 
 	public Friend(Application application) {
@@ -43,6 +45,10 @@ public class Friend {
 	
 	public String getArea(){
 		return this.area;
+	}
+	
+	public int getIs_group(){
+		return is_group;
 	}
 	
 }

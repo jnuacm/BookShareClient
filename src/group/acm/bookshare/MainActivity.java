@@ -599,6 +599,7 @@ public class MainActivity extends Activity {
 
 		private void addFriendDataToList(String response) {
 			this.friendList.clear();
+			this.groupList.clear();
 			Map<String, Object> map = new HashMap<String, Object>();
 			JSONObject jsonobj;
 			try {
@@ -618,7 +619,13 @@ public class MainActivity extends Activity {
 					map.put("email", email);
 					map.put("area", area);
 
-					this.friendList.add(map);
+					map.put("is_group", is_group);
+
+					if (0 == is_group)// 朋友关系
+						this.friendList.add(map);
+					else
+						// 组属关系
+						this.groupList.add(map);
 				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
@@ -629,7 +636,10 @@ public class MainActivity extends Activity {
 		private void initFriendList() {
 			addFriendDataToList(getIntent().getStringExtra("response"));
 
-			for (int i = 0; i < 2; i++) {// 本地测试
+			// //////////////////////////////////////////////////
+			// /////////////////本地测试///////////////////////////
+			// /////////////////////////////////////////////////
+			for (int i = 0; i < 2; i++) {
 
 				String name = "Kitty" + String.valueOf(i);
 				String email = "999@qq.com";
@@ -645,6 +655,7 @@ public class MainActivity extends Activity {
 
 			User user = ((LocalApp) getApplication()).getUser();
 			user.setFriend(friendList);
+			user.setGroup(groupList);
 
 			friendAdapter = new SimpleAdapter(MainActivity.this, friendList,
 					R.layout.myfriends_listview_item, new String[] { "image",
