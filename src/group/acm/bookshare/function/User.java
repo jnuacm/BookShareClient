@@ -31,7 +31,7 @@ public class User {
 	private List<OwnerBook> ownBooks;
 	private List<OwnerBook> borrowedBooks;
 
-	// private List<String> friends;
+	private List<Friend> friends;
 
 	private Application application;
 	private Handler mainHandler;
@@ -173,6 +173,12 @@ public class User {
 		return null;
 	}
 
+	public void setFriend(List<Map<String, Object>> friend){
+		this.friends = new ArrayList<Friend>();
+		for (Map<String, Object> item : friend)
+			this.friends.add(new Friend(item));
+	}
+	
 	public int addFriend(String name) {
 		return 0;
 	}

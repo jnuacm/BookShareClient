@@ -22,7 +22,7 @@ public class FriendsInformationActivity extends Activity {
 		Bundle bundle =intent.getBundleExtra("key");// ´ò¿ª email 
 		
 		FriendImg.setImageResource(Integer.parseInt(bundle.getString("image")));
-		FriendName.setText(bundle.getString("friendName"));
+		FriendName.setText(bundle.getString("name"));
 		bundle.getString("image");
 		
 
