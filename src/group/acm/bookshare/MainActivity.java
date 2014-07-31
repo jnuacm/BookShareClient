@@ -593,6 +593,7 @@ public class MainActivity extends Activity {
 		ListView myfriendslistview;
 		SimpleAdapter friendAdapter;
 		List<Map<String, Object>> friendList = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> groupList = new ArrayList<Map<String, Object>>();
 
 		public View getView() {
 			initFriendList();
@@ -608,10 +609,12 @@ public class MainActivity extends Activity {
 				JSONArray jsonarray = jsonobj.getJSONArray("friend");
 
 				for (int i = 0; i < jsonarray.length(); i++) {
+					
 					JSONObject item = jsonarray.getJSONObject(i);
 					String name = item.getString("name");
 					String email = item.getString("email");
 					String area = item.getString("area");
+					int is_group = item.getInt("is_group");
 
 					map = new HashMap<String, Object>();
 					map.put("name", name);
