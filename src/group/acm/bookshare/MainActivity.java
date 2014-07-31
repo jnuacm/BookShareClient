@@ -243,6 +243,7 @@ public class MainActivity extends Activity {
 		List<Map<String, Object>> bookList = new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> ownList = new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> borrowedList = new ArrayList<Map<String, Object>>();
+	
 
 		/*
 		 * 刷新代码 private boolean isFirstRow = false; private boolean isLastRow =
@@ -588,58 +589,66 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private class FriendListManage implements OnScrollListener {
+	private class FriendListManage {
 		ListView myfriendslistview;
 		SimpleAdapter friendAdapter;
-		List<Map<String, Object>> friendList;
-
-		private boolean isFirstRow = false;
-		private boolean isLastRow = false;
-
-		public void onScroll(AbsListView view, int firstVisibleItem,
-				int visibleItemCount, int totalItemCount) {
-			// TODO Auto-generated method stub
-			if (firstVisibleItem + visibleItemCount == totalItemCount
-					&& totalItemCount > 0) {
-				isLastRow = true;
-			}
-			if (0 == firstVisibleItem && totalItemCount > 0) {
-				isFirstRow = true;
-			}
-		}
-
-		@Override
-		public void onScrollStateChanged(AbsListView view, int scrollState) {
-			// TODO Auto-generated method stub
-
-			if (isLastRow
-					&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-
-				friendmanage.loadFriendData();
-				friendmanage.showUpdate();
-				isLastRow = false;
-
-			} else if (isFirstRow
-					&& scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-
-				friendmanage.reload();
-				friendmanage.showUpdate();
-				isFirstRow = false;
-
-			}
-
-		}
+		List<Map<String, Object>> friendList = new ArrayList<Map<String, Object>>();
 
 		public View getView() {
 			initFriendList();
 			return myfriendslistview;
 		}
+		
+		private void addFriendDataToList(String response) {
+			this.friendList.clear();
+			Map<String, Object> map = new HashMap<String, Object>();
+			JSONObject jsonobj;
+			try {
+				jsonobj = new JSONObject(response);
+				JSONArray jsonarray = jsonobj.getJSONArray("friend");
+
+				for (int i = 0; i < jsonarray.length(); i++) {
+					JSONObject item = jsonarray.getJSONObject(i);
+					String name = item.getString("name");
+					String email = item.getString("email");
+					String area = item.getString("area");
+
+					map = new HashMap<String, Object>();
+					map.put("name", name);
+					map.put("email", email);
+					map.put("area", area);
+					
+					this.friendList.add(map);
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
 		private void initFriendList() {
-			friendList = getFriendData();
+			addFriendDataToList(getIntent().getStringExtra("response"));
+			
+			for (int i = 0; i < 2; i++) {//本地测试
+				
+				String name = "Kitty"+String.valueOf(i);
+				String email = "999@qq.com";
+				String area = "ZH";
+
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("name", name);
+				map.put("email", email);
+				map.put("area", area);
+				map.put("image", R.drawable.friend1);
+				this.friendList.add(map);
+			}
+			
+			User user = ((LocalApp) getApplication()).getUser();
+			user.setFriend(friendList);
+			
 			friendAdapter = new SimpleAdapter(MainActivity.this, friendList,
 					R.layout.myfriends_listview_item, new String[] { "image",
-							"friendname" }, new int[] {
+							"name" }, new int[] {
 							R.id.myfriendslistitem_friendimage,
 							R.id.myfriendslistitem_friendname });
 
@@ -648,43 +657,53 @@ public class MainActivity extends Activity {
 			myfriendslistview = (ListView) view
 					.findViewById(R.id.myfirendslistview);
 
-			myfriendslistview.setOnItemClickListener(new OnItemClickListener() {
-				public void onItemClick(AdapterView<?> parent, View view,
-						int position, long id) {
-
-					Bundle bundle = new Bundle();// 创建 email 内容
-					Map<String, Object> temp = new HashMap<String, Object>();
-					temp = friendList.get(position - 1);
-					bundle.putString("friendName", temp.get("friendname")
-							.toString());
-					bundle.putString("image", temp.get("image").toString());
-					Intent intent = new Intent(MainActivity.this,
-							FriendsInformationActivity.class);
-					intent.putExtra("key", bundle);// 封装 email
-					startActivity(intent);
-
-				}
-			});
-
-			myfriendslistview.setOnScrollListener(this);
+			setListener();
+			
 			myfriendslistview.addHeaderView(LayoutInflater.from(
 					MainActivity.this).inflate(R.layout.myfriends_listview_top,
 					null));
 			myfriendslistview.setAdapter(friendAdapter);
 		}
 
+		private void setListener() {
+			myfriendslistview.setOnItemClickListener(new OnItemClickListener() {
+				public void onItemClick(AdapterView<?> parent, View view,
+						int position, long id) {
+					if (0 == position) {
+						//待实现
+					} else{
+						Intent intent = new Intent(MainActivity.this,
+								FriendsInformationActivity.class);
+						
+						Bundle bundle = new Bundle();
+						bundle.putString("name",friendList.get(position-1).get("name").toString());  
+						bundle.putString("area", friendList.get(position-1).get("area").toString());
+						bundle.putString("email", friendList.get(position-1).get("email").toString());
+						bundle.putString("image", friendList.get(position-1).get("image").toString());
+						
+						intent.putExtra("key",bundle);
+						startActivity(intent);
+					}
+				}
+			});
+
+			//myfriendslistview.setOnItemLongClickListener(new JudgeListener());
+		}
+		
+		
+		
 		private List<Map<String, Object>> getFriendData() {
 			return new ArrayList<Map<String, Object>>();
 		}
 
 		private void loadFriendData() {
-			Map<String, Object> map;
+			/*Map<String, Object> map;
 			for (int i = 0; i < listshowsize; i++) {
 				map = new HashMap<String, Object>();
 				map.put("image", R.drawable.friend1);
 				map.put("friendname", "Kitty" + i);
 				friendList.add(map);
-			}
+			}*/
 		}
 
 		private void reload() {
