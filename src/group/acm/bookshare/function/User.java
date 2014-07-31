@@ -33,9 +33,6 @@ public class User {
 
 	private List<Friend> friends;
 
-	private List<Inform> sendList;
-	private List<Inform> receiveList;
-
 	private Application application;
 	private Handler handler;
 
@@ -164,7 +161,8 @@ public class User {
 	}
 
 	public void getSendInformList(Handler handler) {
-		String url = NetAccess.URL_HOST + Inform.URL_GETSEND_INFORM;
+		String url = application.getResources().getString(R.string.url_login);
+		url += application.getResources().getString(R.string.url_send_inform);
 		url += username;
 
 		NetAccess net = NetAccess.getInstance();
@@ -172,7 +170,9 @@ public class User {
 	}
 
 	public void getReceiveInformList(Handler handler) {
-		String url = NetAccess.URL_HOST + Inform.URL_GETRECEIVE_INFORM;
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources()
+				.getString(R.string.url_receive_inform);
 		url += username;
 
 		NetAccess net = NetAccess.getInstance();
@@ -201,12 +201,12 @@ public class User {
 		return null;
 	}
 
-	public void setFriend(List<Map<String, Object>> friend){
+	public void setFriend(List<Map<String, Object>> friend) {
 		this.friends = new ArrayList<Friend>();
 		for (Map<String, Object> item : friend)
 			this.friends.add(new Friend(item));
 	}
-	
+
 	public int addFriend(String name) {
 		return 0;
 	}

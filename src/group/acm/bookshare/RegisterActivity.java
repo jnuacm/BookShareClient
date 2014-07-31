@@ -53,13 +53,12 @@ public class RegisterActivity extends Activity {
 		area = "";
 		area = edittext.getText().toString();
 
-		username = "amy";
-		password = "12345";
-		email = "kk@qd.com";
-		area = "shaoguan";
-		
-		if (username == "" || password == "" || email == "")
-			return;
+		if (username == "" || password == "" || email == "") {
+			username = "amy";
+			password = "12345";
+			email = "kk@qd.com";
+			area = "shaoguan";
+		}
 
 		// ∑√Œ Õ¯¬Á
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();

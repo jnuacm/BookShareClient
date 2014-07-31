@@ -10,8 +10,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.Menu;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class LoginActivity extends Activity {
@@ -26,16 +26,15 @@ public class LoginActivity extends Activity {
 		if (Utils.isQuickClick())
 			return;
 		String username, password;
-		// username = ((TextView)
-		// findViewById(R.id.USERNAME)).getText().toString();
-		// password = ((TextView)
-		// findViewById(R.id.PASSWORD)).getText().toString();
+		username = ((TextView) findViewById(R.id.USERNAME)).getText()
+				.toString();
+		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
+				.toString();
 
-		// ////////////////////////！！！注意！！！！///////////////////////////////////////////
-		// ////////////////////////以下为测试代码//////////////////////////////////////////////
-		username = "gg";
-		password = "1234";
-		// ////////////////////////以上为测试代码//////////////////////////////////////////////
+		if (username == "" && password == "") {
+			username = "gg";
+			password = "1234";
+		}
 		LocalApp localapp = (LocalApp) getApplication();
 		User user = localapp.getUser();
 

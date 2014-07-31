@@ -38,8 +38,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -243,7 +241,6 @@ public class MainActivity extends Activity {
 		List<Map<String, Object>> bookList = new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> ownList = new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> borrowedList = new ArrayList<Map<String, Object>>();
-	
 
 		/*
 		 * 刷新代码 private boolean isFirstRow = false; private boolean isLastRow =
@@ -599,7 +596,7 @@ public class MainActivity extends Activity {
 			initFriendList();
 			return myfriendslistview;
 		}
-		
+
 		private void addFriendDataToList(String response) {
 			this.friendList.clear();
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -609,7 +606,7 @@ public class MainActivity extends Activity {
 				JSONArray jsonarray = jsonobj.getJSONArray("friend");
 
 				for (int i = 0; i < jsonarray.length(); i++) {
-					
+
 					JSONObject item = jsonarray.getJSONObject(i);
 					String name = item.getString("name");
 					String email = item.getString("email");
@@ -620,7 +617,7 @@ public class MainActivity extends Activity {
 					map.put("name", name);
 					map.put("email", email);
 					map.put("area", area);
-					
+
 					this.friendList.add(map);
 				}
 			} catch (JSONException e) {
@@ -631,10 +628,10 @@ public class MainActivity extends Activity {
 
 		private void initFriendList() {
 			addFriendDataToList(getIntent().getStringExtra("response"));
-			
-			for (int i = 0; i < 2; i++) {//本地测试
-				
-				String name = "Kitty"+String.valueOf(i);
+
+			for (int i = 0; i < 2; i++) {// 本地测试
+
+				String name = "Kitty" + String.valueOf(i);
 				String email = "999@qq.com";
 				String area = "ZH";
 
@@ -645,10 +642,10 @@ public class MainActivity extends Activity {
 				map.put("image", R.drawable.friend1);
 				this.friendList.add(map);
 			}
-			
+
 			User user = ((LocalApp) getApplication()).getUser();
 			user.setFriend(friendList);
-			
+
 			friendAdapter = new SimpleAdapter(MainActivity.this, friendList,
 					R.layout.myfriends_listview_item, new String[] { "image",
 							"name" }, new int[] {
@@ -661,7 +658,7 @@ public class MainActivity extends Activity {
 					.findViewById(R.id.myfirendslistview);
 
 			setListener();
-			
+
 			myfriendslistview.addHeaderView(LayoutInflater.from(
 					MainActivity.this).inflate(R.layout.myfriends_listview_top,
 					null));
@@ -673,40 +670,42 @@ public class MainActivity extends Activity {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					if (0 == position) {
-						//待实现
-					} else{
+						// 待实现
+					} else {
 						Intent intent = new Intent(MainActivity.this,
 								FriendsInformationActivity.class);
-						
+
 						Bundle bundle = new Bundle();
-						bundle.putString("name",friendList.get(position-1).get("name").toString());  
-						bundle.putString("area", friendList.get(position-1).get("area").toString());
-						bundle.putString("email", friendList.get(position-1).get("email").toString());
-						bundle.putString("image", friendList.get(position-1).get("image").toString());
-						
-						intent.putExtra("key",bundle);
+						bundle.putString("name", friendList.get(position - 1)
+								.get("name").toString());
+						bundle.putString("area", friendList.get(position - 1)
+								.get("area").toString());
+						bundle.putString("email", friendList.get(position - 1)
+								.get("email").toString());
+						bundle.putString("image", friendList.get(position - 1)
+								.get("image").toString());
+
+						intent.putExtra("key", bundle);
 						startActivity(intent);
 					}
 				}
 			});
 
-			//myfriendslistview.setOnItemLongClickListener(new JudgeListener());
+			// myfriendslistview.setOnItemLongClickListener(new
+			// JudgeListener());
 		}
-		
-		
-		
+
 		private List<Map<String, Object>> getFriendData() {
 			return new ArrayList<Map<String, Object>>();
 		}
 
 		private void loadFriendData() {
-			/*Map<String, Object> map;
-			for (int i = 0; i < listshowsize; i++) {
-				map = new HashMap<String, Object>();
-				map.put("image", R.drawable.friend1);
-				map.put("friendname", "Kitty" + i);
-				friendList.add(map);
-			}*/
+			/*
+			 * Map<String, Object> map; for (int i = 0; i < listshowsize; i++) {
+			 * map = new HashMap<String, Object>(); map.put("image",
+			 * R.drawable.friend1); map.put("friendname", "Kitty" + i);
+			 * friendList.add(map); }
+			 */
 		}
 
 		private void reload() {
@@ -750,37 +749,8 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					localUser.getSendInformList(new Handler() {
-						public void handleMessage(Message msg) {
-							switch (msg.what) {
-							case NetAccess.NETMSG_AFTER:
-								if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-									addSendDataToList(msg.getData().getString(
-											"response"));
-									localUser
-											.getReceiveInformList(new Handler() {
-												public void handleMessage(
-														Message msg) {
-													switch (msg.what) {
-													case NetAccess.NETMSG_AFTER:
-														if (msg.getData()
-																.getInt("status") == NetAccess.STATUS_SUCCESS) {
-															addReceiveDataToList(msg
-																	.getData()
-																	.getString(
-																			"response"));
-															informmanage.informAdapter
-																	.notifyDataSetChanged();
-														}
-														break;
-													}
-												}
-											});
-								}
-								break;
-							}
-						}
-					});
+					informList.clear();
+					localUser.getSendInformList(new SendInformHandler());
 				}
 			});
 
@@ -798,18 +768,56 @@ public class MainActivity extends Activity {
 			informlistview.setAdapter(informAdapter);
 		}
 
+		private class SendInformHandler extends Handler {
+			@Override
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_AFTER:
+					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+						addSendDataToList(msg.getData().getString("response"));
+						localUser
+								.getReceiveInformList(new ReceiveInformHandler());
+					}
+					break;
+				}
+			}
+		}
+
+		private class ReceiveInformHandler extends Handler {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_AFTER:
+					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+						addReceiveDataToList(msg.getData()
+								.getString("response"));
+						informmanage.informAdapter.notifyDataSetChanged();
+					}
+					break;
+				}
+			}
+		}
+
 		private void addSendDataToList(String response) {
 			Map<String, Object> map = new HashMap<String, Object>();
-			JSONObject jsonobj;
+			JSONArray jsonarray;
 			try {
-				jsonobj = new JSONObject(response);
-				JSONArray jsonarray = jsonobj.getJSONArray("own_book");
+				jsonarray = new JSONArray(response);
 
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject item = jsonarray.getJSONObject(i);
-					String status = item.getString("status");
+					int id = item.getInt("id");
+					String time = item.getString("time");
+					String from = item.getString("from");
+					int type = item.getInt("type");
+					String description = item.getString("description");
+					int status = item.getInt("status");
 
 					map = new HashMap<String, Object>();
+					map.put("id", id);
+					map.put("time", time);
+					map.put("from", from);
+					map.put("type", type);
+					map.put("description", description);
 					map.put("status", status);
 					this.informList.add(map);
 				}
@@ -821,16 +829,25 @@ public class MainActivity extends Activity {
 
 		private void addReceiveDataToList(String response) {
 			Map<String, Object> map = new HashMap<String, Object>();
-			JSONObject jsonobj;
+			JSONArray jsonarray;
 			try {
-				jsonobj = new JSONObject(response);
-				JSONArray jsonarray = jsonobj.getJSONArray("own_book");
+				jsonarray = new JSONArray(response);
 
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject item = jsonarray.getJSONObject(i);
-					String status = item.getString("status");
+					int id = item.getInt("id");
+					String time = item.getString("time");
+					String from = item.getString("from");
+					int type = item.getInt("type");
+					String description = item.getString("description");
+					int status = item.getInt("status");
 
 					map = new HashMap<String, Object>();
+					map.put("id", id);
+					map.put("time", time);
+					map.put("from", from);
+					map.put("type", type);
+					map.put("description", description);
 					map.put("status", status);
 					this.informList.add(map);
 				}
