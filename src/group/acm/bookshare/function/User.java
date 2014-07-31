@@ -32,6 +32,9 @@ public class User {
 	private List<OwnerBook> borrowedBooks;
 
 	private List<Friend> friends;
+	private List<Friend> groups;
+	
+	private int is_group;
 
 	private Application application;
 	private Handler mainHandler;
@@ -64,6 +67,14 @@ public class User {
 		this.borrowedBooks = new ArrayList<OwnerBook>();
 		for (Map<String, Object> item : borrowedBooks)
 			this.borrowedBooks.add(new OwnerBook(item));
+	}
+	
+	public void setIs_Group(int is_group){
+		this.is_group = is_group;
+	}
+	
+	public int getIs_Group(){
+		return this.is_group;
 	}
 
 	public void login(Handler mainHandler) {
@@ -177,6 +188,12 @@ public class User {
 		this.friends = new ArrayList<Friend>();
 		for (Map<String, Object> item : friend)
 			this.friends.add(new Friend(item));
+	}
+	
+	public void setGroup(List<Map<String, Object>> group){
+		this.groups = new ArrayList<Friend>();
+		for (Map<String, Object> item : group)
+			this.groups.add(new Friend(item));
 	}
 	
 	public int addFriend(String name) {
