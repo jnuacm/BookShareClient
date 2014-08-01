@@ -3,11 +3,15 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.R.bool;
 import android.annotation.SuppressLint;
@@ -34,12 +38,15 @@ public class User {
 	private List<Friend> friends;
 	private List<Friend> groups;
 
+	private List<Map<String, Object>> informs;
+
 	private int is_group;
 
 	private Application application;
 	private Handler handler;
 
 	public User(Application application) {
+		informs = new ArrayList<Map<String, Object>>();
 		this.application = application;
 	}
 
@@ -171,6 +178,50 @@ public class User {
 		net.createGetThread(url, handler);
 	}
 
+	public List<Map<String, Object>> getInitInformData() {
+		for (int i = 0; i < 5; i++) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("title", "借书消息:");
+			map.put("content", "来自火星的你的消息：你狗日的快还书");
+			map.put("confirm", "confirm");
+			map.put("cancel", "cancel");
+			informs.add(map);
+		}
+		return informs;
+	}
+
+	public boolean addSendDataToList(String response) {
+
+		JSONArray jsonarray;
+		try {
+			jsonarray = new JSONArray(response);
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				informs.add(Inform.objToSend(item));
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public boolean addReceiveDataToList(String response) {
+		try {
+			JSONArray jsonarray = new JSONArray(response);
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				informs.add(Inform.objToReceive(item));
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
 	public void getSendInformList(Handler handler) {
 		String url = application.getResources().getString(R.string.url_login);
 		url += application.getResources().getString(R.string.url_send_inform);
@@ -188,6 +239,18 @@ public class User {
 
 		NetAccess net = NetAccess.getInstance();
 		net.createGetThread(url, handler);
+	}
+
+	public void updateRequest(int id, int status, Handler handler) {
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources().getString(R.string.url_inform_update);
+		url += Integer.toString(id);
+		NetAccess net = NetAccess.getInstance();
+
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("status", Integer.toString(id)));
+
+		net.createPutThread(url, nvps, handler);
 	}
 
 	/*

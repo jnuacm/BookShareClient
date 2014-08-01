@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
@@ -538,22 +539,6 @@ public class MainActivity extends Activity {
 			}
 		}
 
-		private void loadBookData() {
-
-			Map<String, Object> map;
-			for (int i = 0; i < 10; i++) {
-
-				map = new HashMap<String, Object>();
-				map.put("image", R.drawable.default_book_big);
-				map.put("bookname", "load book name");
-				if (i % 2 == 0)
-					map.put("state", "mine");
-				else
-					map.put("state", "other");
-				bookList.add(map);
-			}
-		}
-
 		private void reload() {
 			localUser.getBookList(new Handler() {
 				public void handleMessage(Message msg) {
@@ -705,50 +690,197 @@ public class MainActivity extends Activity {
 			// myfriendslistview.setOnItemLongClickListener(new
 			// JudgeListener());
 		}
-
-		private List<Map<String, Object>> getFriendData() {
-			return new ArrayList<Map<String, Object>>();
-		}
-
-		private void loadFriendData() {
-			/*
-			 * Map<String, Object> map; for (int i = 0; i < listshowsize; i++) {
-			 * map = new HashMap<String, Object>(); map.put("image",
-			 * R.drawable.friend1); map.put("friendname", "Kitty" + i);
-			 * friendList.add(map); }
-			 */
-		}
-
-		private void reload() {
-			friendList.clear();
-			Map<String, Object> map;
-			for (int i = 0; i < listshowsize; i++) {
-				map = new HashMap<String, Object>();
-				map.put("image", R.drawable.friend1);
-				map.put("friendname", "Kitty" + i);
-				friendList.add(map);
-			}
-		}
-
-		private void showUpdate() {
-			friendAdapter.notifyDataSetChanged();
-		}
 	}
 
 	private class InformListManage {
 		ListView informlistview;
-		SimpleAdapter informAdapter;
-		List<Map<String, Object>> informList = new ArrayList<Map<String, Object>>();
+		InformListAdapter informAdapter;
+
+		private class InformListAdapter extends BaseAdapter {
+			List<Map<String, Object>> informs;
+			Context context;
+
+			public InformListAdapter(Context context,
+					List<Map<String, Object>> data) {
+				this.context = context;
+				informs = data;
+			}
+
+			@Override
+			public int getCount() {
+				return informs.size();
+			}
+
+			@Override
+			public Object getItem(int position) {
+				return informs.get(position);
+			}
+
+			@Override
+			public long getItemId(int position) {
+				return position;
+			}
+
+			public class ViewHolder {
+				TextView title;
+				TextView content;
+				Button confirm;
+				Button cancel;
+			}
+
+			public class InformClickListener implements OnClickListener {
+				int id;
+				int status;
+				int position;
+
+				public InformClickListener(int id, int status, int position) {
+					this.id = id;
+					this.status = status;
+					this.position = position;
+				}
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					localUser.updateRequest(id, status, new RequestHandler(
+							position));
+				}
+			}
+
+			public class RequestHandler extends Handler {
+				private int position;
+
+				public RequestHandler(int position) {
+					this.position = position;
+				}
+
+				@Override
+				public void handleMessage(Message msg) {
+					switch (msg.what) {
+					case NetAccess.NETMSG_ERROR:
+						MainActivity.this.showToast(msg.getData().getString(
+								"error"));
+					case NetAccess.NETMSG_AFTER:
+						if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS)
+							informs.remove(position);
+						break;
+					}
+				}
+			}
+
+			public abstract class InformState {
+				public abstract void setView(ViewHolder holder,
+						Map<String, Object> item, int position);
+			}
+
+			public class UnprocessFromState extends InformState {
+
+				@Override
+				public void setView(ViewHolder holder,
+						Map<String, Object> item, int position) {
+					// TODO Auto-generated method stub
+
+					int id = (Integer) item.get("id");
+					String msg = (String) item.get("message");
+
+					holder.title.setText("借出尚未被确认:");
+					holder.content.setText("bookid," + item.get("id") + ":\n"
+							+ msg);
+					holder.confirm.setVisibility(View.INVISIBLE);
+					holder.cancel.setVisibility(View.INVISIBLE);
+				}
+
+			}
+
+			public class UnprocessToState extends InformState {
+
+				@Override
+				public void setView(ViewHolder holder,
+						Map<String, Object> item, int position) {
+					// TODO Auto-generated method stub
+					int id = (Integer) item.get("id");
+					holder.title.setText("借书请求");
+					holder.content.setText("来自" + (String) item.get("from")
+							+ "的请求:\n" + (String) item.get("message"));
+					holder.confirm.setText("同意");
+					holder.cancel.setText("不同意");
+
+					holder.confirm.setOnClickListener(new InformClickListener(
+							id, Inform.REQUEST_STATUS_PERMITTED, position));
+					holder.cancel.setOnClickListener(new InformClickListener(
+							id, Inform.REQUEST_STATUS_REFUESED, position));
+				}
+			}
+
+			public class PermittedFromState extends InformState {
+
+				@Override
+				public void setView(ViewHolder holder,
+						Map<String, Object> item, int position) {
+					// TODO Auto-generated method stub
+					int id = (Integer) item.get("id");
+
+					holder.title.setText("处理结果");
+					holder.content.setText("");
+					holder.confirm.setText("");
+					holder.cancel.setText("");
+
+					holder.confirm.setOnClickListener(new InformClickListener(
+							id, Inform.REQUEST_STATUS_CONFIRM, position));
+					holder.cancel.setVisibility(View.INVISIBLE);
+				}
+
+			}
+
+			public class RefusedFromState extends InformState {
+
+				@Override
+				public void setView(ViewHolder holder,
+						Map<String, Object> item, int position) {
+					// TODO Auto-generated method stub
+					int id = (Integer) item.get("id");
+
+					holder.title.setText("");
+					holder.content.setText("");
+					holder.confirm.setText("");
+					holder.cancel.setText("");
+
+					holder.confirm.setOnClickListener(new InformClickListener(
+							id, Inform.REQUEST_STATUS_CONFIRM, position));
+					holder.cancel.setVisibility(View.INVISIBLE);
+				}
+			}
+
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+				ViewHolder views = null;
+				if (convertView == null) {
+					convertView = LayoutInflater.from(context).inflate(
+							R.layout.inform_listview_item, null);
+					views = new ViewHolder();
+					views.title = (TextView) convertView
+							.findViewById(R.id.informlistviewitem_title);
+					views.content = (TextView) convertView
+							.findViewById(R.id.informlistviewitem_content);
+					views.confirm = (Button) convertView
+							.findViewById(R.id.informlistviewitem_confirm);
+					views.cancel = (Button) convertView
+							.findViewById(R.id.informlistviewitem_cancel);
+				}
+				Map<String, Object> item = informs.get(position);
+
+				//InformState curState = getCurState();
+				//curState.setView(views, item, position);
+
+				return convertView;
+			}
+		}
 
 		private void initInformList() {
-			informList = new ArrayList<Map<String, Object>>();
-			informAdapter = new SimpleAdapter(MainActivity.this, informList,
-					R.layout.inform_listview_item, new String[] { "title",
-							"content", "confirm", "cancel" }, new int[] {
-							R.id.informlistviewitem_title,
-							R.id.informlistviewitem_content,
-							R.id.informlistviewitem_confirm,
-							R.id.informlistviewitem_cancel });
+			List<Map<String, Object>> informList = localUser
+					.getInitInformData();
+
+			informAdapter = new InformListAdapter(MainActivity.this, informList);
 
 			informlistview = (ListView) LayoutInflater.from(MainActivity.this)
 					.inflate(R.layout.activity_submain_inform, null);
@@ -760,7 +892,7 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					informList.clear();
+					localUser.getInitInformData().clear();
 					localUser.getSendInformList(new SendInformHandler());
 				}
 			});
@@ -785,7 +917,8 @@ public class MainActivity extends Activity {
 				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
 					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-						addSendDataToList(msg.getData().getString("response"));
+						localUser.addSendDataToList(msg.getData().getString(
+								"response"));
 						localUser
 								.getReceiveInformList(new ReceiveInformHandler());
 					}
@@ -799,72 +932,12 @@ public class MainActivity extends Activity {
 				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
 					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-						addReceiveDataToList(msg.getData()
-								.getString("response"));
+						localUser.addReceiveDataToList(msg.getData().getString(
+								"response"));
 						informmanage.informAdapter.notifyDataSetChanged();
 					}
 					break;
 				}
-			}
-		}
-
-		private void addSendDataToList(String response) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			JSONArray jsonarray;
-			try {
-				jsonarray = new JSONArray(response);
-
-				for (int i = 0; i < jsonarray.length(); i++) {
-					JSONObject item = jsonarray.getJSONObject(i);
-					int id = item.getInt("id");
-					String time = item.getString("time");
-					String from = item.getString("from");
-					int type = item.getInt("type");
-					String description = item.getString("description");
-					int status = item.getInt("status");
-
-					map = new HashMap<String, Object>();
-					map.put("id", id);
-					map.put("time", time);
-					map.put("from", from);
-					map.put("type", type);
-					map.put("description", description);
-					map.put("status", status);
-					this.informList.add(map);
-				}
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		private void addReceiveDataToList(String response) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			JSONArray jsonarray;
-			try {
-				jsonarray = new JSONArray(response);
-
-				for (int i = 0; i < jsonarray.length(); i++) {
-					JSONObject item = jsonarray.getJSONObject(i);
-					int id = item.getInt("id");
-					String time = item.getString("time");
-					String from = item.getString("from");
-					int type = item.getInt("type");
-					String description = item.getString("description");
-					int status = item.getInt("status");
-
-					map = new HashMap<String, Object>();
-					map.put("id", id);
-					map.put("time", time);
-					map.put("from", from);
-					map.put("type", type);
-					map.put("description", description);
-					map.put("status", status);
-					this.informList.add(map);
-				}
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 
