@@ -130,7 +130,6 @@ public class User {
 	}
 
 	public void addToDB(Bundle data) {
-		// TODO Auto-generated method stub
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
 		nvps.add(new BasicNameValuePair("name", data.getString("name")));
@@ -165,7 +164,6 @@ public class User {
 		url += application.getResources().getString(R.string.url_delete_book);
 		url += (String) book.get("id");
 		net.createDeleteThread(url, handler);
-		// net.createPostThread(url,new ArrayList<NameValuePair>(), handler);
 		return true;
 	}
 
@@ -177,16 +175,12 @@ public class User {
 		url += application.getResources().getString(R.string.action_book);
 		net.createGetThread(url, handler);
 	}
-
+	
 	public List<Map<String, Object>> getInitInformData() {
-		for (int i = 0; i < 5; i++) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("title", "借书消息:");
-			map.put("content", "来自火星的你的消息：你狗日的快还书");
-			map.put("confirm", "confirm");
-			map.put("cancel", "cancel");
-			informs.add(map);
-		}
+		return informs;
+	}
+
+	public List<Map<String, Object>> getCurInformData() {
 		return informs;
 	}
 
@@ -223,7 +217,7 @@ public class User {
 	}
 
 	public void getSendInformList(Handler handler) {
-		String url = application.getResources().getString(R.string.url_login);
+		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_send_inform);
 		url += username;
 
@@ -253,28 +247,6 @@ public class User {
 		net.createPutThread(url, nvps, handler);
 	}
 
-	/*
-	 * public bool deleteBook(MyBook obj) { return null; }
-	 */
-	/*
-	 * public int giveBack(MyBook obj) { return 0; }
-	 */
-	/*
-	 * public int borrow(MyBook obj, String from) { return 0; }
-	 */
-
-	public int pushInfo() {
-		return 0;
-	}
-
-	public int pullInfo() {
-		return 0;
-	}
-
-	public bool updateState() {
-		return null;
-	}
-
 	public void setFriend(List<Map<String, Object>> friend) {
 		this.friends = new ArrayList<Friend>();
 		for (Map<String, Object> item : friend)
@@ -285,21 +257,5 @@ public class User {
 		this.groups = new ArrayList<Friend>();
 		for (Map<String, Object> item : group)
 			this.groups.add(new Friend(item));
-	}
-
-	public int addFriend(String name) {
-		return 0;
-	}
-
-	public int deleteFriend(String name) {
-		return 0;
-	}
-
-	public int createGroup(String name) {
-		return 0;
-	}
-
-	public int deleteGroup() {
-		return 0;
 	}
 }

@@ -594,7 +594,7 @@ public class MainActivity extends Activity {
 				for (int i = 0; i < jsonarray.length(); i++) {
 
 					JSONObject item = jsonarray.getJSONObject(i);
-					String name = item.getString("name");
+					String name = item.getString("username");
 					String email = item.getString("email");
 					String area = item.getString("area");
 					int is_group = item.getInt("is_group");
@@ -635,6 +635,7 @@ public class MainActivity extends Activity {
 				map.put("email", email);
 				map.put("area", area);
 				map.put("image", R.drawable.friend1);
+				map.put("is_group", 0);
 				this.friendList.add(map);
 			}
 
@@ -768,6 +769,23 @@ public class MainActivity extends Activity {
 				}
 			}
 
+			private InformState getCurState(Map<String, Object> item,
+					String username) {
+				switch ((Integer) item.get("status")) {
+				case Inform.REQUEST_STATUS_UNPROCESSED:
+					if (username.equals(item.get("from"))) {
+						return new UnprocessFromState();
+					} else {
+						return new UnprocessToState();
+					}
+				case Inform.REQUEST_STATUS_PERMITTED:
+					return new PermittedFromState();
+				case Inform.REQUEST_STATUS_REFUSED:
+					return new RefusedFromState();
+				}
+				return null;
+			}
+
 			public abstract class InformState {
 				public abstract void setView(ViewHolder holder,
 						Map<String, Object> item, int position);
@@ -778,14 +796,8 @@ public class MainActivity extends Activity {
 				@Override
 				public void setView(ViewHolder holder,
 						Map<String, Object> item, int position) {
-					// TODO Auto-generated method stub
-
-					int id = (Integer) item.get("id");
-					String msg = (String) item.get("message");
-
-					holder.title.setText("借出尚未被确认:");
-					holder.content.setText("bookid," + item.get("id") + ":\n"
-							+ msg);
+					holder.title.setText("未处理消息:");
+					holder.content.setText((String) item.get("description"));
 					holder.confirm.setVisibility(View.INVISIBLE);
 					holder.cancel.setVisibility(View.INVISIBLE);
 				}
@@ -799,16 +811,15 @@ public class MainActivity extends Activity {
 						Map<String, Object> item, int position) {
 					// TODO Auto-generated method stub
 					int id = (Integer) item.get("id");
-					holder.title.setText("借书请求");
-					holder.content.setText("来自" + (String) item.get("from")
-							+ "的请求:\n" + (String) item.get("message"));
-					holder.confirm.setText("同意");
-					holder.cancel.setText("不同意");
+					holder.title.setText((String) item.get("未处理消息:"));
+					holder.content.setText((String) item.get("description"));
+					holder.confirm.setText("确认");
+					holder.cancel.setText("取消");
 
 					holder.confirm.setOnClickListener(new InformClickListener(
 							id, Inform.REQUEST_STATUS_PERMITTED, position));
 					holder.cancel.setOnClickListener(new InformClickListener(
-							id, Inform.REQUEST_STATUS_REFUESED, position));
+							id, Inform.REQUEST_STATUS_REFUSED, position));
 				}
 			}
 
@@ -820,10 +831,10 @@ public class MainActivity extends Activity {
 					// TODO Auto-generated method stub
 					int id = (Integer) item.get("id");
 
-					holder.title.setText("处理结果");
-					holder.content.setText("");
-					holder.confirm.setText("");
-					holder.cancel.setText("");
+					holder.title.setText("已确认");
+					holder.content.setText((String) item.get("description"));
+					holder.confirm.setText("确认");
+					holder.cancel.setText("取消");
 
 					holder.confirm.setOnClickListener(new InformClickListener(
 							id, Inform.REQUEST_STATUS_CONFIRM, position));
@@ -840,10 +851,10 @@ public class MainActivity extends Activity {
 					// TODO Auto-generated method stub
 					int id = (Integer) item.get("id");
 
-					holder.title.setText("");
-					holder.content.setText("");
-					holder.confirm.setText("");
-					holder.cancel.setText("");
+					holder.title.setText("已取消");
+					holder.content.setText((String) item.get("description"));
+					holder.confirm.setText("确认");
+					holder.cancel.setText("取消");
 
 					holder.confirm.setOnClickListener(new InformClickListener(
 							id, Inform.REQUEST_STATUS_CONFIRM, position));
@@ -869,8 +880,9 @@ public class MainActivity extends Activity {
 				}
 				Map<String, Object> item = informs.get(position);
 
-				//InformState curState = getCurState();
-				//curState.setView(views, item, position);
+				InformState curState = getCurState(item,
+						localUser.getUserName());
+				curState.setView(views, item, position);
 
 				return convertView;
 			}
@@ -892,7 +904,7 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					localUser.getInitInformData().clear();
+					localUser.getCurInformData().clear();
 					localUser.getSendInformList(new SendInformHandler());
 				}
 			});

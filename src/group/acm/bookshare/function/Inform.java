@@ -12,7 +12,7 @@ public class Inform {
 	
 	public static final int REQUEST_STATUS_UNPROCESSED = 0;
 	public static final int REQUEST_STATUS_PERMITTED = 1;
-	public static final int REQUEST_STATUS_REFUESED = 2;
+	public static final int REQUEST_STATUS_REFUSED = 2;
 	public static final int REQUEST_STATUS_CONFIRM = 3;
 
 	public static Map<String, Object> objToSend(JSONObject item)

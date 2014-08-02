@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +36,10 @@ public class LoginActivity extends Activity {
 			username = "gg";
 			password = "1234";
 		}
+		username = "gg";
+		password = "1234";
+		Log.i("loginactivity", username);
+		Log.i("loginactivity", password);
 		LocalApp localapp = (LocalApp) getApplication();
 		User user = localapp.getUser();
 

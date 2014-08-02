@@ -15,8 +15,18 @@
         android:layout_width="215dp"
         android:layout_height="40dp"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/informlistviewitem_text"
+        android:layout_below="@id/informlistviewitem_title"
         android:text="TextView" />
+
+    <Button
+        android:id="@+id/informlistviewitem_confirm"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/informlistviewitem_content"
+        android:text="确认"
+        android:textSize="10sp" />
 
     <Button
         android:id="@+id/informlistviewitem_cancel"
@@ -25,17 +35,8 @@
         android:layout_height="40dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/informlistviewitem_confirm"
         android:text="取消"
-        android:textSize="10sp" />
-
-    <Button
-        android:id="@+id/informlistviewitem_confirm"
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="50dp"
-        android:layout_height="40dp"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/informlistviewitem_cancel"
-        android:text="确认"
         android:textSize="10sp" />
 
 </RelativeLayout>
