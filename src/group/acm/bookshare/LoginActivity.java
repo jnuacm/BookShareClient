@@ -32,14 +32,10 @@ public class LoginActivity extends Activity {
 		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
 				.toString();
 
-		if (username == "" && password == "") {
-			username = "gg";
-			password = "1234";
-		}
+		
 		username = "gg";
 		password = "1234";
-		Log.i("loginactivity", username);
-		Log.i("loginactivity", password);
+		
 		LocalApp localapp = (LocalApp) getApplication();
 		User user = localapp.getUser();
 

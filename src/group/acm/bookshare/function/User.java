@@ -3,7 +3,6 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.R.bool;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.Bundle;
@@ -175,7 +173,7 @@ public class User {
 		url += application.getResources().getString(R.string.action_book);
 		net.createGetThread(url, handler);
 	}
-	
+
 	public List<Map<String, Object>> getInitInformData() {
 		return informs;
 	}
@@ -258,4 +256,9 @@ public class User {
 		for (Map<String, Object> item : group)
 			this.groups.add(new Friend(item));
 	}
+
+	public List<Friend> getGroup() {
+		return this.groups;
+	}
+
 }

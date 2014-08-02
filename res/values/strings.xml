@@ -43,5 +43,9 @@
     <!-- douban url -->
     <string name="douban_url">http://api.douban.com/book/subject/isbn/</string>
     <string name="douban_form">\?alt=json&amp;apikey=060debf571622a801229c3e054267f80</string>
+    <string name="add_friend">添加</string>
+    <string name="group">组群</string>
+    <string name="title_activity_group">GroupActivity</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

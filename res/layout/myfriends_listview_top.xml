@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
-    <ImageButton
-        android:id="@+id/Group"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:background="@color/transparent"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/group" />
+    <Button
+        android:id="@+id/button_friend_refresh"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh" />
 
-    <ImageButton
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:layout_below="@id/Group"
-        android:background="@color/transparent"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/newfriend" />
+    <Button
+        android:id="@+id/button_group"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/group" />
 
-</RelativeLayout>
+    <Button
+        android:id="@+id/button_add_friend"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_friend" />
+
+</LinearLayout>
