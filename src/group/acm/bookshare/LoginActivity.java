@@ -32,7 +32,6 @@ public class LoginActivity extends Activity {
 		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
 				.toString();
 
-		
 		username = "gg";
 		password = "1234";
 		

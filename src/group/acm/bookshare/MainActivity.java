@@ -652,6 +652,7 @@ public class MainActivity extends Activity {
 			});
 			
 			addFriendDataToList(getIntent().getStringExtra("response"));
+
 			User user = ((LocalApp) getApplication()).getUser();
 			user.setFriend(friendList);
 			user.setGroup(groupList);

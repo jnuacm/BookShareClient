@@ -21,10 +21,11 @@ public class Friend {
 	public Friend(Map<String, Object> data) {
 		this.name = (String) data.get("name");
 		image = R.drawable.friend1;
-		// this.image = (String)data.get("image");
-		this.email = (String) data.get("email");
-		this.area = (String) data.get("area");
-		this.is_group = (Integer) data.get("is_group");
+
+		//this.image = (String)data.get("image");
+		this.email = (String)data.get("email");
+		this.area = (String)data.get("area");
+		this.is_group = (Integer)data.get("is_group");
 	}
 
 	public Friend(Application application) {
