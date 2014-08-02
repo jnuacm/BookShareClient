@@ -223,6 +223,9 @@ public class User {
 		for (Map<String, Object> item : group)
 			this.groups.add(new Friend(item));
 	}
+	public List<Friend> getGroup() {
+		return this.groups;
+	}
 
 	public int addFriend(String name) {
 		return 0;

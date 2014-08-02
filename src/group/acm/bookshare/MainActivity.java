@@ -609,24 +609,26 @@ public class MainActivity extends Activity {
 				for (int i = 0; i < jsonarray.length(); i++) {
 
 					JSONObject item = jsonarray.getJSONObject(i);
-					String name = item.getString("name");
+					String name = item.getString("username");
 					String email = item.getString("email");
 					String area = item.getString("area");
 					int is_group = item.getInt("is_group");
+					
 
 					map = new HashMap<String, Object>();
 					map.put("name", name);
 					map.put("email", email);
 					map.put("area", area);
-
+					map.put("image", R.drawable.friend1);
 					map.put("is_group", is_group);
+					//Log.i("is_group",name+" is "+is_group+"!!!");
 
 					if (0 == is_group)// 朋友关系
 						this.friendList.add(map);
-					else
-						// 组属关系
+					else			  // 组属关系
 						this.groupList.add(map);
 				}
+				
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -634,25 +636,39 @@ public class MainActivity extends Activity {
 		}
 
 		private void initFriendList() {
+			View head = LayoutInflater.from(MainActivity.this).inflate(
+					R.layout.myfriends_listview_top, null);
+			
+			Button refresh = (Button)head.findViewById(R.id.button_friend_refresh);
+			refresh.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					friendList.clear();
+					//localUser.getSendInformList(new SendInformHandler());
+				}
+			});
+			
+			Button group = (Button)head.findViewById(R.id.button_group);
+			group.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Intent intent = new Intent();
+					intent.setClass(MainActivity.this, GroupActivity.class);
+					startActivity(intent);
+				
+				}
+			});
+			
+			Button add_friend = (Button)head.findViewById(R.id.button_add_friend);
+			add_friend.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+				}
+			});
+			
 			addFriendDataToList(getIntent().getStringExtra("response"));
-
-			// //////////////////////////////////////////////////
-			// /////////////////本地测试///////////////////////////
-			// /////////////////////////////////////////////////
-			for (int i = 0; i < 2; i++) {
-
-				String name = "Kitty" + String.valueOf(i);
-				String email = "999@qq.com";
-				String area = "ZH";
-
-				Map<String, Object> map = new HashMap<String, Object>();
-				map.put("name", name);
-				map.put("email", email);
-				map.put("area", area);
-				map.put("image", R.drawable.friend1);
-				this.friendList.add(map);
-			}
-
+		
+			
 			User user = ((LocalApp) getApplication()).getUser();
 			user.setFriend(friendList);
 			user.setGroup(groupList);
@@ -670,9 +686,7 @@ public class MainActivity extends Activity {
 
 			setListener();
 
-			myfriendslistview.addHeaderView(LayoutInflater.from(
-					MainActivity.this).inflate(R.layout.myfriends_listview_top,
-					null));
+			myfriendslistview.addHeaderView(head);
 			myfriendslistview.setAdapter(friendAdapter);
 		}
 

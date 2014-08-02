@@ -24,7 +24,7 @@ public class Friend {
 		//this.image = (String)data.get("image");
 		this.email = (String)data.get("email");
 		this.area = (String)data.get("area");
-		this.is_group = Integer.parseInt((String)data.get("is_group"));
+		this.is_group = (Integer)data.get("is_group");
 	}
 
 	public Friend(Application application) {
