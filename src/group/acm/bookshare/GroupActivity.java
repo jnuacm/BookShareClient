@@ -243,11 +243,11 @@ public class GroupActivity extends Activity {
         }  
   
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {  
+        public View getView(final int position, View convertView, ViewGroup parent) {
             ViewHolder holder = null;
-            if(convertView == null) {  
+            if(convertView == null) {
                 holder = new ViewHolder();  
-                LayoutInflater inflater = LayoutInflater.from(mContext);  
+                LayoutInflater inflater = LayoutInflater.from(mContext);
                 convertView = inflater.inflate(R.layout.mygroup_listview_item, null);   
          
                 holder.image = (ImageView)convertView.findViewById(R.id.mygrouplistitem_groupimage);  

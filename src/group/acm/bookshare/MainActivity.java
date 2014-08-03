@@ -406,6 +406,12 @@ public class MainActivity extends Activity {
 					} else {
 						Intent intent = new Intent(MainActivity.this,
 								BookInformationActivity.class);
+						Bundle bundle = new Bundle();
+						bundle.putString("bookName",(String)bookList.get(position-1).get("bookname"));
+						bundle.putString("bookIsbn",(String)bookList.get(position-1).get("isbn"));
+						bundle.putString("bookDescription",(String)bookList.get(position-1).get("description"));
+						bundle.putInt("bookImage",R.drawable.default_book_big);
+						intent.putExtra("key", bundle);
 						startActivity(intent);
 					}
 				}
@@ -490,6 +496,7 @@ public class MainActivity extends Activity {
 					map.put("isbn", isbn);
 					map.put("bookname", bookname);
 					map.put("coverurl", R.drawable.default_book_big);
+					map.put("description", item.getString("description"));
 					map.put("status", status);
 					this.bookList.add(map);
 
@@ -519,6 +526,7 @@ public class MainActivity extends Activity {
 					map.put("isbn", item.getString("isbn"));
 					map.put("bookname", bookname);
 					map.put("coverurl", R.drawable.default_book_big);
+					map.put("description", item.getString("description"));
 					map.put("status", status);
 					this.bookList.add(map);
 

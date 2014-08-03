@@ -278,16 +278,5 @@ public class User {
 		net.createDeleteThread(url, handler);
 		return true;
 	}
-	
-	public boolean addFriend(String friendName, Handler handler) {
-		NetAccess net = NetAccess.getInstance();
-		//////////////////////////////////////////////
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_add_friend);
-		
-		Log.i("delete user name is ",url);
-		net.createDeleteThread(url, handler);
-		return true;
-	}
 
 }
