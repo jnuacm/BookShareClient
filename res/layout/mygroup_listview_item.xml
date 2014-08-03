@@ -5,8 +5,8 @@
 
     <ImageView
         android:id="@+id/mygrouplistitem_groupimage"
-        android:layout_width="40dp"
-        android:layout_height="80dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="5dp" />
 
