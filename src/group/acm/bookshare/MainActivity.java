@@ -44,6 +44,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -575,6 +576,10 @@ public class MainActivity extends Activity {
 		SimpleAdapter friendAdapter;
 		List<Map<String, Object>> friendList = new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> groupList = new ArrayList<Map<String, Object>>();
+		View addFrienView;
+		EditText addFriendEdit;
+		AlertDialog addFriendDialog;  
+        AlertDialog.Builder builder;
 
 		public View getView() {
 			initFriendList();
@@ -642,10 +647,40 @@ public class MainActivity extends Activity {
 				}
 			});
 			
+			addFrienView =  LayoutInflater.from(MainActivity.this).inflate(R.layout.add_friend_alert_dialog, null);
+			addFriendEdit =(EditText)addFrienView.findViewById(R.id.add_friend_name);
+			addFriendDialog = null;  
+	        builder = null;   
+	        builder = new AlertDialog.Builder(MainActivity.this);  
+	        builder.setTitle("Friend");
+	        builder.setMessage("Please input your firend'account.");
+	        builder.setView(addFrienView);
+	        builder.setPositiveButton("Yes",
+			new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog,
+						int which) {
+					
+					String addFriendName = addFriendEdit.getText().toString();
+					Log.i("will add the friend'name is",addFriendName);
+					addFriendEdit.setText("");
+				}
+
+			});
+	        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog,
+						int which) {
+					addFriendEdit.setText("");
+				}
+
+			});
+	        addFriendDialog = builder.create();
 			Button add_friend = (Button)head.findViewById(R.id.button_add_friend);
 			add_friend.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
+					addFriendDialog.show();  
 				}
 			});
 			
@@ -789,7 +824,6 @@ public class MainActivity extends Activity {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					if (0 == position) {
-						// ´ýÊµÏÖ
 					} else {
 						Intent intent = new Intent(MainActivity.this,
 								FriendsInformationActivity.class);

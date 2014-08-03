@@ -48,6 +48,7 @@
     <string name="title_activity_group">GroupActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="url_delete_friend">bookshareyii/index.php/api/friend/</string>
+    <string name="url_add_friend">bookshareyii/index.php/api/friend</string>
     <string name="url_friendship_inform">bookshareyii/index.php/api/friend</string>
 
 </resources>
