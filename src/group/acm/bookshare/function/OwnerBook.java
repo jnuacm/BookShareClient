@@ -12,12 +12,12 @@ public class OwnerBook extends Book {
 
 	protected String owner;
 	protected String holder;
-	protected String status;
-	protected String id;
+	protected int status;
+	protected int id;
 
 	public OwnerBook(Map<String, Object> data) {
 		super();
-		this.id = (String)data.get("id");
+		this.id = (Integer)data.get("id");
 		this.isbn = (String)data.get("isbn");
 		this.name = (String)data.get("name");
 		this.coverurl = (String)data.get("coverurl");
@@ -25,6 +25,6 @@ public class OwnerBook extends Book {
 		this.description = (String)data.get("description");
 		this.owner = (String)data.get("owner");
 		this.holder = (String)data.get("holder");
-		this.status = (String)data.get("status");
+		this.status = (Integer)data.get("status");
 	}
 }

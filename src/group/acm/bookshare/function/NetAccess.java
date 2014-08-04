@@ -184,6 +184,11 @@ public class NetAccess {
 		protected Handler handler;
 
 		private NetThread(String url, List<NameValuePair> nvps, Handler handler) {
+			if (nvps != null) {
+				for (NameValuePair i : nvps) {
+					Log.i("nvps:", i.getName() + ":" + i.getValue());
+				}
+			}
 			this.url = url;
 			this.nvps = nvps;
 			this.handler = handler;

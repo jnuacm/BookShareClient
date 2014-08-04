@@ -50,15 +50,17 @@ public class RegisterActivity extends Activity {
 		email = edittext.getText().toString();
 
 		edittext = (EditText) findViewById(R.id.registerarea);
-		area = "";
+
 		area = edittext.getText().toString();
 
-		if (username == "" || password == "" || email == "") {
+		if (!(username.length() > 0 && password.length() > 0 && email.length() > 0)) {
 			username = "amy";
 			password = "12345";
 			email = "kk@qd.com";
 			area = "shaoguan";
 		}
+		if (area.length() <= 0)
+			area = "ÎÞ";
 
 		// ·ÃÎÊÍøÂç
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();

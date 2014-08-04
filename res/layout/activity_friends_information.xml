@@ -106,4 +106,13 @@
             android:textColor="#000000" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/friend_checkbook_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/IF_collection"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="43dp"
+        android:text="查看书表" />
+
 </RelativeLayout>

@@ -23,11 +23,6 @@ import android.util.Log;
 public class User {
 	private String username;
 	private String password;
-	// private Time registTime;
-	// private String area;
-	// private String group;
-	// private Library mylibrary;
-	// private MsgManager msm;
 
 	private List<Map<String, Object>> books;
 	private List<OwnerBook> ownBooks;
@@ -96,7 +91,6 @@ public class User {
 
 	public void addBook(String isbn, Handler handler) {
 		this.handler = handler;
-		Log.i("User: addBook()", "success");
 		Book book = new Book(this.application);
 		book.getBookByIsbn(isbn, new Handler() {
 			public void handleMessage(Message msg) {
@@ -137,12 +131,12 @@ public class User {
 				.getString("description")));
 		nvps.add(new BasicNameValuePair("publisher", data
 				.getString("publisher")));
-		nvps.add(new BasicNameValuePair("status", "可借"));
+		nvps.add(new BasicNameValuePair("status", Integer
+				.toString(Book.STATUS_BORROW | Book.STATUS_UNBUY)));
 
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.path_api);
-		url += application.getString(R.string.action_book);
+		url += application.getString(R.string.url_add_book);
 		Handler handler = new Handler() {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
@@ -160,16 +154,16 @@ public class User {
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_delete_book);
-		url += (String) book.get("id");
+		url += Integer.toString(((Integer) book.get("id")));
 		net.createDeleteThread(url, handler);
 		return true;
 	}
 
-	public void getBookList(Handler handler) {
+	public void getBookList(String name, Handler handler) {
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_get_book);
-		url += username;
+		url += name;
 		url += application.getResources().getString(R.string.action_book);
 		net.createGetThread(url, handler);
 	}
@@ -189,7 +183,10 @@ public class User {
 			jsonarray = new JSONArray(response);
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject item = jsonarray.getJSONObject(i);
-				informs.add(Inform.objToSend(item));
+				Map<String, Object> tmp = Inform.objToSend(item);
+				if ((Integer) tmp.get("status") == Inform.REQUEST_STATUS_CONFIRM)
+					continue;
+				informs.add(tmp);
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -204,7 +201,10 @@ public class User {
 			JSONArray jsonarray = new JSONArray(response);
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject item = jsonarray.getJSONObject(i);
-				informs.add(Inform.objToReceive(item));
+				Map<String, Object> tmp = Inform.objToReceive(item);
+				if ((Integer) tmp.get("status") == Inform.REQUEST_STATUS_CONFIRM)
+					continue;
+				informs.add(tmp);
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -250,7 +250,7 @@ public class User {
 		NetAccess net = NetAccess.getInstance();
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		nvps.add(new BasicNameValuePair("status", Integer.toString(id)));
+		nvps.add(new BasicNameValuePair("status", Integer.toString(status)));
 
 		net.createPutThread(url, nvps, handler);
 	}
@@ -289,4 +289,60 @@ public class User {
 		return true;
 	}
 
+	public String getInformString(Map<String, Object> item) {
+		String ret = (String) item.get("time");
+		ret += ("\nfrom:" + item.get("from"));
+		ret += ("\nto:" + item.get("to"));
+		ret += "\n请求:";
+		switch ((Integer) item.get("type")) {
+		case Inform.REQUEST_TYPE_BORROW:
+			ret += "借书";
+			break;
+		case Inform.REQUEST_TYPE_RETURN:
+			ret += "还书";
+			break;
+		}
+
+		ret += "\n";
+
+		switch ((Integer) item.get("status")) {
+		case Inform.REQUEST_STATUS_UNPROCESSED:
+			ret += "未处理";
+			break;
+		case Inform.REQUEST_STATUS_PERMITTED:
+			ret += "已允许";
+			break;
+		case Inform.REQUEST_STATUS_REFUSED:
+			ret += "已拒绝";
+			break;
+		}
+		return ret;
+	}
+
+	public void bookRequest(String aimName, int bookid, String message,
+			int type, Handler handler) {
+		try {
+			JSONObject obj = new JSONObject();
+			obj.put("bookid", bookid);
+			obj.put("message", message);
+			String description = obj.toString();
+
+			String url = application.getResources()
+					.getString(R.string.url_host);
+			url += application.getResources().getString(
+					R.string.url_inform_create);
+
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("type", Integer.toString(type)));
+			nvps.add(new BasicNameValuePair("description", description));
+			nvps.add(new BasicNameValuePair("to", aimName));
+
+			NetAccess net = NetAccess.getInstance();
+			net.createPostThread(url, nvps, handler);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
 }

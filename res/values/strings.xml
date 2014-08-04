@@ -30,13 +30,19 @@
     <string name="url_host">http://192.168.1.10/</string>
     <string name="url_login">bookshareyii/index.php/api/login</string>
     <string name="url_register">bookshareyii/index.php/api/register</string>
+    <string name="url_add_book">bookshareyii/index.php/api/book/</string>
     <string name="url_get_book">bookshareyii/index.php/api/book/</string>
     <string name="url_delete_book">bookshareyii/index.php/api/book/</string>
+    <string name="url_delete_friend">bookshareyii/index.php/api/friend/</string>
+    <string name="url_add_friend">bookshareyii/index.php/api/friend</string>
+    <string name="url_friendship_inform">bookshareyii/index.php/api/friend</string>
     <string name="url_send_inform">bookshareyii/index.php/api/request/from/</string>
     <string name="url_receive_inform">bookshareyii/index.php/api/request/to/</string>
     <string name="url_inform_update">bookshareyii/index.php/api/request/</string>
+    <string name="url_inform_create">bookshareyii/index.php/api/request</string>
+    <string name="url_good_comm_num">未确定</string>
     <string name="path_api">bookshareyii/index.php/api</string>
-    <string name="action_book">/all/</string>
+    <string name="action_book">/all</string>
     <string name="action_ownbook">/own/</string>
     <string name="action_borrowedbook">/borrowed/</string>
 
@@ -47,9 +53,7 @@
     <string name="group">组群</string>
     <string name="title_activity_group">GroupActivity</string>
     <string name="hello_world">Hello world!</string>
-    <string name="url_delete_friend">bookshareyii/index.php/api/friend/</string>
-    <string name="url_add_friend">bookshareyii/index.php/api/friend</string>
-    <string name="url_friendship_inform">bookshareyii/index.php/api/friend</string>
-    <string name="url_good_comm_num">未知</string>
+    <string name="title_activity_capture">CaptureActivity</string>
+    <string name="title_activity_bar_code_test">BarCodeTestActivity</string>
 
 </resources>
