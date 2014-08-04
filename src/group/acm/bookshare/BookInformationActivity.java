@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.NoScrollListView;
 
 import java.util.ArrayList;
@@ -8,9 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -22,12 +28,15 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class BookInformationActivity extends Activity {
 	String				bookName;
 	String 				bookIsbn;
 	String 				bookDescription;
 	int    				bookImage;
+	int					goodNum;
+	int					commNum;
 	NoScrollListView	listview;
 	
 	List<Map<String, Object>> commentList;
@@ -59,9 +68,47 @@ public class BookInformationActivity extends Activity {
 		initListView();
 		loadComments();
 		commentAdapter.notifyDataSetChanged();
-		setListViewHeightBasedOnChildren(listview); 
+		setListViewHeightBasedOnChildren(listview);
 		
 		setButtonEvent();
+	}
+	
+	public void showToast(String content) {
+		Toast.makeText(BookInformationActivity.this, content, Toast.LENGTH_LONG).show();
+	}
+	
+	private class getGoodCommNumHandler extends Handler {
+
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case NetAccess.NETMSG_BEFORE:
+				break;
+			case NetAccess.NETMSG_AFTER:
+				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+					//reload(msg.getData().getString("response"));
+					//bookmanage.bookAdapter.notifyDataSetChanged();
+					BookInformationActivity.this.showToast("查看成功");
+				} else
+					BookInformationActivity.this.showToast("查看失败");
+				break;
+			case NetAccess.NETMSG_ERROR:
+				BookInformationActivity.this.showToast(msg.getData()
+						.getString("error"));
+				break;
+			}
+		}
+	}
+	
+	public void reload(String response){
+		try {
+			JSONObject jsonObject = new JSONObject(response);
+			goodNum = jsonObject.getInt("good_num");
+			commNum = jsonObject.getInt("comm_num");
+			
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	

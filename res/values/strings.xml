@@ -50,5 +50,6 @@
     <string name="url_delete_friend">bookshareyii/index.php/api/friend/</string>
     <string name="url_add_friend">bookshareyii/index.php/api/friend</string>
     <string name="url_friendship_inform">bookshareyii/index.php/api/friend</string>
+    <string name="url_good_comm_num">未知</string>
 
 </resources>

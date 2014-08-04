@@ -232,6 +232,16 @@ public class User {
 		NetAccess net = NetAccess.getInstance();
 		net.createGetThread(url, handler);
 	}
+	
+	public void getGoodCommNum(Handler handler) {/////////////////////////////待实现：url未确定
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources()
+				.getString(R.string.url_good_comm_num);
+		//url += username;
+
+		NetAccess net = NetAccess.getInstance();
+		net.createGetThread(url, handler);
+	}
 
 	public void updateRequest(int id, int status, Handler handler) {
 		String url = application.getResources().getString(R.string.url_host);
