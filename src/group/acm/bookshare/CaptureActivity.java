@@ -26,10 +26,10 @@ import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
-import com.zijunlin.Zxing.Demo.camera.CameraManager;
-import com.zijunlin.Zxing.Demo.decoding.CaptureActivityHandler;
-import com.zijunlin.Zxing.Demo.decoding.InactivityTimer;
-import com.zijunlin.Zxing.Demo.view.ViewfinderView;
+import com.zxing.camera.CameraManager;
+import com.zxing.decoding.CaptureActivityHandler;
+import com.zxing.decoding.InactivityTimer;
+import com.zxing.view.ViewfinderView;
 
 public class CaptureActivity extends Activity implements Callback {
 

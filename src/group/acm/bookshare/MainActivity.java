@@ -678,7 +678,6 @@ public class MainActivity extends Activity {
 						public void onClick(DialogInterface dialog, int which) {
 							addFriendEdit.setText("");
 						}
-
 					});
 			addFriendDialog = builder.create();
 			Button add_friend = (Button) head
