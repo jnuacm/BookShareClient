@@ -2,7 +2,10 @@ package group.acm.bookshare.function;
 
 import group.acm.bookshare.R;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,6 +19,11 @@ import android.os.Message;
 
 @SuppressLint("HandlerLeak")
 public class Book {
+	public static final int STATUS_BORROW = 1;
+	public static final int STATUS_UNBORROW = 0;
+	public static final int STATUS_BUY = 2;
+	public static final int STATUS_UNBUY = 0;
+
 	public static String DEFAULT_BOOK_IMAGE_URL = "http://pica.nipic.com/2008-05-03/200853124434763_2.jpg";
 
 	protected String isbn = "";
@@ -113,18 +121,6 @@ public class Book {
 		network.createDoubanThread(url, getBookHandler);
 	}
 
-	public int addComment(String username) {
-		return 0;
-	}
-
-	public int addApproval(String username) {
-		return 0;
-	}
-
-	public int deleteComment(String username) {
-		return 0;
-	}
-
 	public void strToBook(Bundle data) throws JSONException {
 		// TODO Auto-generated method stub
 		if (NetAccess.STATUS_SUCCESS != data.getInt("status")) {
@@ -140,5 +136,32 @@ public class Book {
 		this.description = bookObj.getJSONObject("summary").getString("$t");
 		this.publisher = bookObj.getJSONArray("db:attribute").getJSONObject(5)
 				.getString("$t");
+	}
+
+	public static List<Map<String, Object>> responseToBooks(String response) {
+		List<Map<String, Object>> books = new ArrayList<Map<String, Object>>();
+		Map<String, Object> item = new HashMap<String, Object>();
+		try {
+			JSONArray array = new JSONArray(response);
+			for (int i = 0; i < array.length(); i++) {
+				JSONObject obj = array.getJSONObject(i);
+				item = new HashMap<String, Object>();
+				item.put("id", obj.getInt("id"));
+				item.put("isbn", obj.getString("isbn"));
+				item.put("name", obj.getString("name"));
+				item.put("authors", obj.getString("author"));
+				item.put("publisher", obj.getString("publisher"));
+				item.put("description", obj.getString("description"));
+				item.put("status", obj.getInt("status"));
+				books.add(item);
+
+			}
+			
+			return books;
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

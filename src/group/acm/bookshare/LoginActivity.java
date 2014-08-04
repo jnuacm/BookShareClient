@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,9 +31,11 @@ public class LoginActivity extends Activity {
 		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
 				.toString();
 
-		username = "gg";
-		password = "1234";
-		
+		if (!(username.length() > 0 && password.length() > 0)) {
+			username = "amy";
+			password = "1234";
+		}
+
 		LocalApp localapp = (LocalApp) getApplication();
 		User user = localapp.getUser();
 
