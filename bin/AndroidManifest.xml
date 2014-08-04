@@ -36,7 +36,7 @@
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity android:name="group.acm.bookshare.LoginActivity" >
-             <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -59,6 +59,8 @@
         <activity
             android:name="group.acm.bookshare.GroupActivity"
             android:label="@string/title_activity_group" >
+        </activity>
+        <activity android:name="group.acm.bookshare.FriendBooksActivity" >
         </activity>
     </application>
 

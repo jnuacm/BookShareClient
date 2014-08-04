@@ -17,6 +17,7 @@ import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 @SuppressLint("HandlerLeak")
 public class User {
@@ -258,6 +259,24 @@ public class User {
 
 	public List<Friend> getGroup() {
 		return this.groups;
+	}
+	
+	public void updateFriendship(Handler handler) {
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources().getString(R.string.url_friendship_inform);
+		
+		NetAccess net = NetAccess.getInstance();
+		net.createGetThread(url, handler);
+	}
+	
+	public boolean deleteFriend(Map<String, Object> friend, Handler handler) {
+		NetAccess net = NetAccess.getInstance();
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources().getString(R.string.url_delete_friend);
+		url += (String) friend.get("username");
+		Log.i("delete user name is ",url);
+		net.createDeleteThread(url, handler);
+		return true;
 	}
 
 	public String getInformString(Map<String, Object> item) {

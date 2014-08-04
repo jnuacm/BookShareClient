@@ -19,7 +19,7 @@ public class Friend {
 	}
 
 	public Friend(Map<String, Object> data) {
-		this.name = (String) data.get("name");
+		this.name = (String) data.get("username");
 		image = R.drawable.friend1;
 
 		//this.image = (String)data.get("image");
