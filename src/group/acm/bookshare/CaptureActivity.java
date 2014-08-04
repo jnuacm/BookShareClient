@@ -3,25 +3,22 @@ package group.acm.bookshare;
 import java.io.IOException;
 import java.util.Vector;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
-import android.hardware.Camera;
-import android.hardware.Camera.Parameters;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.view.Menu;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageView;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
@@ -30,11 +27,13 @@ import com.zxing.camera.CameraManager;
 import com.zxing.decoding.CaptureActivityHandler;
 import com.zxing.decoding.InactivityTimer;
 import com.zxing.view.ViewfinderView;
-
+/**
+ * Initial the camera
+ * @author Ryan.Tang
+ */
 public class CaptureActivity extends Activity implements Callback {
 
 	private CaptureActivityHandler handler;
-	public CameraManager cameraManager;
 	private ViewfinderView viewfinderView;
 	private boolean hasSurface;
 	private Vector<BarcodeFormat> decodeFormats;
@@ -44,93 +43,31 @@ public class CaptureActivity extends Activity implements Callback {
 	private boolean playBeep;
 	private static final float BEEP_VOLUME = 0.10f;
 	private boolean vibrate;
-	private static boolean is_flash;
+	private Button cancelScanButton;
 
 	/** Called when the activity is first created. */
-	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.scan);
-		// 初始化 CameraManager
-
-		is_flash = false;
-		cameraManager = new CameraManager(getApplication());
-		hasSurface = false;
+		setContentView(R.layout.camera);
+		//ViewUtil.addTopView(getApplicationContext(), this, R.string.scan_card);
+		CameraManager.init(getApplication());
 		viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
-		viewfinderView.setCameraManager(cameraManager);
+		cancelScanButton = (Button) this.findViewById(R.id.btn_cancel_scan);
+		hasSurface = false;
 		inactivityTimer = new InactivityTimer(this);
-
-		ImageView flash_img = (ImageView) findViewById(R.id.flash);
-		/*
-		 * int bmpW = BitmapFactory.decodeResource(getResources(),
-		 * R.drawable.open_w).getWidth();// 获取图片宽度 int bmpH =
-		 * BitmapFactory.decodeResource(getResources(),
-		 * R.drawable.open_w).getHeight();// 获取图片宽度 DisplayMetrics dm = new
-		 * DisplayMetrics();
-		 * getWindowManager().getDefaultDisplay().getMetrics(dm); int screenW =
-		 * dm.widthPixels;// 获取分辨率宽度 int screenH = dm.heightPixels;// 获取分辨率宽度
-		 * Matrix matrix1 = new Matrix(); matrix1.setScale(screenW/(10*bmpW),
-		 * screenH/(10*bmpH)); matrix1.postTranslate(screenW/10*4,
-		 * screenH/10*7); flash_img.setImageMatrix(matrix1);
-		 */
-
-		/*
-		 * ImageView turnback_img = (ImageView) findViewById(R.id.turnback);
-		 * bmpW = BitmapFactory.decodeResource(getResources(),
-		 * R.drawable.turnback_b).getWidth();// 获取图片宽度 bmpH =
-		 * BitmapFactory.decodeResource(getResources(),
-		 * R.drawable.turnback_b).getHeight();// 获取图片宽度
-		 * 
-		 * Matrix matrix2 = new Matrix(); matrix2.setScale(screenW/(10*bmpW),
-		 * screenH/(10*bmpH)); matrix2.postTranslate(screenW/10*4,
-		 * screenH/10*7); matrix2.postTranslate(screenW/10*6, screenH/10*7);
-		 * turnback_img.setImageMatrix(matrix2);
-		 */
-
 	}
 
-	public void Turnback(View v)// 返回按钮
-	{
-		Intent intent = new Intent();
-		intent.setClass(this, LoginActivity.class);
-		CaptureActivity.this.finish();
-	}
-
-	public void Flash(View v)// 控制闪光灯按钮
-	{
-		if (false == is_flash) {
-			Parameters params = cameraManager.getCamera().getParameters();
-			params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-			cameraManager.getCamera().setParameters(params);
-			is_flash = true;
-			ImageView flash_image = (ImageView) findViewById(R.id.flash);
-			flash_image.setImageResource(R.drawable.close_b);
-		} else {
-			Parameters params = cameraManager.getCamera().getParameters();
-			params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-			cameraManager.getCamera().setParameters(params);
-			is_flash = false;
-			ImageView flash_image = (ImageView) findViewById(R.id.flash);
-			flash_image.setImageResource(R.drawable.open_b);
-		}
-	}
-
-	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() {
 		super.onResume();
-
 		SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
 		SurfaceHolder surfaceHolder = surfaceView.getHolder();
 		if (hasSurface) {
-
 			initCamera(surfaceHolder);
-
 		} else {
 			surfaceHolder.addCallback(this);
 			surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
 		}
 		decodeFormats = null;
 		characterSet = null;
@@ -142,32 +79,59 @@ public class CaptureActivity extends Activity implements Callback {
 		}
 		initBeepSound();
 		vibrate = true;
-
+		
+		//quit the scan view
+		cancelScanButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				CaptureActivity.this.finish();
+			}
+		});
 	}
 
 	@Override
 	protected void onPause() {
-
+		super.onPause();
 		if (handler != null) {
 			handler.quitSynchronously();
 			handler = null;
 		}
-		cameraManager.closeDriver();
-		super.onPause();
+		CameraManager.get().closeDriver();
 	}
 
 	@Override
 	protected void onDestroy() {
-
 		inactivityTimer.shutdown();
 		super.onDestroy();
-
 	}
-
+	
+	/**
+	 * Handler scan result
+	 * @param result
+	 * @param barcode
+	 */
+	public void handleDecode(Result result, Bitmap barcode) {
+		inactivityTimer.onActivity();
+		playBeepSoundAndVibrate();
+		String resultString = result.getText();
+		//FIXME
+		if (resultString.equals("")) {
+			Toast.makeText(CaptureActivity.this, "Scan failed!", Toast.LENGTH_SHORT).show();
+		}else {
+//			System.out.println("Result:"+resultString);
+			Intent resultIntent = new Intent();
+			Bundle bundle = new Bundle();
+			bundle.putString("result", resultString);
+			resultIntent.putExtras(bundle);
+			this.setResult(RESULT_OK, resultIntent);
+		}
+		CaptureActivity.this.finish();
+	}
+	
 	private void initCamera(SurfaceHolder surfaceHolder) {
-
 		try {
-			cameraManager.openDriver(surfaceHolder);
+			CameraManager.get().openDriver(surfaceHolder);
 		} catch (IOException ioe) {
 			return;
 		} catch (RuntimeException e) {
@@ -177,7 +141,6 @@ public class CaptureActivity extends Activity implements Callback {
 			handler = new CaptureActivityHandler(this, decodeFormats,
 					characterSet);
 		}
-
 	}
 
 	@Override
@@ -211,27 +174,6 @@ public class CaptureActivity extends Activity implements Callback {
 
 	public void drawViewfinder() {
 		viewfinderView.drawViewfinder();
-
-	}
-
-	// /////////////////扫描成功后结果在handleDecode 获取/////////////////////
-	public void handleDecode(Result obj, Bitmap barcode) {
-
-		inactivityTimer.onActivity();
-		viewfinderView.drawResultBitmap(barcode);
-		playBeepSoundAndVibrate();
-
-		Toast.makeText(this,
-				obj.getBarcodeFormat().toString() + ":" + obj.getText(),
-				Toast.LENGTH_LONG).show();
-
-		Bundle data = new Bundle();
-		data.putString("isbn", obj.getText());
-		Intent intent = new Intent();
-		intent.putExtras(data);
-		CaptureActivity.this.setResult(RESULT_OK, intent);
-
-		finish();
 
 	}
 
@@ -279,11 +221,5 @@ public class CaptureActivity extends Activity implements Callback {
 			mediaPlayer.seekTo(0);
 		}
 	};
-
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
 
 }
