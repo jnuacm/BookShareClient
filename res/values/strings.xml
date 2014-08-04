@@ -33,6 +33,9 @@
     <string name="url_add_book">bookshareyii/index.php/api/book/</string>
     <string name="url_get_book">bookshareyii/index.php/api/book/</string>
     <string name="url_delete_book">bookshareyii/index.php/api/book/</string>
+    <string name="url_delete_friend">bookshareyii/index.php/api/friend/</string>
+    <string name="url_add_friend">bookshareyii/index.php/api/friend</string>
+    <string name="url_friendship_inform">bookshareyii/index.php/api/friend</string>
     <string name="url_send_inform">bookshareyii/index.php/api/request/from/</string>
     <string name="url_receive_inform">bookshareyii/index.php/api/request/to/</string>
     <string name="url_inform_update">bookshareyii/index.php/api/request/</string>
@@ -49,6 +52,5 @@
     <string name="group">组群</string>
     <string name="title_activity_group">GroupActivity</string>
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_friend_books">FriendBooksActivity</string>
 
 </resources>
