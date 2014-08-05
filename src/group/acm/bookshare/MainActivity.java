@@ -4,8 +4,11 @@ import group.acm.bookshare.function.Book;
 import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.RSAUtils;
+import group.acm.bookshare.function.TripleDESUtil;
 import group.acm.bookshare.function.User;
 
+import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -237,7 +240,48 @@ public class MainActivity extends Activity {
 				localUser.addBook(isbn, bookmanage.getAddBookHandler());
 			}
 			else if(0 == scanModel.compareTo("borrowBook")){
-				///////////////////////////待实现
+				
+				String res = bundle.getString("result");
+				try {
+					JSONObject jsonObject = new JSONObject(res);
+				
+					//私钥
+					String private_exponent = "2339397144132832735651743410630166925917431927091999052138400443572283"
+			        		+ "178202452720852594994757182603931424366824473790820764"
+			        		+ "643477052528532740106062695663575106992841755917852920"
+			        		+ "811920437845960617055842926574173587617727934596713682"
+			        		+ "832055832582548878334670846844359231907945702517343526"
+			        		+ "3134780530125944042045";
+					
+					//模 
+					String modulus = "1342178680163122288334135585244412587094902706870597407686197582687531494789933"
+							+ "85246009382974176202673425333737700725579112713332360668443009882107179274910464650698"
+							+ "80929584502832391497033125849992285341218988289801502354908712667651437506714728106047"
+							+ "3659828465972338681421950511104511172957148096843143165953";
+					
+					RSAPrivateKey priKey = RSAUtils.getPrivateKey(modulus, private_exponent);
+					
+					String desKey1 = jsonObject.getString("desKey1");
+					String desKey2 = jsonObject.getString("desKey2");
+					String id = jsonObject.getString("id");
+					
+					//还原desKey1和desKey2
+					desKey1 = RSAUtils.decryptByPrivateKey(desKey1, priKey);
+					desKey2 = RSAUtils.decryptByPrivateKey(desKey2, priKey);
+					
+					//还原id
+					TripleDESUtil desUtil = new TripleDESUtil(desKey1,desKey2);
+					id = desUtil.getDec(id);
+					Log.i("id",id);
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			}
 		}
 	}
@@ -1117,9 +1161,17 @@ public class MainActivity extends Activity {
 							if (localUser.getUserName()
 									.equals(item.get("from"))) {
 								// 扫码
+								//打开扫描界面扫描条形码或二维码
+								Intent openCameraIntent = new Intent(MainActivity.this,CaptureActivity.class);
+								openCameraIntent.putExtra("model", "borrowBook");
+								startActivityForResult(openCameraIntent, 0);
 								Log.i("click", "扫码");
 							} else {
 								// 显示码
+								Log.i("click", (Integer)item.get("id")+"");
+								Intent intent = new Intent(MainActivity.this,GenerateQRCodeActivity.class);
+								intent.putExtra("ContentString",(Integer)item.get("id")+"");
+								startActivity(intent);
 								Log.i("click", "显示码");
 							}
 							return;

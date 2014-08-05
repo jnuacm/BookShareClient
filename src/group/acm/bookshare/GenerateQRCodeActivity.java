@@ -9,6 +9,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.json.JSONObject;
+
 import com.google.zxing.WriterException;
 import com.zxing.encoding.EncodingHandler;
 
@@ -23,7 +25,7 @@ import android.widget.ImageView;
 public class GenerateQRCodeActivity extends Activity {
 	
 	HashMap<String, Object> map;
-	String contentString;
+	
      
 
 	@Override
@@ -35,9 +37,9 @@ public class GenerateQRCodeActivity extends Activity {
 		try {
 			
 			//明文  
-	        Intent intent = new Intent();
-	        contentString = intent.getStringExtra("ContentString");
-	        Log.i("DES明文",contentString);
+	        Intent intent = getIntent();
+	        JSONObject jsonObject = new JSONObject();
+	        String contentString = intent.getStringExtra("ContentString");
 	        
 			//生成公钥和私钥 
 			//map = RSAUtils.getKeys();
@@ -75,23 +77,27 @@ public class GenerateQRCodeActivity extends Activity {
 	        Log.i("DES密钥",desKey2);
 	        TripleDESUtil desUtil = new TripleDESUtil(desKey1,desKey2);
 	        contentString = desUtil.getEnc(contentString);
-	        Log.i("DES密文",contentString);
+	        jsonObject.put("id", contentString);
 	        
 	        
 	        //使用模和指数生成公钥和私钥 
-	        Log.i("模",modulus);
+	       
 	        RSAPublicKey pubKey = RSAUtils.getPublicKey(modulus, public_exponent);
-	        Log.i("公钥",public_exponent);
-	        RSAPrivateKey priKey = RSAUtils.getPrivateKey(modulus, private_exponent);
-	        Log.i("私钥",private_exponent);
-	        //加密后的密文  
-	        contentString = RSAUtils.encryptByPublicKey(contentString, pubKey);  
-	        Log.i("RSA密文",contentString);
+
+	        
+
+	        //加密desKey1 
+	        desKey1 = RSAUtils.encryptByPublicKey(desKey1, pubKey);
+	        jsonObject.put("desKey1",desKey1);
+	        //加密desKey2
+	        desKey2 = RSAUtils.encryptByPublicKey(desKey2, pubKey);
+	        jsonObject.put("desKey2",desKey2);
+	        
 	        
 	      //根据字符串生成二维码图片并显示在界面上，第二个参数为图片的大小（400*400）
 			Bitmap qrCodeBitmap;
 			
-			qrCodeBitmap = EncodingHandler.createQRCode(contentString, 500);
+			qrCodeBitmap = EncodingHandler.createQRCode(jsonObject.toString(), 500);
 				
 			qrImgImageView.setImageBitmap(qrCodeBitmap);
 	        
