@@ -16,6 +16,8 @@
 
 package com.zxing.decoding;
 
+import group.acm.bookshare.CaptureActivity;
+
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
@@ -26,7 +28,6 @@ import android.os.Looper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.ResultPointCallback;
-import group.acm.bookshare.CaptureActivity;
 
 /**
  * This thread does all the heavy lifting of decoding the images.

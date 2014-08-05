@@ -32,7 +32,7 @@ public class LoginActivity extends Activity {
 				.toString();
 
 		if (!(username.length() > 0 && password.length() > 0)) {
-			username = "gg";
+			username = "amy";
 			password = "1234";
 		}
 

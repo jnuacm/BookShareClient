@@ -55,6 +55,7 @@ import android.widget.Toast;
 @SuppressLint("HandlerLeak")
 public class MainActivity extends Activity {
 	public static final int SCANREQUEST_ADDBOOK = 1;
+	public static final int SCANREQUEST_BOOKCONFIRM = 2;
 
 	private ImageView underlined;
 	private int offset = 0;// ¶¯»­Í¼Æ¬Æ«ÒÆÁ¿
@@ -80,7 +81,6 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		localUser = ((LocalApp) getApplication()).getUser();
-		
 
 		viewList = new ArrayList<View>();
 		viewList.add(bookmanage.getView());
@@ -229,6 +229,7 @@ public class MainActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		
 		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
+
 			Bundle bundle = data.getExtras();
 			String scanModel = bundle.getString("model");
 			if(0 == scanModel.compareTo("addBook")){
@@ -355,6 +356,7 @@ public class MainActivity extends Activity {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					if (0 == position) {
+
 						Intent intent = new Intent(MainActivity.this,CaptureActivity.class);
 						intent.putExtra("model", "addBook");
 						startActivityForResult(intent, SCANREQUEST_ADDBOOK);
@@ -686,7 +688,6 @@ public class MainActivity extends Activity {
 						public void onClick(DialogInterface dialog, int which) {
 							addFriendEdit.setText("");
 						}
-
 					});
 			addFriendDialog = builder.create();
 			Button add_friend = (Button) head
@@ -1007,26 +1008,6 @@ public class MainActivity extends Activity {
 				return position;
 			}
 
-			public class InformClickListener implements OnClickListener {
-				int id;
-				int status;
-				int position;
-
-				public InformClickListener(int id, int status, int position) {
-					this.id = id;
-					this.status = status;
-					this.position = position;
-				}
-
-				@Override
-				public void onClick(View v) {
-					// TODO Auto-generated method stub
-					Log.i("InformClickListener", "click");
-					
-					localUser.updateRequest(id, status, new RequestHandler(
-							position));
-				}
-			}
 
 			public class RequestHandler extends Handler {
 				private int position;
@@ -1082,28 +1063,71 @@ public class MainActivity extends Activity {
 				Map<String, Object> item = informs.get(position);
 
 				int id = (Integer) item.get("id");
-				Log.i("getView() : id", Integer.toString(id));
 
 				Inform inform = new Inform();
 				inform.setState(item, localUser.getUserName());
 				int nextConfirmStatus = inform.getNextConfirmStatus();
 				int nextCancelStatus = inform.getNextCancelStatus();
-				Log.i("getView Status:",
-						"nextconfirm:" + Integer.toString(nextConfirmStatus)
-								+ "  nextcancel:"
-								+ Integer.toString(nextCancelStatus));
+
 				if (nextConfirmStatus != Inform.EMPTY_STATUS) {
-					Log.i("getView : position", Integer.toString(position));
 					views.confirm.setOnClickListener(new InformClickListener(
-							id, nextConfirmStatus, position));
+							true, item, id, nextConfirmStatus, position));
 				}
 				if (nextCancelStatus != Inform.EMPTY_STATUS) {
-					views.cancel.setOnClickListener(new InformClickListener(id,
-							nextCancelStatus, position));
+					views.cancel.setOnClickListener(new InformClickListener(
+							false, item, id, nextCancelStatus, position));
 				}
-				inform.setView(views, position);
+				Map<String, Object> showingData = inform.getContent();
+				views.title.setText((String) showingData.get(Inform.TITLE));
+				views.content.setText((String) showingData.get(Inform.CONTENT));
+				views.confirm.setText((String) showingData.get(Inform.CONFIRM));
+				views.cancel.setText((String) showingData.get(Inform.CANCEL));
+				views.confirm.setVisibility((Integer) showingData
+						.get(Inform.CONFIRM_VISIBILITY));
+				views.cancel.setVisibility((Integer) showingData
+						.get(Inform.CANCEL_VISIBILITY));
 
 				return convertView;
+			}
+
+			public class InformClickListener implements OnClickListener {
+				int id;
+				int status;
+				int position;
+				Map<String, Object> item;
+				boolean flag;
+
+				public InformClickListener(boolean flag,
+						Map<String, Object> item, int id, int status,
+						int position) {
+					this.flag = flag;
+					this.id = id;
+					this.status = status;
+					this.position = position;
+					this.item = item;
+				}
+
+				@Override
+				public void onClick(View v) {
+					if (flag
+							&& status == Inform.REQUEST_STATUS_CONFIRM
+							&& (Integer) item.get("status") == Inform.REQUEST_STATUS_PERMITTED) {
+						if ((Integer) item.get("type") == Inform.REQUEST_TYPE_BORROW
+								|| (Integer) item.get("type") == Inform.REQUEST_TYPE_RETURN) {
+							if (localUser.getUserName()
+									.equals(item.get("from"))) {
+								// É¨Âë
+								Log.i("click", "É¨Âë");
+							} else {
+								// ÏÔÊ¾Âë
+								Log.i("click", "ÏÔÊ¾Âë");
+							}
+							return;
+						}
+					}
+					localUser.updateRequest(id, status, new RequestHandler(
+							position));
+				}
 			}
 		}
 	}

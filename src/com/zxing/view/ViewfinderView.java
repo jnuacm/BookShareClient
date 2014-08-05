@@ -287,4 +287,9 @@ public final class ViewfinderView extends View {
     possibleResultPoints.add(point);
   }
 
+public void setCameraManager(CameraManager cameraManager) {
+	// TODO Auto-generated method stub
+	
+}
+
 }

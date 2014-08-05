@@ -176,6 +176,10 @@ public class User {
 		return informs;
 	}
 
+	public boolean informIgnoreJudge() {
+		return false;
+	}
+
 	public boolean addSendDataToList(String response) {
 
 		JSONArray jsonarray;
@@ -184,7 +188,8 @@ public class User {
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject item = jsonarray.getJSONObject(i);
 				Map<String, Object> tmp = Inform.objToSend(item);
-				if ((Integer) tmp.get("status") == Inform.REQUEST_STATUS_CONFIRM)
+				if ((Integer) tmp.get("status") == Inform.REQUEST_STATUS_CONFIRM
+						|| (Integer) tmp.get("status") == Inform.REQUEST_STATUS_CANCEL)
 					continue;
 				informs.add(tmp);
 			}
@@ -202,7 +207,11 @@ public class User {
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject item = jsonarray.getJSONObject(i);
 				Map<String, Object> tmp = Inform.objToReceive(item);
-				if ((Integer) tmp.get("status") == Inform.REQUEST_STATUS_CONFIRM)
+				int curStatus = (Integer) tmp.get("status");
+				if (curStatus == Inform.REQUEST_STATUS_CONFIRM
+						|| curStatus == Inform.REQUEST_STATUS_CANCEL
+						|| curStatus == Inform.REQUEST_STATUS_REFUSED
+						|| ((Integer) tmp.get("type") == Inform.REQUEST_TYPE_ADDFRIEND && curStatus == Inform.REQUEST_STATUS_PERMITTED))
 					continue;
 				informs.add(tmp);
 			}
@@ -228,16 +237,6 @@ public class User {
 		url += application.getResources()
 				.getString(R.string.url_receive_inform);
 		url += username;
-
-		NetAccess net = NetAccess.getInstance();
-		net.createGetThread(url, handler);
-	}
-	
-	public void getGoodCommNum(Handler handler) {/////////////////////////////待实现：url未确定
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources()
-				.getString(R.string.url_good_comm_num);
-		//url += username;
 
 		NetAccess net = NetAccess.getInstance();
 		net.createGetThread(url, handler);
@@ -270,21 +269,22 @@ public class User {
 	public List<Friend> getGroup() {
 		return this.groups;
 	}
-	
+
 	public void updateFriendship(Handler handler) {
 		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_friendship_inform);
-		
+		url += application.getResources().getString(
+				R.string.url_friendship_inform);
+
 		NetAccess net = NetAccess.getInstance();
 		net.createGetThread(url, handler);
 	}
-	
+
 	public boolean deleteFriend(Map<String, Object> friend, Handler handler) {
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_delete_friend);
 		url += (String) friend.get("username");
-		Log.i("delete user name is ",url);
+		Log.i("delete user name is ", url);
 		net.createDeleteThread(url, handler);
 		return true;
 	}

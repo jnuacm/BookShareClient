@@ -41,7 +41,7 @@ public final class CameraManager {
   private static final int MIN_FRAME_WIDTH = 240;
   private static final int MIN_FRAME_HEIGHT = 240;
   private static final int MAX_FRAME_WIDTH = 480;
-  private static final int MAX_FRAME_HEIGHT = 480;
+  private static final int MAX_FRAME_HEIGHT = 360;
 
   private static CameraManager cameraManager;
 
@@ -93,7 +93,7 @@ public final class CameraManager {
     return cameraManager;
   }
 
-  private CameraManager(Context context) {
+  public CameraManager(Context context) {
 
     this.context = context;
     this.configManager = new CameraConfigurationManager(context);

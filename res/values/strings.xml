@@ -42,7 +42,6 @@
     <string name="url_receive_inform">bookshareyii/index.php/api/request/to/</string>
     <string name="url_inform_update">bookshareyii/index.php/api/request/</string>
     <string name="url_inform_create">bookshareyii/index.php/api/request</string>
-    <string name="url_good_comm_num">未确定</string>
     <string name="path_api">bookshareyii/index.php/api</string>
     <string name="action_book">/all</string>
     <string name="action_ownbook">/own/</string>
@@ -55,6 +54,7 @@
     <string name="group">组群</string>
     <string name="title_activity_group">GroupActivity</string>
     <string name="hello_world">Hello world!</string>
+
     <string name="title_activity_capture">CaptureActivity</string>
     <string name="title_activity_bar_code_test">BarCodeTestActivity</string>
     <string name="title_activity_generate_qrcode">GenerateQRCodeActivity</string>

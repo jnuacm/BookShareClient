@@ -16,7 +16,6 @@
 
 package com.zxing.decoding;
 
-
 import group.acm.bookshare.CaptureActivity;
 import group.acm.bookshare.R;
 
