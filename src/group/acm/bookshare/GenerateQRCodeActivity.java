@@ -14,6 +14,7 @@ import com.zxing.encoding.EncodingHandler;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.Menu;
@@ -21,7 +22,8 @@ import android.widget.ImageView;
 
 public class GenerateQRCodeActivity extends Activity {
 	
-	HashMap<String, Object> map;  
+	HashMap<String, Object> map;
+	String contentString;
      
 
 	@Override
@@ -31,6 +33,12 @@ public class GenerateQRCodeActivity extends Activity {
 		
 		ImageView qrImgImageView = (ImageView) this.findViewById(R.id.gen_qr_image);
 		try {
+			
+			//明文  
+	        Intent intent = new Intent();
+	        contentString = intent.getStringExtra("ContentString");
+	        Log.i("DES明文",contentString);
+	        
 			//生成公钥和私钥 
 			//map = RSAUtils.getKeys();
 			//RSAPublicKey publicKey = (RSAPublicKey) map.get("public");  
@@ -58,9 +66,7 @@ public class GenerateQRCodeActivity extends Activity {
 	        		+ "832055832582548878334670846844359231907945702517343526"
 	        		+ "3134780530125944042045";
 	        
-	        //明文  
-	        String contentString = "123456789";
-	        Log.i("DES明文",contentString);
+	       
 	        
 	        // TripleDES加密部分
 	        String desKey1 = radomString(20);
