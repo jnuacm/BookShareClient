@@ -231,7 +231,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		
-		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
+		if (RESULT_OK == resultCode) {
 
 			Bundle bundle = data.getExtras();
 			String scanModel = bundle.getString("model");
@@ -242,33 +242,15 @@ public class MainActivity extends Activity {
 			else if(0 == scanModel.compareTo("borrowBook")){
 				
 				String res = bundle.getString("result");
+				Log.i("result",res);
+				MainActivity.this.showToast(res);
 				try {
 					JSONObject jsonObject = new JSONObject(res);
 				
-					//私钥
-					String private_exponent = "2339397144132832735651743410630166925917431927091999052138400443572283"
-			        		+ "178202452720852594994757182603931424366824473790820764"
-			        		+ "643477052528532740106062695663575106992841755917852920"
-			        		+ "811920437845960617055842926574173587617727934596713682"
-			        		+ "832055832582548878334670846844359231907945702517343526"
-			        		+ "3134780530125944042045";
+					String desKey1 =  "BIOGXVLBJLOQODARLCJB";
+			        String desKey2 =  "ORQCSRROXMVQXTIKSRGZ";
 					
-					//模 
-					String modulus = "1342178680163122288334135585244412587094902706870597407686197582687531494789933"
-							+ "85246009382974176202673425333737700725579112713332360668443009882107179274910464650698"
-							+ "80929584502832391497033125849992285341218988289801502354908712667651437506714728106047"
-							+ "3659828465972338681421950511104511172957148096843143165953";
-					
-					RSAPrivateKey priKey = RSAUtils.getPrivateKey(modulus, private_exponent);
-					
-					String desKey1 = jsonObject.getString("desKey1");
-					String desKey2 = jsonObject.getString("desKey2");
 					String id = jsonObject.getString("id");
-					
-					//还原desKey1和desKey2
-					desKey1 = RSAUtils.decryptByPrivateKey(desKey1, priKey);
-					desKey2 = RSAUtils.decryptByPrivateKey(desKey2, priKey);
-					
 					//还原id
 					TripleDESUtil desUtil = new TripleDESUtil(desKey1,desKey2);
 					id = desUtil.getDec(id);
@@ -979,6 +961,7 @@ public class MainActivity extends Activity {
 					Intent openCameraIntent = new Intent(MainActivity.this,CaptureActivity.class);
 					openCameraIntent.putExtra("model", "borrowBook");
 					startActivityForResult(openCameraIntent, 0);
+					
 				}
 			});
 			

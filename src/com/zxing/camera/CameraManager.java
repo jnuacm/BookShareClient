@@ -93,7 +93,7 @@ public final class CameraManager {
     return cameraManager;
   }
 
-  public CameraManager(Context context) {
+  private CameraManager(Context context) {
 
     this.context = context;
     this.configManager = new CameraConfigurationManager(context);
