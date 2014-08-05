@@ -35,7 +35,6 @@ public class BarCodeTestActivity extends Activity {
         
         Button scanBarCodeButton = (Button) this.findViewById(R.id.btn_scan_barcode);
         scanBarCodeButton.setOnClickListener(new OnClickListener() {
-			
 			@Override
 			public void onClick(View v) {
 				//打开扫描界面扫描条形码或二维码
@@ -46,7 +45,6 @@ public class BarCodeTestActivity extends Activity {
         
         Button generateQRCodeButton = (Button) this.findViewById(R.id.btn_add_qrcode);
         generateQRCodeButton.setOnClickListener(new OnClickListener() {
-			
 			@Override
 			public void onClick(View v) {
 				try {

@@ -25,8 +25,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -41,7 +44,7 @@ import com.zxing.camera.CameraManager;
 public final class ViewfinderView extends View {
 
   private static final int[] SCANNER_ALPHA = {0, 64, 128, 192, 255, 192, 128, 64};
-  private static final long ANIMATION_DELAY = 100L;
+  private static final long ANIMATION_DELAY = 1L;
   private static final int OPAQUE = 0xFF;
 
   private final Paint paint;
@@ -54,12 +57,68 @@ public final class ViewfinderView extends View {
   private int scannerAlpha;
   private Collection<ResultPoint> possibleResultPoints;
   private Collection<ResultPoint> lastPossibleResultPoints;
+  
+  
+
+  /** 
+   * 四个绿色边角对应的长度 
+   */  
+  private int ScreenRate;  
+    
+  /** 
+   * 四个绿色边角对应的宽度 
+   */  
+  private static final int CORNER_WIDTH = 10;  
+  /** 
+   * 扫描框中的中间线的宽度 
+   */  
+  private static final int MIDDLE_LINE_WIDTH = 6;  
+    
+  /** 
+   * 扫描框中的中间线的与扫描框左右的间隙 
+   */  
+  private static final int MIDDLE_LINE_PADDING = 5;  
+    
+  /** 
+   * 中间那条线每次刷新移动的距离 
+   */  
+  private static final int SPEEN_DISTANCE = 5;  
+    
+  /** 
+   * 手机的屏幕密度 
+   */  
+  private static float density;  
+  /** 
+   * 字体大小 
+   */  
+  private static final int TEXT_SIZE = 16;  
+  /** 
+   * 字体距离扫描框下面的距离 
+   */  
+  private static final int TEXT_PADDING_TOP = 30;  
+    
+  /** 
+   * 中间滑动线的最顶端位置 
+   */  
+  private int slideTop;
+    
+  /** 
+   * 中间滑动线的最底端位置 
+   */  
+  private int slideBottom;  
+  
+  boolean isFirst; 
 
   // This constructor is used when the class is built from an XML resource.
   public ViewfinderView(Context context, AttributeSet attrs) {
     super(context, attrs);
 
     // Initialize these once for performance rather than calling them every time in onDraw().
+   
+    density = context.getResources().getDisplayMetrics().density;  
+    //将像素转换成dp
+    ScreenRate = (int)(20 * density);  
+    
     paint = new Paint();
     Resources resources = getResources();
     maskColor = resources.getColor(R.color.viewfinder_mask);
@@ -77,6 +136,15 @@ public final class ViewfinderView extends View {
     if (frame == null) {
       return;
     }
+    
+    //初始化中间线滑动的最上边和最下边  
+    if(!isFirst){  
+        isFirst = true;  
+        slideTop = frame.top;  
+        slideBottom = frame.bottom;  
+    }  
+    
+    //获取屏幕的宽和高 
     int width = canvas.getWidth();
     int height = canvas.getHeight();
 
@@ -86,6 +154,7 @@ public final class ViewfinderView extends View {
     canvas.drawRect(0, frame.top, frame.left, frame.bottom + 1, paint);
     canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1, paint);
     canvas.drawRect(0, frame.bottom + 1, width, height, paint);
+    
 
     if (resultBitmap != null) {
       // Draw the opaque result bitmap over the scanning rectangle
@@ -93,12 +162,75 @@ public final class ViewfinderView extends View {
       canvas.drawBitmap(resultBitmap, frame.left, frame.top, paint);
     } else {
 
-      // Draw a two pixel solid black border inside the framing rect
+    	paint.setColor(Color.rgb(50, 189, 189));  
+        canvas.drawRect(frame.left, frame.top, frame.left + ScreenRate,  
+                frame.top + CORNER_WIDTH, paint);  
+        canvas.drawRect(frame.left, frame.top, frame.left + CORNER_WIDTH, frame.top  
+                + ScreenRate, paint);  
+        canvas.drawRect(frame.right - ScreenRate, frame.top, frame.right,  
+                frame.top + CORNER_WIDTH, paint);  
+        canvas.drawRect(frame.right - CORNER_WIDTH, frame.top, frame.right, frame.top  
+                + ScreenRate, paint);  
+        canvas.drawRect(frame.left, frame.bottom - CORNER_WIDTH, frame.left  
+                + ScreenRate, frame.bottom, paint);  
+        canvas.drawRect(frame.left, frame.bottom - ScreenRate,  
+                frame.left + CORNER_WIDTH, frame.bottom, paint);  
+        canvas.drawRect(frame.right - ScreenRate, frame.bottom - CORNER_WIDTH,  
+                frame.right, frame.bottom, paint);  
+        canvas.drawRect(frame.right - CORNER_WIDTH, frame.bottom - ScreenRate,  
+                frame.right, frame.bottom, paint);
+        
+        slideTop += SPEEN_DISTANCE;  
+        if(slideTop >= frame.bottom){  
+            slideTop = frame.top;  
+        }  
+        Rect lineRect = new Rect();  
+        lineRect.left = frame.left;  
+        lineRect.right = frame.right; 
+        lineRect.top = slideTop;  
+        lineRect.bottom = slideTop + 10;  
+        canvas.drawBitmap(((BitmapDrawable)(getResources().getDrawable(R.drawable.zx_code_line))).getBitmap(), null, lineRect, paint);   
+          
+          
+        //画扫描框下面的字  
+        paint.setColor(Color.WHITE);    
+        paint.setTextSize(TEXT_SIZE * density); 
+        paint.setAlpha(0x40);    
+        paint.setTypeface(Typeface.DEFAULT_BOLD);   
+        String text = getResources().getString(R.string.scan_text);  
+        float textWidth = paint.measureText(text);  
+          
+        canvas.drawText(text, (width - textWidth)/2, (float) (frame.bottom + (float)TEXT_PADDING_TOP *density), paint);
+          
+
+        Collection<ResultPoint> currentPossible = possibleResultPoints;  
+        Collection<ResultPoint> currentLast = lastPossibleResultPoints;  
+        if (currentPossible.isEmpty()) {  
+            lastPossibleResultPoints = null;  
+        } else {  
+            possibleResultPoints = new HashSet<ResultPoint>(5);  
+            lastPossibleResultPoints = currentPossible;  
+            paint.setAlpha(OPAQUE);  
+            paint.setColor(resultPointColor);  
+            for (ResultPoint point : currentPossible) {  
+                canvas.drawCircle(frame.left + point.getX(), frame.top  
+                        + point.getY(), 6.0f, paint);  
+            }  
+        }  
+        if (currentLast != null) {  
+            paint.setAlpha(OPAQUE / 2);  
+            paint.setColor(resultPointColor);  
+            for (ResultPoint point : currentLast) {  
+                canvas.drawCircle(frame.left + point.getX(), frame.top  
+                        + point.getY(), 3.0f, paint);  
+            }  
+        }  
+
+      /*// Draw a two pixel solid black border inside the framing rect
       paint.setColor(frameColor);
       canvas.drawRect(frame.left, frame.top, frame.right + 1, frame.top + 2, paint);
       canvas.drawRect(frame.left, frame.top + 2, frame.left + 2, frame.bottom - 1, paint);
       canvas.drawRect(frame.right - 1, frame.top, frame.right + 1, frame.bottom - 1, paint);
-      canvas.drawRect(frame.left, frame.bottom - 1, frame.right + 1, frame.bottom + 1, paint);
 
       // Draw a red "laser scanner" line through the middle to show decoding is active
       paint.setColor(laserColor);
@@ -126,10 +258,12 @@ public final class ViewfinderView extends View {
         for (ResultPoint point : currentLast) {
           canvas.drawCircle(frame.left + point.getX(), frame.top + point.getY(), 3.0f, paint);
         }
-      }
+      }*/
 
       // Request another update at the animation interval, but only repaint the laser line,
       // not the entire viewfinder mask.
+        
+        
       postInvalidateDelayed(ANIMATION_DELAY, frame.left, frame.top, frame.right, frame.bottom);
     }
   }

@@ -36,10 +36,14 @@
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity android:name="group.acm.bookshare.LoginActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name="group.acm.bookshare.RegisterActivity" >
         </activity>
-        
         <activity android:name="group.acm.bookshare.MainActivity" >
         </activity>
         <activity
@@ -61,11 +65,10 @@
         <activity
             android:name="group.acm.bookshare.BarCodeTestActivity"
             android:label="@string/title_activity_bar_code_test" >
-             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+        </activity>
+        <activity
+            android:name="group.acm.bookshare.GenerateQRCodeActivity"
+            android:label="@string/title_activity_generate_qrcode" >
         </activity>
     </application>
 
