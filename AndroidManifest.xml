@@ -44,10 +44,6 @@
         </activity>
         <activity android:name="group.acm.bookshare.RegisterActivity" >
         </activity>
-        <activity
-            android:name="group.acm.bookshare.CaptureActivity"
-            android:screenOrientation="portrait" >
-        </activity>
         <activity android:name="group.acm.bookshare.MainActivity" >
         </activity>
         <activity
@@ -61,6 +57,18 @@
             android:label="@string/title_activity_group" >
         </activity>
         <activity android:name="group.acm.bookshare.FriendBooksActivity" >
+        </activity>
+        <activity
+            android:name="group.acm.bookshare.CaptureActivity"
+            android:label="@string/title_activity_capture" >
+        </activity>
+        <activity
+            android:name="group.acm.bookshare.BarCodeTestActivity"
+            android:label="@string/title_activity_bar_code_test" >
+        </activity>
+        <activity
+            android:name="group.acm.bookshare.GenerateQRCodeActivity"
+            android:label="@string/title_activity_generate_qrcode" >
         </activity>
     </application>
 

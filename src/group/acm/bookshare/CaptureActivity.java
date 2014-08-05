@@ -13,6 +13,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
@@ -46,21 +47,26 @@ public class CaptureActivity extends Activity implements Callback {
 	private static final float BEEP_VOLUME = 0.10f;
 	private boolean vibrate;
 	private Button cancelScanButton;
+	private String model;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera);
-		// ViewUtil.addTopView(getApplicationContext(), this,
-		// R.string.scan_card);
+
 		CameraManager.init(getApplication());
 		viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
 		cancelScanButton = (Button) this.findViewById(R.id.btn_cancel_scan);
 		hasSurface = false;
 		inactivityTimer = new InactivityTimer(this);
+
+		Intent intent = getIntent();
+		model = intent.getStringExtra("model");
+		Log.i("in onactivityresult!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", model);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -90,6 +96,7 @@ public class CaptureActivity extends Activity implements Callback {
 			public void onClick(View v) {
 				CaptureActivity.this.finish();
 			}
+
 		});
 	}
 
@@ -121,13 +128,16 @@ public class CaptureActivity extends Activity implements Callback {
 		String resultString = result.getText();
 		// FIXME
 		if (resultString.equals("")) {
+
 			Toast.makeText(CaptureActivity.this, "Scan failed!",
 					Toast.LENGTH_SHORT).show();
 		} else {
 			// System.out.println("Result:"+resultString);
+
 			Intent resultIntent = new Intent();
 			Bundle bundle = new Bundle();
 			bundle.putString("result", resultString);
+			bundle.putString("model", model);
 			resultIntent.putExtras(bundle);
 			this.setResult(RESULT_OK, resultIntent);
 		}

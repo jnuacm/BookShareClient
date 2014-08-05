@@ -227,18 +227,18 @@ public class MainActivity extends Activity {
 	// 调用扫描功能的返回结果需要在onActivitiyResult中获取
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		
 		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
-			String isbn = data.getStringExtra("isbn");
-			Log.i("in onactivityresult", "go inside");
-			localUser.addBook(isbn, bookmanage.getAddBookHandler());
-		} else if (requestCode == SCANREQUEST_BOOKCONFIRM
-				&& RESULT_OK == resultCode) {
-			localUser.updateRequest((Integer) data.getIntExtra("id", -1),
-					Inform.REQUEST_STATUS_CONFIRM, new Handler() {
-						public void handleMessage(Message msg) {
 
-						}
-					});
+			Bundle bundle = data.getExtras();
+			String scanModel = bundle.getString("model");
+			if(0 == scanModel.compareTo("addBook")){
+				String isbn = bundle.getString("result");
+				localUser.addBook(isbn, bookmanage.getAddBookHandler());
+			}
+			else if(0 == scanModel.compareTo("borrowBook")){
+				///////////////////////////待实现
+			}
 		}
 	}
 
@@ -356,8 +356,9 @@ public class MainActivity extends Activity {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					if (0 == position) {
-						Intent intent = new Intent(MainActivity.this,
-								CaptureActivity.class);
+
+						Intent intent = new Intent(MainActivity.this,CaptureActivity.class);
+						intent.putExtra("model", "addBook");
 						startActivityForResult(intent, SCANREQUEST_ADDBOOK);
 					} else {
 						Intent intent = new Intent(MainActivity.this,
@@ -926,18 +927,31 @@ public class MainActivity extends Activity {
 				}
 			});
 
-			Button button2 = (Button) head.findViewById(R.id.button2);
-			button2.setOnClickListener(new OnClickListener() {
-
+			Button button_scan = (Button) head.findViewById(R.id.button_scan);
+			button_scan.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Toast.makeText(MainActivity.this, "button2",
-							Toast.LENGTH_SHORT).show();
+					//打开扫描界面扫描条形码或二维码
+					Intent openCameraIntent = new Intent(MainActivity.this,CaptureActivity.class);
+					openCameraIntent.putExtra("model", "borrowBook");
+					startActivityForResult(openCameraIntent, 0);
+				}
+			});
+			
+			Button button3 = (Button) head.findViewById(R.id.button3);
+			button3.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Intent intent = new Intent(MainActivity.this,GenerateQRCodeActivity.class);
+					intent.putExtra("key", "key");
+					startActivity(intent);
 				}
 			});
 
 			return head;
 		}
+		
+		
 
 		private class SendInformHandler extends Handler {
 			@Override
@@ -993,6 +1007,7 @@ public class MainActivity extends Activity {
 			public long getItemId(int position) {
 				return position;
 			}
+
 
 			public class RequestHandler extends Handler {
 				private int position;
