@@ -227,10 +227,10 @@ public class MainActivity extends Activity {
 	// 调用扫描功能的返回结果需要在onActivitiyResult中获取
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Bundle bundle = data.getExtras();
-		String scanModel = bundle.getString("model");
 		
 		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
+			Bundle bundle = data.getExtras();
+			String scanModel = bundle.getString("model");
 			if(0 == scanModel.compareTo("addBook")){
 				String isbn = bundle.getString("result");
 				localUser.addBook(isbn, bookmanage.getAddBookHandler());

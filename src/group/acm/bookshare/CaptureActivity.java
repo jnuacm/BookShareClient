@@ -65,6 +65,7 @@ public class CaptureActivity extends Activity implements Callback {
 		Log.i("in onactivityresult!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", model);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -94,7 +95,8 @@ public class CaptureActivity extends Activity implements Callback {
 			public void onClick(View v) {
 				CaptureActivity.this.finish();
 			}
-		});
+
+	});
 	}
 
 	@Override
