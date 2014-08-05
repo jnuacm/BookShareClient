@@ -319,6 +319,17 @@ public class User {
 		return ret;
 	}
 
+	public boolean deleteInformById(int id) {
+		for (int i = 0; i < informs.size(); i++) {
+			Map<String, Object> item = informs.get(i);
+			if ((Integer) item.get("id") == id) {
+				informs.remove(i);
+				break;
+			}
+		}
+		return true;
+	}
+
 	public void bookRequest(String aimName, int bookid, String message,
 			int type, Handler handler) {
 		try {

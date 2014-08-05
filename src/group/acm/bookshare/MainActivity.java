@@ -230,58 +230,89 @@ public class MainActivity extends Activity {
 	// 调用扫描功能的返回结果需要在onActivitiyResult中获取
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		
-		if (requestCode == SCANREQUEST_ADDBOOK && RESULT_OK == resultCode) {
+
+		if (RESULT_OK == resultCode) {
 
 			Bundle bundle = data.getExtras();
 			String scanModel = bundle.getString("model");
-			if(0 == scanModel.compareTo("addBook")){
+			if (0 == scanModel.compareTo("addBook")) {
 				String isbn = bundle.getString("result");
 				localUser.addBook(isbn, bookmanage.getAddBookHandler());
-			}
-			else if(0 == scanModel.compareTo("borrowBook")){
-				
+			} else if (0 == scanModel.compareTo("borrowBook")) {
+
 				String res = bundle.getString("result");
+				Log.i("result", res);
+				MainActivity.this.showToast(res);
 				try {
 					JSONObject jsonObject = new JSONObject(res);
-				
-					//私钥
-					String private_exponent = "2339397144132832735651743410630166925917431927091999052138400443572283"
-			        		+ "178202452720852594994757182603931424366824473790820764"
-			        		+ "643477052528532740106062695663575106992841755917852920"
-			        		+ "811920437845960617055842926574173587617727934596713682"
-			        		+ "832055832582548878334670846844359231907945702517343526"
-			        		+ "3134780530125944042045";
-					
-					//模 
-					String modulus = "1342178680163122288334135585244412587094902706870597407686197582687531494789933"
-							+ "85246009382974176202673425333737700725579112713332360668443009882107179274910464650698"
-							+ "80929584502832391497033125849992285341218988289801502354908712667651437506714728106047"
-							+ "3659828465972338681421950511104511172957148096843143165953";
-					
-					RSAPrivateKey priKey = RSAUtils.getPrivateKey(modulus, private_exponent);
-					
-					String desKey1 = jsonObject.getString("desKey1");
-					String desKey2 = jsonObject.getString("desKey2");
-					String id = jsonObject.getString("id");
-					
-					//还原desKey1和desKey2
+
+					// 模
+					String modulus = "1095908257922794133899641353345223659509198870727619"
+							+ "84662925904428324513840234320762060769240802226180024972009"
+							+ "23198993652791393424108233803797411622424439308380949251312"
+							+ "11865875997007206462274689115480894523234426618616006872199"
+							+ "90868747713338468835352980211896324717589079982458697178916"
+							+ "072092088274807099109";
+					// 私钥指数
+					String private_exponent = "22924159341842905201077533779406550724341375"
+							+ "587538246299709343177257133531223161013276333758367910015746"
+							+ "255417162234310997774877161160836964807469968386805892084950"
+							+ "686634327143636933869340087048479665692267235347320120424665"
+							+ "407579323193200884292522562661901712837097758688799098085230"
+							+ "883536351178306308687201";
+					RSAPrivateKey priKey = RSAUtils.getPrivateKey(modulus,
+							private_exponent);
+
+					// 还原desKey1和desKey2
+					String desKey1 = (String) jsonObject.get("desKey1");
+					String desKey2 = (String) jsonObject.get("desKey2");
 					desKey1 = RSAUtils.decryptByPrivateKey(desKey1, priKey);
 					desKey2 = RSAUtils.decryptByPrivateKey(desKey2, priKey);
-					
-					//还原id
-					TripleDESUtil desUtil = new TripleDESUtil(desKey1,desKey2);
-					id = desUtil.getDec(id);
-					Log.i("id",id);
-					
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Log.i("desKey1", desKey1);
+					Log.i("desKey2", desKey2);
+
+					// TripleDES解密部分
+
+					String contentString = (String) jsonObject
+							.get("contentString");
+					TripleDESUtil desUtil = new TripleDESUtil(desKey1, desKey2);
+					contentString = desUtil.getDec(contentString);
+					int id = Integer.parseInt(contentString);
+					localUser.updateRequest(id, Inform.REQUEST_STATUS_CONFIRM,
+							new ConfirmInformHandler(id));
+					Log.i("contentString", contentString);
+
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					this.showToast(e.toString());
 				}
-				
+
+			}
+		}
+	}
+
+	private class ConfirmInformHandler extends Handler {
+		int id;
+
+		public ConfirmInformHandler(int id) {
+			this.id = id;
+		}
+
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case NetAccess.NETMSG_AFTER:
+				Bundle data = msg.getData();
+				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
+					localUser.deleteInformById(id);
+					MainActivity.this.informmanage.informAdapter
+							.notifyDataSetChanged();
+					MainActivity.this.showToast("成功");
+				} else
+					MainActivity.this.showToast("失败:"
+							+ data.getString("response"));
+				break;
+			case NetAccess.NETMSG_ERROR:
+				MainActivity.this.showToast(msg.getData().getString("error"));
+				break;
 			}
 		}
 	}
@@ -401,7 +432,8 @@ public class MainActivity extends Activity {
 						int position, long id) {
 					if (0 == position) {
 
-						Intent intent = new Intent(MainActivity.this,CaptureActivity.class);
+						Intent intent = new Intent(MainActivity.this,
+								CaptureActivity.class);
 						intent.putExtra("model", "addBook");
 						startActivityForResult(intent, SCANREQUEST_ADDBOOK);
 					} else {
@@ -909,10 +941,6 @@ public class MainActivity extends Activity {
 
 		}
 
-		private void showUpdate() {
-			friendAdapter.notifyDataSetChanged();
-		}
-
 	}
 
 	public class InformListManage {
@@ -975,18 +1003,21 @@ public class MainActivity extends Activity {
 			button_scan.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					//打开扫描界面扫描条形码或二维码
-					Intent openCameraIntent = new Intent(MainActivity.this,CaptureActivity.class);
+					// 打开扫描界面扫描条形码或二维码
+					Intent openCameraIntent = new Intent(MainActivity.this,
+							CaptureActivity.class);
 					openCameraIntent.putExtra("model", "borrowBook");
 					startActivityForResult(openCameraIntent, 0);
+
 				}
 			});
-			
+
 			Button button3 = (Button) head.findViewById(R.id.button3);
 			button3.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Intent intent = new Intent(MainActivity.this,GenerateQRCodeActivity.class);
+					Intent intent = new Intent(MainActivity.this,
+							GenerateQRCodeActivity.class);
 					intent.putExtra("key", "key");
 					startActivity(intent);
 				}
@@ -994,8 +1025,6 @@ public class MainActivity extends Activity {
 
 			return head;
 		}
-		
-		
 
 		private class SendInformHandler extends Handler {
 			@Override
@@ -1051,7 +1080,6 @@ public class MainActivity extends Activity {
 			public long getItemId(int position) {
 				return position;
 			}
-
 
 			public class RequestHandler extends Handler {
 				private int position;
@@ -1161,16 +1189,21 @@ public class MainActivity extends Activity {
 							if (localUser.getUserName()
 									.equals(item.get("from"))) {
 								// 扫码
-								//打开扫描界面扫描条形码或二维码
-								Intent openCameraIntent = new Intent(MainActivity.this,CaptureActivity.class);
-								openCameraIntent.putExtra("model", "borrowBook");
+								// 打开扫描界面扫描条形码或二维码
+								Intent openCameraIntent = new Intent(
+										MainActivity.this,
+										CaptureActivity.class);
+								openCameraIntent
+										.putExtra("model", "borrowBook");
 								startActivityForResult(openCameraIntent, 0);
 								Log.i("click", "扫码");
 							} else {
 								// 显示码
-								Log.i("click", (Integer)item.get("id")+"");
-								Intent intent = new Intent(MainActivity.this,GenerateQRCodeActivity.class);
-								intent.putExtra("ContentString",(Integer)item.get("id")+"");
+								Log.i("click", (Integer) item.get("id") + "");
+								Intent intent = new Intent(MainActivity.this,
+										GenerateQRCodeActivity.class);
+								intent.putExtra("ContentString",
+										(Integer) item.get("id") + "");
 								startActivity(intent);
 								Log.i("click", "显示码");
 							}
