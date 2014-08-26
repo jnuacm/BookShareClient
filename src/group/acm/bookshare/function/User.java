@@ -3,6 +3,7 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,20 +26,18 @@ public class User {
 	private String password;
 
 	private List<Map<String, Object>> books;
-	private List<OwnerBook> ownBooks;
-	private List<OwnerBook> borrowedBooks;
-
-	private List<Friend> friends;
-	private List<Friend> groups;
-
+	private List<Map<String, Object>> friends;
+	private List<Map<String, Object>> groups;
 	private List<Map<String, Object>> informs;
 
 	private int is_group;
 
 	private Application application;
-	private Handler handler;
 
 	public User(Application application) {
+		books = new ArrayList<Map<String, Object>>();
+		friends = new ArrayList<Map<String, Object>>();
+		groups = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		this.application = application;
 	}
@@ -50,31 +49,6 @@ public class User {
 
 	public String getUserName() {
 		return username;
-	}
-
-	public void setBooks(List<Map<String, Object>> books) {
-		this.books = books;
-	}
-
-	public void setOwnBooks(List<Map<String, Object>> ownBooks) {
-
-		this.ownBooks = new ArrayList<OwnerBook>();
-		for (Map<String, Object> item : ownBooks)
-			this.ownBooks.add(new OwnerBook(item));
-	}
-
-	public void setBorrowedBooks(List<Map<String, Object>> borrowedBooks) {
-		this.borrowedBooks = new ArrayList<OwnerBook>();
-		for (Map<String, Object> item : borrowedBooks)
-			this.borrowedBooks.add(new OwnerBook(item));
-	}
-
-	public void setIs_Group(int is_group) {
-		this.is_group = is_group;
-	}
-
-	public int getIs_Group() {
-		return this.is_group;
 	}
 
 	public void login(Handler mainHandler) {
@@ -89,39 +63,162 @@ public class User {
 		network.createPostThread(url, nvps, mainHandler);
 	}
 
-	public void addBook(String isbn, Handler handler) {
-		this.handler = handler;
-		Book book = new Book(this.application);
-		book.getBookByIsbn(isbn, new Handler() {
-			public void handleMessage(Message msg) {
-				switch (msg.what) {
-				case NetAccess.NETMSG_AFTER:
-					Bundle repData = msg.getData();
-					if (repData.getInt("status") == NetAccess.STATUS_ERROR) {
-						Message tmsg = Message.obtain();
-						tmsg.what = NetAccess.NETMSG_AFTER;
-						Bundle data = new Bundle();
-						data.putInt("status", NetAccess.STATUS_ERROR);
-						data.putString("response",
-								repData.getString("response"));
-						tmsg.setData(data);
-						User.this.handler.sendMessage(tmsg);
-					} else {
-						Message tmsg = Message.obtain();
-						tmsg.what = NetAccess.NETMSG_PROCESS;
-						Bundle data = new Bundle();
-						data.putInt("time", 50);
-						tmsg.setData(data);
-						User.this.handler.sendMessage(tmsg);
-						addToDB(repData);
-					}
-					break;
-				}
-			}
-		});
+	public void setBooks(List<Map<String, Object>> books) {
+		this.books = books;
 	}
 
-	public void addToDB(Bundle data) {
+	public void setFriend(List<Map<String, Object>> friend) {
+		this.friends = friend;
+	}
+
+	public void setGroup(List<Map<String, Object>> group) {
+		this.groups = group;
+	}
+
+	public void setIs_Group(int is_group) {
+		this.is_group = is_group;
+	}
+
+	public int getIs_Group() {
+		return this.is_group;
+	}
+
+	public List<Map<String, Object>> getBookListData() {
+		return books;
+	}
+
+	public List<Map<String, Object>> getFriendListData() {
+		return friends;
+	}
+
+	public List<Map<String, Object>> getGroupListData() {
+		return groups;
+	}
+
+	public List<Map<String, Object>> getInformListData() {
+		return informs;
+	}
+
+	public void addBookDataToList(String response) {
+		books.clear();
+		Map<String, Object> map = new HashMap<String, Object>();
+		JSONObject jsonobj;
+		try {
+			jsonobj = new JSONObject(response);
+			JSONArray jsonarray = jsonobj.getJSONArray("own_book");
+
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+
+				map = new HashMap<String, Object>();
+				map.put("id", item.getInt("id"));
+				map.put("isbn", item.getString("isbn"));
+				map.put("bookname", item.getString("name"));
+				map.put("coverurl", R.drawable.default_book_big);
+				map.put("description", item.getString("description"));
+				map.put("authors", item.getString("author"));
+
+				map.put("owner", item.getString("owner"));
+				map.put("holder", item.getString("holder"));
+				map.put("status", item.getInt("status"));
+				books.add(map);
+			}
+
+			jsonarray = jsonobj.getJSONArray("borrowed_book");
+
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				map = new HashMap<String, Object>();
+				map.put("id", item.getInt("id"));
+				map.put("isbn", item.getString("isbn"));
+				map.put("owner", item.getString("owner"));
+				map.put("holder", item.getString("holder"));
+				map.put("bookname", item.getString("name"));
+				map.put("coverurl", R.drawable.default_book_big);
+				map.put("description", item.getString("description"));
+				map.put("authors", item.getString("author"));
+				map.put("status", item.getInt("status"));
+				books.add(map);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void addFriendDataToList(String response) {
+		friends.clear();
+		groups.clear();
+		Map<String, Object> map = new HashMap<String, Object>();
+		JSONObject jsonobj;
+		try {
+			jsonobj = new JSONObject(response);
+			JSONArray jsonarray = jsonobj.getJSONArray("friend");
+
+			for (int i = 0; i < jsonarray.length(); i++) {
+
+				JSONObject item = jsonarray.getJSONObject(i);
+				String name = item.getString("username");
+				String email = item.getString("email");
+				String area = item.getString("area");
+				int is_group = item.getInt("is_group");
+				map = new HashMap<String, Object>();
+				map.put("username", name);
+				map.put("email", email);
+				map.put("area", area);
+				map.put("image", R.drawable.friend1);
+				map.put("is_group", is_group);
+				// Log.i("is_group",name+" is "+is_group+"!!!");
+
+				if (0 == is_group)// 朋友关系
+					friends.add(map);
+				else
+					// 组属关系
+					groups.add(map);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void addBook(String isbn, Handler handler) {
+		Book book = new Book(this.application);
+		book.getBookByIsbn(isbn, new DoubanBookHandler(handler));
+	}
+
+	private class DoubanBookHandler extends Handler {
+		public Handler handler;
+
+		public DoubanBookHandler(Handler handler) {
+			this.handler = handler;
+		}
+
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case NetAccess.NETMSG_AFTER:
+				Bundle repData = msg.getData();
+				if (repData.getInt("status") == NetAccess.STATUS_ERROR) {
+					Message tmsg = Message.obtain();
+					tmsg.what = NetAccess.NETMSG_AFTER;
+					Bundle data = new Bundle();
+					data.putInt("status", NetAccess.STATUS_ERROR);
+					data.putString("response", repData.getString("response"));
+					tmsg.setData(data);
+					handler.sendMessage(tmsg);
+				} else {
+					Message tmsg = Message.obtain();
+					tmsg.what = NetAccess.NETMSG_PROCESS;
+					Bundle data = new Bundle();
+					data.putInt("time", 50);
+					tmsg.setData(data);
+					handler.sendMessage(tmsg);
+					addToDB(repData, handler);
+				}
+				break;
+			}
+		}
+	}
+
+	private void addToDB(Bundle data, Handler handler) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
 		nvps.add(new BasicNameValuePair("name", data.getString("name")));
@@ -137,17 +234,24 @@ public class User {
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
 		url += application.getString(R.string.url_add_book);
-		Handler handler = new Handler() {
-			public void handleMessage(Message msg) {
-				switch (msg.what) {
-				case NetAccess.NETMSG_AFTER:
-					msg = Message.obtain(msg);
-					User.this.handler.sendMessage(msg);
-					break;
-				}
+		network.createPostThread(url, nvps, new AddToDBHandler(handler));
+	}
+
+	private class AddToDBHandler extends Handler {
+		private Handler handler;
+
+		public AddToDBHandler(Handler handler) {
+			this.handler = handler;
+		}
+
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case NetAccess.NETMSG_AFTER:
+				msg = Message.obtain(msg);
+				handler.sendMessage(msg);
+				break;
 			}
-		};
-		network.createPostThread(url, nvps, handler);
+		}
 	}
 
 	public boolean deleteBook(Map<String, Object> book, Handler handler) {
@@ -168,14 +272,6 @@ public class User {
 		net.createGetThread(url, handler);
 	}
 
-	public List<Map<String, Object>> getInitInformData() {
-		return informs;
-	}
-
-	public List<Map<String, Object>> getCurInformData() {
-		return informs;
-	}
-
 	public boolean informIgnoreJudge() {
 		return false;
 	}
@@ -194,7 +290,6 @@ public class User {
 				informs.add(tmp);
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
@@ -216,7 +311,6 @@ public class User {
 				informs.add(tmp);
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
@@ -243,6 +337,13 @@ public class User {
 	}
 
 	public void updateRequest(int id, int status, Handler handler) {
+		for (Map<String, Object> item : informs) {
+			if (status == Inform.REQUEST_STATUS_CONFIRM
+					&& (Integer) item.get("id") == id
+					&& username.equals(item.get("to")))
+				return;
+		}
+
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_inform_update);
 		url += Integer.toString(id);
@@ -252,22 +353,6 @@ public class User {
 		nvps.add(new BasicNameValuePair("status", Integer.toString(status)));
 
 		net.createPutThread(url, nvps, handler);
-	}
-
-	public void setFriend(List<Map<String, Object>> friend) {
-		this.friends = new ArrayList<Friend>();
-		for (Map<String, Object> item : friend)
-			this.friends.add(new Friend(item));
-	}
-
-	public void setGroup(List<Map<String, Object>> group) {
-		this.groups = new ArrayList<Friend>();
-		for (Map<String, Object> item : group)
-			this.groups.add(new Friend(item));
-	}
-
-	public List<Friend> getGroup() {
-		return this.groups;
 	}
 
 	public void updateFriendship(Handler handler) {
@@ -351,7 +436,6 @@ public class User {
 			NetAccess net = NetAccess.getInstance();
 			net.createPostThread(url, nvps, handler);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

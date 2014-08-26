@@ -15,10 +15,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class LoginActivity extends Activity {
+	private User localUser;
+
 	@SuppressLint("HandlerLeak")
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+		LocalApp localapp = (LocalApp) getApplication();
+		localUser = localapp.getUser();
 	}
 
 	@SuppressLint("HandlerLeak")
@@ -36,10 +40,7 @@ public class LoginActivity extends Activity {
 			password = "1234";
 		}
 
-		LocalApp localapp = (LocalApp) getApplication();
-		User user = localapp.getUser();
-
-		user.setUser(username, password);
+		localUser.setUser(username, password);
 		Handler loginHandler = new Handler() {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
@@ -58,7 +59,7 @@ public class LoginActivity extends Activity {
 				}
 			}
 		};
-		user.login(loginHandler);
+		localUser.login(loginHandler);
 	}
 
 	public void Register(View v) { // ×¢²á»Øµ÷º¯Êý
@@ -70,14 +71,12 @@ public class LoginActivity extends Activity {
 	}
 
 	public void showResponse(Bundle data) {
-		// TODO Auto-generated method stub
 		int status = data.getInt("status");
 		if (status == NetAccess.STATUS_SUCCESS) {
-			Bundle retdata = new Bundle();
-			retdata.putString("response", data.getString("response"));
-
+			String response = data.getString("response");
+			localUser.addBookDataToList(response);
+			localUser.addFriendDataToList(response);
 			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-			intent.putExtras(retdata);
 			startActivity(intent);
 			finish();
 		} else if (status == NetAccess.STATUS_ERROR) {
