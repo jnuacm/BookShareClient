@@ -43,7 +43,6 @@ public class FriendBooksActivity extends Activity {
 
 		try {
 			JSONObject obj = new JSONObject(response);
-			Log.i("FriendBooksActivity:", obj.getString("own_book"));
 			books = Book.responseToBooks(obj.getString("own_book"));
 			if (books.isEmpty())
 				Log.i("FriendBooksActivity", "Îª¿Õ");
@@ -129,35 +128,30 @@ public class FriendBooksActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				((LocalApp) getApplication()).getUser().bookRequest(friendName,
-						(Integer) datas.get(position).get("id"), "½èÊéÏûÏ¢",
-						Inform.REQUEST_TYPE_BORROW, new Handler() {
-							public void handleMessage(Message msg) {
-								switch (msg.what) {
-								case NetAccess.NETMSG_AFTER:
-									if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-										Toast.makeText(
-												FriendBooksActivity.this,
-												"·¢ËÍ³É¹¦", Toast.LENGTH_SHORT)
-												.show();
-									} else {
-										Toast.makeText(
-												FriendBooksActivity.this,
-												"·¢ËÍÊ§°Ü", Toast.LENGTH_SHORT)
-												.show();
-									}
-									break;
-								case NetAccess.NETMSG_ERROR:
-									Toast.makeText(FriendBooksActivity.this,
-											"ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
-									break;
-								}
-							}
-						});
+				((LocalApp) getApplication()).getUser().borrowBook(friendName,
+						datas.get(position), new BorrowBookHandler());
 			}
 
 		}
 
+		private class BorrowBookHandler extends Handler {
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case NetAccess.NETMSG_AFTER:
+					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+						Toast.makeText(FriendBooksActivity.this, "·¢ËÍ³É¹¦",
+								Toast.LENGTH_SHORT).show();
+					} else {
+						Toast.makeText(FriendBooksActivity.this, "·¢ËÍÊ§°Ü",
+								Toast.LENGTH_SHORT).show();
+					}
+					break;
+				case NetAccess.NETMSG_ERROR:
+					Toast.makeText(FriendBooksActivity.this, "ÍøÂç´íÎó",
+							Toast.LENGTH_SHORT).show();
+					break;
+				}
+			}
+		}
 	}
-
 }

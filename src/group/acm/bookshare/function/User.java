@@ -263,6 +263,43 @@ public class User {
 		return true;
 	}
 
+	public void borrowBook(String aimName, Map<String, Object> book,
+			Handler handler) {
+		bookRequest(aimName, (Integer) book.get("id"), "借书消息",
+				Inform.REQUEST_TYPE_BORROW, handler);
+	}
+
+	public void returnBook(Map<String, Object> book, Handler handler) {
+		String owner = (String) book.get("owner");
+		bookRequest(owner, (Integer) book.get("id"), "还书啦",
+				Inform.REQUEST_TYPE_RETURN, handler);
+	}
+
+	private void bookRequest(String aimName, int bookid, String message,
+			int type, Handler handler) {
+		try {
+			JSONObject obj = new JSONObject();
+			obj.put("bookid", bookid);
+			obj.put("message", message);
+			String description = obj.toString();
+
+			String url = application.getResources()
+					.getString(R.string.url_host);
+			url += application.getResources().getString(
+					R.string.url_inform_create);
+
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("type", Integer.toString(type)));
+			nvps.add(new BasicNameValuePair("description", description));
+			nvps.add(new BasicNameValuePair("to", aimName));
+
+			NetAccess net = NetAccess.getInstance();
+			net.createPostThread(url, nvps, handler);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void getBookList(String name, Handler handler) {
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
@@ -413,31 +450,5 @@ public class User {
 			}
 		}
 		return true;
-	}
-
-	public void bookRequest(String aimName, int bookid, String message,
-			int type, Handler handler) {
-		try {
-			JSONObject obj = new JSONObject();
-			obj.put("bookid", bookid);
-			obj.put("message", message);
-			String description = obj.toString();
-
-			String url = application.getResources()
-					.getString(R.string.url_host);
-			url += application.getResources().getString(
-					R.string.url_inform_create);
-
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			nvps.add(new BasicNameValuePair("type", Integer.toString(type)));
-			nvps.add(new BasicNameValuePair("description", description));
-			nvps.add(new BasicNameValuePair("to", aimName));
-
-			NetAccess net = NetAccess.getInstance();
-			net.createPostThread(url, nvps, handler);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
 	}
 }

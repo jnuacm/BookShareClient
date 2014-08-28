@@ -61,39 +61,46 @@ public class Book {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				try {
-					Bundle data = strToBook(msg.getData());
-					data.putInt("status", NetAccess.STATUS_SUCCESS);
-					data.putString("isbn", isbn);
-					msg = Message.obtain();
-					msg.what = NetAccess.NETMSG_AFTER;
-					msg.setData(data);
-					handler.sendMessage(msg);
+					if (NetAccess.STATUS_SUCCESS == msg.getData().getInt(
+							"status")) {
+						Bundle data = doubanStrToBundle((String) msg.getData()
+								.get("response"));
+						data.putInt("status", NetAccess.STATUS_SUCCESS);
+						data.putString("isbn", isbn);
+						msg = Message.obtain();
+						msg.what = NetAccess.NETMSG_AFTER;
+						msg.setData(data);
+						handler.sendMessage(msg);
+					} else {
+						sendFailMessage("∂π∞Í∑√Œ ¥ÌŒÛ");
+					}
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					Bundle data = new Bundle();
-					data.putInt("status", NetAccess.STATUS_ERROR);
-					data.putString("response", e.toString());
-					msg = Message.obtain();
-					msg.what = NetAccess.NETMSG_AFTER;
-					msg.setData(data);
-					handler.sendMessage(msg);
+					sendFailMessage(e.toString());
 					break;
 				}
 				break;
 			}
 		}
+
+		private void sendFailMessage(String error) {
+			Bundle data = new Bundle();
+			data.putInt("status", NetAccess.STATUS_ERROR);
+			data.putString("response", error);
+			Message msg = Message.obtain();
+			msg.what = NetAccess.NETMSG_AFTER;
+			msg.setData(data);
+			handler.sendMessage(msg);
+		}
 	}
 
-	public Bundle strToBook(Bundle data) throws JSONException {
+	public Bundle doubanStrToBundle(String response) throws JSONException {
 		Bundle ret = new Bundle();
 		String name = "";
 		String authors = "";
 		String description = "";
 		String publisher = "";
-		if (NetAccess.STATUS_SUCCESS != data.getInt("status")) {
-			return ret;
-		}
-		JSONObject bookObj = new JSONObject((String) data.get("response"));
+
+		JSONObject bookObj = new JSONObject(response);
 		name = bookObj.getJSONObject("title").getString("$t");
 		JSONArray array = bookObj.getJSONArray("author");
 		for (int i = 0; i < array.length(); i++) {
@@ -128,12 +135,9 @@ public class Book {
 				item.put("description", obj.getString("description"));
 				item.put("status", obj.getInt("status"));
 				books.add(item);
-
 			}
-
 			return books;
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;

@@ -1,7 +1,6 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
-import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
@@ -12,13 +11,14 @@ import java.util.Map;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -194,6 +194,61 @@ public class BookListManage {
 		mybookslistview.setOnItemLongClickListener(new JudgeListener());
 	}
 
+	private class JudgeListener implements OnItemLongClickListener {
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view,
+				int position, long id) {
+			if (0 == position)
+				return false;
+
+			Builder builder = new AlertDialog.Builder(activity)
+					.setTitle("Confirm");
+			List<Map<String, Object>> books = localUser.getBookListData();
+			Map<String, Object> book = books.get(position - 1);
+			String text;
+			OnClickListener listener;
+			if (localUser.getUserName().equals(book.get("owner"))) {
+				text = "删书";
+				listener = new DeleteBookListener(book);
+			} else {
+				text = "还书";
+				listener = new ReturnBookListener(book);
+			}
+			builder = builder.setMessage(text).setPositiveButton("Yes",
+					listener);
+			builder = builder.setNegativeButton("No", null);
+			builder.show();
+
+			return true;
+		}
+	}
+
+	private class ReturnBookListener implements DialogInterface.OnClickListener {
+		private Map<String, Object> book;
+
+		public ReturnBookListener(Map<String, Object> book) {
+			this.book = book;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			localUser.returnBook(book, new ReturnBookHandler());
+		}
+	}
+
+	private class DeleteBookListener implements DialogInterface.OnClickListener {
+		private Map<String, Object> book;
+
+		public DeleteBookListener(Map<String, Object> book) {
+			this.book = book;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			localUser.deleteBook(book, new DeleteBookHandler());
+		}
+	}
+
 	private class ReturnBookHandler extends Handler {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -235,56 +290,6 @@ public class BookListManage {
 			case NetAccess.NETMSG_ERROR:
 				String content = msg.getData().getString("error");
 				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				break;
-			}
-		}
-	}
-
-	private class JudgeListener implements OnItemLongClickListener {
-		@Override
-		public boolean onItemLongClick(AdapterView<?> parent, View view,
-				int position, long id) {
-			if (0 == position)
-				return false;
-
-			String[] choices = { "还书", "删书" };
-			new AlertDialog.Builder(activity).setTitle("Choose:")
-					.setItems(choices, new ChooseListener(position - 1)).show();
-
-			return true;
-		}
-	}
-
-	private class ChooseListener implements DialogInterface.OnClickListener {
-		private int position;
-
-		public ChooseListener(int position) {
-			this.position = position;
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			Log.i("in dialog", "touch" + Integer.toString(which));
-			List<Map<String, Object>> bookList = localUser.getBookListData();
-			Map<String, Object> book = bookList.get(position);
-			String owner = (String) book.get("owner");
-			String holder = (String) book.get("holder");
-			Log.i("long click in booklist", "owner:" + owner + "  holder:"
-					+ holder);
-			switch (which) {
-			case 0:
-				if (owner != holder) {
-					Log.i("in dialog", "not equal");
-					localUser.bookRequest(owner, (Integer) book.get("id"),
-							"还书啦", Inform.REQUEST_TYPE_RETURN,
-							new ReturnBookHandler());
-				}
-				break;
-			case 1:
-				if (owner.equals(holder)) {
-					localUser.deleteBook(bookList.get(position),
-							new DeleteBookHandler());
-				}
 				break;
 			}
 		}
