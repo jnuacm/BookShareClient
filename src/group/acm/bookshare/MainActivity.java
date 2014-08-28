@@ -2,12 +2,11 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
-import group.acm.bookshare.function.NetAccess;
-import group.acm.bookshare.function.RSAUtils;
+
 import group.acm.bookshare.function.TripleDESUtil;
 import group.acm.bookshare.function.User;
 
-import java.security.interfaces.RSAPrivateKey;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +19,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -232,33 +230,10 @@ public class MainActivity extends Activity {
 				try {
 					JSONObject jsonObject = new JSONObject(res);
 
-					// 模
-					String modulus = "1095908257922794133899641353345223659509198870727619"
-							+ "84662925904428324513840234320762060769240802226180024972009"
-							+ "23198993652791393424108233803797411622424439308380949251312"
-							+ "11865875997007206462274689115480894523234426618616006872199"
-							+ "90868747713338468835352980211896324717589079982458697178916"
-							+ "072092088274807099109";
-					// 私钥指数
-					String private_exponent = "22924159341842905201077533779406550724341375"
-							+ "587538246299709343177257133531223161013276333758367910015746"
-							+ "255417162234310997774877161160836964807469968386805892084950"
-							+ "686634327143636933869340087048479665692267235347320120424665"
-							+ "407579323193200884292522562661901712837097758688799098085230"
-							+ "883536351178306308687201";
-					RSAPrivateKey priKey = RSAUtils.getPrivateKey(modulus,
-							private_exponent);
-
-					// 还原desKey1和desKey2
-					String desKey1 = (String) jsonObject.get("desKey1");
-					String desKey2 = (String) jsonObject.get("desKey2");
-					desKey1 = RSAUtils.decryptByPrivateKey(desKey1, priKey);
-					desKey2 = RSAUtils.decryptByPrivateKey(desKey2, priKey);
-					Log.i("desKey1", desKey1);
-					Log.i("desKey2", desKey2);
-
+					String desKey1 = "ASDASDEFRGRHTTGRGEFWSP";
+					String desKey2 = "IHDASHKDSJFSDKLJFKOEFJ";
+					
 					// TripleDES解密部分
-
 					String contentString = (String) jsonObject
 							.get("contentString");
 					TripleDESUtil desUtil = new TripleDESUtil(desKey1, desKey2);
