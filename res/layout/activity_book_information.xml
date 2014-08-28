@@ -20,16 +20,15 @@
             android:layout_alignParentTop="true"
             android:gravity="center"
             android:textAppearance="?android:attr/textAppearanceLarge" />
-        
-        
+
         <ImageView
             android:id="@+id/book_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/book_name"
-            android:layout_marginTop="18dp" 
-            android:layout_centerHorizontal="true"/>
-        
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="18dp" />
+
         <TextView
             android:id="@+id/book_description"
             android:layout_width="fill_parent"
@@ -38,21 +37,19 @@
             android:layout_below="@id/book_image"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        
-		
         <Button
             android:id="@+id/button_good"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/book_description"
             android:text="赞" />
-        
+
         <Button
             android:id="@+id/button_addcomment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf ="@id/button_good"
             android:layout_below="@id/book_description"
+            android:layout_toRightOf="@id/button_good"
             android:text="添加评论" />
 
         <group.acm.bookshare.function.NoScrollListView
@@ -61,8 +58,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/button_addcomment"
             android:layout_centerHorizontal="true"
-            android:overScrollMode="always" >
-        </group.acm.bookshare.function.NoScrollListView>
+            android:overScrollMode="always" />
     </RelativeLayout>
 
 </ScrollView>

@@ -107,10 +107,15 @@ public class FriendBooksActivity extends Activity {
 
 			Map<String, Object> item = datas.get(position);
 
+			int bookStatus = (Integer) item.get("status");
+
 			title.setText((String) item.get("name"));
-			String[] text = { "可借", "在借", "已借未确认", "已还未确认" };
-			status.setText(text[(Integer) item.get("status")]);
-			borrow.setOnClickListener(new ItemButtonClick(position));
+			String[] text = { "在借", "可借", "已借未确认", "已还未确认" };
+			status.setText(text[bookStatus]);
+			if (bookStatus == 1)
+				borrow.setOnClickListener(new ItemButtonClick(position));
+			else
+				borrow.setVisibility(View.INVISIBLE);
 
 			return convertView;
 		}

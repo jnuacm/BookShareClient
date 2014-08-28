@@ -12,7 +12,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,12 +19,15 @@ import android.widget.Toast;
 public class LoginActivity extends Activity {
 	private User localUser;
 
-	@SuppressLint("HandlerLeak")
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 		LocalApp localapp = (LocalApp) getApplication();
 		localUser = localapp.getUser();
+		fillInInfo();
+	}
+
+	private void fillInInfo() {
 		SharedPreferences info = this.getSharedPreferences("user_info",
 				Context.MODE_PRIVATE);
 		((TextView) findViewById(R.id.USERNAME)).setText(info.getString(
@@ -35,7 +37,6 @@ public class LoginActivity extends Activity {
 				"password", ""));
 	}
 
-	@SuppressLint("HandlerLeak")
 	public void Login(View v) { // µÇÂ¼»Øµ÷º¯Êý
 		if (Utils.isQuickClick())
 			return;
@@ -45,17 +46,22 @@ public class LoginActivity extends Activity {
 		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
 				.toString();
 
+		recordInfo(username, password);
+
+		localUser.setUser(username, password);
+		localUser.login(new LoginHandler());
+	}
+
+	private void recordInfo(String username, String password) {
 		SharedPreferences info = this.getSharedPreferences("user_info",
 				Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = info.edit();
 		editor.putString("username", username);
 		editor.putString("password", password);
 		editor.commit();
-
-		localUser.setUser(username, password);
-		localUser.login(new LoginHandler());
 	}
 
+	@SuppressLint("HandlerLeak")
 	private class LoginHandler extends Handler {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {

@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -30,46 +31,61 @@
         <activity
             android:name="group.acm.bookshare.WelcomeActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
-        <activity android:name="group.acm.bookshare.LoginActivity" >
+        <activity
+            android:name="group.acm.bookshare.LoginActivity"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="group.acm.bookshare.RegisterActivity" >
+        <activity
+            android:name="group.acm.bookshare.RegisterActivity"
+            android:screenOrientation="portrait" >
         </activity>
-        <activity android:name="group.acm.bookshare.MainActivity" >
+        <activity
+            android:name="group.acm.bookshare.MainActivity"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.FriendsInformationActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize" >
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" >
         </activity>
-        <activity android:name="group.acm.bookshare.BookInformationActivity" >
+        <activity
+            android:name="group.acm.bookshare.BookInformationActivity"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.GroupActivity"
-            android:label="@string/title_activity_group" >
-        </activity>
-        <activity android:name="group.acm.bookshare.FriendBooksActivity" >
+            android:label="@string/title_activity_group"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:configChanges="orientation|keyboardHidden"
+            android:name="group.acm.bookshare.FriendBooksActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="group.acm.bookshare.CaptureActivity"
-            android:label="@string/title_activity_capture" 
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/title_activity_capture"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
             android:name="group.acm.bookshare.BarCodeTestActivity"
-            android:label="@string/title_activity_bar_code_test" >
+            android:label="@string/title_activity_bar_code_test"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.GenerateQRCodeActivity"
-            android:label="@string/title_activity_generate_qrcode" >
+            android:label="@string/title_activity_generate_qrcode"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 
