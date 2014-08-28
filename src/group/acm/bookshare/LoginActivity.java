@@ -6,10 +6,13 @@ import group.acm.bookshare.function.User;
 import group.acm.bookshare.util.Utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +26,13 @@ public class LoginActivity extends Activity {
 		setContentView(R.layout.activity_login);
 		LocalApp localapp = (LocalApp) getApplication();
 		localUser = localapp.getUser();
+		SharedPreferences info = this.getSharedPreferences("user_info",
+				Context.MODE_PRIVATE);
+		((TextView) findViewById(R.id.USERNAME)).setText(info.getString(
+				"username", ""));
+
+		((TextView) findViewById(R.id.PASSWORD)).setText(info.getString(
+				"password", ""));
 	}
 
 	@SuppressLint("HandlerLeak")
@@ -35,31 +45,33 @@ public class LoginActivity extends Activity {
 		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
 				.toString();
 
-		if (!(username.length() > 0 && password.length() > 0)) {
-			username = "amy";
-			password = "1234";
-		}
+		SharedPreferences info = this.getSharedPreferences("user_info",
+				Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = info.edit();
+		editor.putString("username", username);
+		editor.putString("password", password);
+		editor.commit();
 
 		localUser.setUser(username, password);
-		Handler loginHandler = new Handler() {
-			public void handleMessage(Message msg) {
-				switch (msg.what) {
-				case NetAccess.NETMSG_BEFORE:
-					findViewById(R.id.loginProgressBar).setVisibility(
-							View.VISIBLE);
-					break;
-				case NetAccess.NETMSG_AFTER:
-					showResponse(msg.getData());
-					break;
-				case NetAccess.NETMSG_ERROR:
-					Toast.makeText(LoginActivity.this,
-							msg.getData().getString("error"), Toast.LENGTH_LONG)
-							.show();
-					break;
-				}
+		localUser.login(new LoginHandler());
+	}
+
+	private class LoginHandler extends Handler {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case NetAccess.NETMSG_BEFORE:
+				findViewById(R.id.loginProgressBar).setVisibility(View.VISIBLE);
+				break;
+			case NetAccess.NETMSG_AFTER:
+				showResponse(msg.getData());
+				break;
+			case NetAccess.NETMSG_ERROR:
+				Toast.makeText(LoginActivity.this,
+						msg.getData().getString("error"), Toast.LENGTH_LONG)
+						.show();
+				break;
 			}
-		};
-		localUser.login(loginHandler);
+		}
 	}
 
 	public void Register(View v) { // ×¢²á»Øµ÷º¯Êý

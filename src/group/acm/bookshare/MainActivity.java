@@ -52,9 +52,9 @@ public class MainActivity extends Activity {
 
 	private User localUser;
 
-	private BookListManage bookmanage = new BookListManage(this);
-	private FriendListManage friendmanage = new FriendListManage(this);
-	private InformListManage informmanage = new InformListManage(this);
+	private BookListManage bookmanage;
+	private FriendListManage friendmanage;
+	private InformListManage informmanage;
 
 	int listshowsize = 10;
 
@@ -64,6 +64,10 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		localUser = ((LocalApp) getApplication()).getUser();
+		
+		bookmanage = new BookListManage(this);
+		friendmanage = new FriendListManage(this);
+		informmanage = new InformListManage(this);
 
 		viewList = new ArrayList<View>();
 		bookmanage.initBookList();
