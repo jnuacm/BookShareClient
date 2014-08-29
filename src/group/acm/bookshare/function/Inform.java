@@ -374,7 +374,6 @@ public class Inform {
 	private InformState getCurState(Map<String, Object> item, String username) throws JSONException {
 		Map<String, Object> map = new HashMap<String, Object>();
 		JSONObject obj = new JSONObject((String) item.get("description"));
-		obj.getInt("bookid");
 		switch ((Integer) item.get("status")) {
 		case Inform.REQUEST_STATUS_UNPROCESSED:
 			// /////////////////////////////////////////

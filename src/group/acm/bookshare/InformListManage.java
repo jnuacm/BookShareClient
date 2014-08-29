@@ -369,14 +369,14 @@ public class InformListManage {
 						if ((Integer) book.get("id") == id) {
 							if (localUser.getUserName().equals(
 									book.get("holder"))) {
-								return true;
+								return false;
 							}
 						}
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-				return false;
+				return true;
 			}
 		}
 	}
