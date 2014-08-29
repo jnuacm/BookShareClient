@@ -8,6 +8,9 @@ import group.acm.bookshare.function.User;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -311,16 +314,14 @@ public class InformListManage {
 				if (flag
 						&& status == Inform.REQUEST_STATUS_CONFIRM
 						&& (Integer) item.get("status") == Inform.REQUEST_STATUS_PERMITTED) {
-					if ((Integer) item.get("type") == Inform.REQUEST_TYPE_BORROW
-							|| (Integer) item.get("type") == Inform.REQUEST_TYPE_RETURN) {
-						if (localUser.getUserName().equals(item.get("from"))) {
+					if ((Integer) item.get("type") == Inform.REQUEST_TYPE_BORROW) {
+						if (isBookHolder()) {
 							// 扫码
 							// 打开扫描界面扫描条形码或二维码
 							Intent openCameraIntent = new Intent(activity,
 									CaptureActivity.class);
 							openCameraIntent.putExtra("model", "borrowBook");
 							activity.startActivityForResult(openCameraIntent, 0);
-							Log.i("click", "扫码");
 						} else {
 							// 显示码
 							Log.i("click", (Integer) item.get("id") + "");
@@ -329,13 +330,48 @@ public class InformListManage {
 							intent.putExtra("ContentString",
 									(Integer) item.get("id") + "");
 							activity.startActivity(intent);
-							Log.i("click", "显示码");
+						}
+						return;
+					} else if ((Integer) item.get("type") == Inform.REQUEST_TYPE_RETURN) {
+						if (!isBookHolder()) {
+							// 显码
+							Intent intent = new Intent(activity,
+									GenerateQRCodeActivity.class);
+							intent.putExtra("ContentString",
+									(Integer) item.get("id") + "");
+							activity.startActivity(intent);
+						} else {
+							// 扫码
+							// 打开扫描界面扫描条形码或二维码
+							Intent openCameraIntent = new Intent(activity,
+									CaptureActivity.class);
+							openCameraIntent.putExtra("model", "returnBook");
+							activity.startActivityForResult(openCameraIntent, 0);
 						}
 						return;
 					}
 				}
 				localUser.updateRequest(id, status,
 						new RequestHandler(position));
+			}
+
+			private boolean isBookHolder() {
+				try {
+					JSONObject obj = new JSONObject(
+							(String) item.get("description"));
+					int id = obj.getInt("bookid");
+					for (Map<String, Object> book : localUser.getBookListData()) {
+						if ((Integer) book.get("id") == id) {
+							if (localUser.getUserName().equals(
+									book.get("holder"))) {
+								return true;
+							}
+						}
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				return false;
 			}
 		}
 	}

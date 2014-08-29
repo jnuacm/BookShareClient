@@ -8,6 +8,9 @@ import group.acm.bookshare.function.User;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -119,24 +122,24 @@ public class BookListManage {
 		@SuppressLint("InflateParams")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			TextView title;
-			TextView status;
-			ImageView cover;
+			TextView titleView;
+			TextView statusView;
+			ImageView coverView;
 			if (convertView == null) {
 				convertView = LayoutInflater.from(context).inflate(
 						R.layout.mybooks_listview_item, null);
 			}
-			cover = (ImageView) convertView
+			coverView = (ImageView) convertView
 					.findViewById(R.id.mybookslistitem_bookimage);
-			title = (TextView) convertView
+			titleView = (TextView) convertView
 					.findViewById(R.id.mybookslistitem_bookname);
-			status = (TextView) convertView
+			statusView = (TextView) convertView
 					.findViewById(R.id.mybookslistitem_bookstate);
 
 			Map<String, Object> item = datas.get(position);
 
-			cover.setImageResource(R.drawable.default_book_big);
-			title.setText((String) item.get("bookname"));
+			coverView.setImageResource(R.drawable.default_book_big);
+			titleView.setText((String) item.get("bookname"));
 			String text;
 			if (localUser.getUserName().equals(item.get("owner")))
 				text = "owner:";
@@ -156,7 +159,7 @@ public class BookListManage {
 				text += "不可卖/不可借";
 				break;
 			}
-			status.setText(text);
+			statusView.setText(text);
 			return convertView;
 		}
 	}
@@ -296,6 +299,8 @@ public class BookListManage {
 	}
 
 	public void reload(String response) {
+		localUser.clearBookData();
+		localUser.addBookDataToList(response);
 		bookAdapter.notifyDataSetChanged();
 	}
 }

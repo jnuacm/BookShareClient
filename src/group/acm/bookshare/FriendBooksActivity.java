@@ -109,7 +109,7 @@ public class FriendBooksActivity extends Activity {
 			int bookStatus = (Integer) item.get("status");
 
 			title.setText((String) item.get("name"));
-			String[] text = { "在借", "可借", "已借未确认", "已还未确认" };
+			String[] text = { "不可借", "可借", "不可卖", "可卖" };
 			status.setText(text[bookStatus]);
 			if (bookStatus == 1)
 				borrow.setOnClickListener(new ItemButtonClick(position));

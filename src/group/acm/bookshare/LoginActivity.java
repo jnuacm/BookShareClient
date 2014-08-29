@@ -92,6 +92,7 @@ public class LoginActivity extends Activity {
 		int status = data.getInt("status");
 		if (status == NetAccess.STATUS_SUCCESS) {
 			String response = data.getString("response");
+			localUser.clearBookData();
 			localUser.addBookDataToList(response);
 			localUser.addFriendDataToList(response);
 			Intent intent = new Intent(LoginActivity.this, MainActivity.class);

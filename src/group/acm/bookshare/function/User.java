@@ -99,49 +99,41 @@ public class User {
 		return informs;
 	}
 
-	public void addBookDataToList(String response) {
+	public void clearBookData() {
 		books.clear();
-		Map<String, Object> map = new HashMap<String, Object>();
+	}
+
+	public void addBookDataToList(String response) {
 		JSONObject jsonobj;
 		try {
 			jsonobj = new JSONObject(response);
 			JSONArray jsonarray = jsonobj.getJSONArray("own_book");
-
-			for (int i = 0; i < jsonarray.length(); i++) {
-				JSONObject item = jsonarray.getJSONObject(i);
-
-				map = new HashMap<String, Object>();
-				map.put("id", item.getInt("id"));
-				map.put("isbn", item.getString("isbn"));
-				map.put("bookname", item.getString("name"));
-				map.put("coverurl", R.drawable.default_book_big);
-				map.put("description", item.getString("description"));
-				map.put("authors", item.getString("author"));
-
-				map.put("owner", item.getString("owner"));
-				map.put("holder", item.getString("holder"));
-				map.put("status", item.getInt("status"));
-				books.add(map);
-			}
+			addBookDataToList(jsonarray);
 
 			jsonarray = jsonobj.getJSONArray("borrowed_book");
-
-			for (int i = 0; i < jsonarray.length(); i++) {
-				JSONObject item = jsonarray.getJSONObject(i);
-				map = new HashMap<String, Object>();
-				map.put("id", item.getInt("id"));
-				map.put("isbn", item.getString("isbn"));
-				map.put("owner", item.getString("owner"));
-				map.put("holder", item.getString("holder"));
-				map.put("bookname", item.getString("name"));
-				map.put("coverurl", R.drawable.default_book_big);
-				map.put("description", item.getString("description"));
-				map.put("authors", item.getString("author"));
-				map.put("status", item.getInt("status"));
-				books.add(map);
-			}
+			addBookDataToList(jsonarray);
 		} catch (JSONException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public void addBookDataToList(JSONArray jsonarray) throws JSONException {
+		Map<String, Object> map;
+		for (int i = 0; i < jsonarray.length(); i++) {
+			JSONObject item = jsonarray.getJSONObject(i);
+
+			map = new HashMap<String, Object>();
+			map.put("id", item.getInt("id"));
+			map.put("isbn", item.getString("isbn"));
+			map.put("bookname", item.getString("name"));
+			map.put("coverurl", R.drawable.default_book_big);
+			map.put("description", item.getString("description"));
+			map.put("authors", item.getString("author"));
+
+			map.put("owner", item.getString("owner"));
+			map.put("holder", item.getString("holder"));
+			map.put("status", item.getInt("status"));
+			books.add(map);
 		}
 	}
 
@@ -229,7 +221,7 @@ public class User {
 		nvps.add(new BasicNameValuePair("publisher", data
 				.getString("publisher")));
 		nvps.add(new BasicNameValuePair("status", Integer
-				.toString(Book.STATUS_BORROW | Book.STATUS_UNBUY)));
+				.toString(Book.STATUS_BORROW)));
 
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
@@ -373,14 +365,25 @@ public class User {
 		net.createGetThread(url, handler);
 	}
 
-	public void updateRequest(int id, int status, Handler handler) {
-		for (Map<String, Object> item : informs) {
-			if (status == Inform.REQUEST_STATUS_CONFIRM
-					&& (Integer) item.get("id") == id
-					&& username.equals(item.get("to")))
+	public void updateBorrowRequest(int id, Handler handler) {
+		for (Map<String, Object> inform : informs) {
+			if ((Integer) inform.get("id") == id) {
+				updateRequest(id, Inform.REQUEST_STATUS_CONFIRM, handler);
 				return;
+			}
 		}
+	}
 
+	public void updateReturnRequest(int id, Handler handler) {
+		for (Map<String, Object> inform : informs) {
+			if ((Integer) inform.get("id") == id) {
+				updateRequest(id, Inform.REQUEST_STATUS_CONFIRM, handler);
+				return;
+			}
+		}
+	}
+
+	public void updateRequest(int id, int status, Handler handler) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_inform_update);
 		url += Integer.toString(id);

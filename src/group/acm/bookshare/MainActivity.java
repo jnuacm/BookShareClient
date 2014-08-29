@@ -1,11 +1,8 @@
 package group.acm.bookshare;
 
-import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
-
 import group.acm.bookshare.function.TripleDESUtil;
 import group.acm.bookshare.function.User;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +16,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.os.Bundle;
-
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -62,7 +58,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		localUser = ((LocalApp) getApplication()).getUser();
-		
+
 		bookmanage = new BookListManage(this);
 		friendmanage = new FriendListManage(this);
 		informmanage = new InformListManage(this);
@@ -222,7 +218,8 @@ public class MainActivity extends Activity {
 			if (0 == scanModel.compareTo("addBook")) {
 				String isbn = bundle.getString("result");
 				localUser.addBook(isbn, bookmanage.getAddBookHandler());
-			} else if (0 == scanModel.compareTo("borrowBook")) {
+			} else if (0 == scanModel.compareTo("borrowBook")
+					|| 0 == scanModel.compareTo("returnBook")) {
 
 				String res = bundle.getString("result");
 				Log.i("result", res);
@@ -232,15 +229,19 @@ public class MainActivity extends Activity {
 
 					String desKey1 = "ASDASDEFRGRHTTGRGEFWSP";
 					String desKey2 = "IHDASHKDSJFSDKLJFKOEFJ";
-					
+
 					// TripleDESΩ‚√‹≤ø∑÷
 					String contentString = (String) jsonObject
 							.get("contentString");
 					TripleDESUtil desUtil = new TripleDESUtil(desKey1, desKey2);
 					contentString = desUtil.getDec(contentString);
 					int id = Integer.parseInt(contentString);
-					localUser.updateRequest(id, Inform.REQUEST_STATUS_CONFIRM,
-							informmanage.getConfirmHandler(id));
+					if (0 == scanModel.compareTo("borrowBook"))
+						localUser.updateBorrowRequest(id,
+								informmanage.getConfirmHandler(id));
+					else
+						localUser.updateReturnRequest(id,
+								informmanage.getConfirmHandler(id));
 					Log.i("contentString", contentString);
 
 				} catch (Exception e) {
