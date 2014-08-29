@@ -129,7 +129,7 @@ public class Inform {
 			case BORROW_PERMITTED_SELF:
 				title = "借书对方已允许:" + (String) item.get("from");
 				content = (String) item.get("to") + "实在是太好人了";
-				confirm = "扫码";
+				confirm = "显码";
 				cancel = "取消";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.VISIBLE;
@@ -137,7 +137,7 @@ public class Inform {
 			case BORROW_PERMITTED_NOTSELF:
 				title = "借书我已允许:" + (String) item.get("to");
 				content = (String) item.get("to") + "实在是太好人了";
-				confirm = "显码";
+				confirm = "扫码";
 				cancel = "取消";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.VISIBLE;
