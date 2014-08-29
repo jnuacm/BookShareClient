@@ -232,7 +232,7 @@ public class Inform {
 		return map;
 	}
 
-	public void setState(Map<String, Object> item, String username) {
+	public void setState(Map<String, Object> item, String username) throws JSONException {
 		curState = getCurState(item, username);
 	}
 
@@ -371,44 +371,67 @@ public class Inform {
 
 	}
 
-	private InformState getCurState(Map<String, Object> item, String username) {
+	private InformState getCurState(Map<String, Object> item, String username) throws JSONException {
 		Map<String, Object> map = new HashMap<String, Object>();
+		JSONObject obj = new JSONObject((String) item.get("description"));
+		obj.getInt("bookid");
 		switch ((Integer) item.get("status")) {
 		case Inform.REQUEST_STATUS_UNPROCESSED:
-			if (username.equals(item.get("from"))) {
-				switch ((Integer) item.get("type")) {
-				case Inform.REQUEST_TYPE_BORROW:
+			// /////////////////////////////////////////
+			switch ((Integer) item.get("type")) {
+			case Inform.REQUEST_TYPE_BORROW:
+				if (username.equals(item.get("from"))) {
 					map = Inform.this.getTextByType(
 							Inform.BORROW_UNPROCESSED_SELF, item);
-					break;
-				case Inform.REQUEST_TYPE_RETURN:
-					map = Inform.this.getTextByType(
-							Inform.RETURN_UNPROCESSED_SELF, item);
-					break;
-				case Inform.REQUEST_TYPE_ADDFRIEND:
-					map = Inform.this.getTextByType(
-							Inform.ADDFRIEND_UNPROCESSED_SELF, item);
-					break;
-				}
-				return new UnprocessFromState(map);
-
-			} else {
-				switch ((Integer) item.get("type")) {
-				case Inform.REQUEST_TYPE_BORROW:
+					return new UnprocessFromState(map);
+				} else {
 					map = Inform.this.getTextByType(
 							Inform.BORROW_UNPROCESSED_NOTSELF, item);
-					break;
-				case Inform.REQUEST_TYPE_RETURN:
+					return new UnprocessToState(map);
+				}
+			case Inform.REQUEST_TYPE_RETURN:
+				if (username.equals(obj.getString("holder"))) {
+					map = Inform.this.getTextByType(
+							Inform.RETURN_UNPROCESSED_SELF, item);
+					return new UnprocessFromState(map);
+				} else {
 					map = Inform.this.getTextByType(
 							Inform.RETURN_UNPROCESSED_NOTSELF, item);
-					break;
-				case Inform.REQUEST_TYPE_ADDFRIEND:
+					return new UnprocessToState(map);
+				}
+			case Inform.REQUEST_TYPE_ADDFRIEND:
+				if (username.equals(item.get("from"))) {
+					map = Inform.this.getTextByType(
+							Inform.ADDFRIEND_UNPROCESSED_SELF, item);
+					return new UnprocessFromState(map);
+				} else {
 					map = Inform.this.getTextByType(
 							Inform.ADDFRIEND_UNPROCESSED_NOTSELF, item);
-					break;
+					return new UnprocessToState(map);
 				}
-				return new UnprocessToState(map);
 			}
+
+			// ///////////////////////////////////////////
+			/*
+			 * if (username.equals(item.get("from"))) { switch ((Integer)
+			 * item.get("type")) { case Inform.REQUEST_TYPE_BORROW: map =
+			 * Inform.this.getTextByType( Inform.BORROW_UNPROCESSED_SELF, item);
+			 * break; case Inform.REQUEST_TYPE_RETURN: map =
+			 * Inform.this.getTextByType( Inform.RETURN_UNPROCESSED_SELF, item);
+			 * break; case Inform.REQUEST_TYPE_ADDFRIEND: map =
+			 * Inform.this.getTextByType( Inform.ADDFRIEND_UNPROCESSED_SELF,
+			 * item); break; } return new UnprocessFromState(map);
+			 * 
+			 * } else { switch ((Integer) item.get("type")) { case
+			 * Inform.REQUEST_TYPE_BORROW: map = Inform.this.getTextByType(
+			 * Inform.BORROW_UNPROCESSED_NOTSELF, item); break; case
+			 * Inform.REQUEST_TYPE_RETURN: map = Inform.this.getTextByType(
+			 * Inform.RETURN_UNPROCESSED_NOTSELF, item); break; case
+			 * Inform.REQUEST_TYPE_ADDFRIEND: map = Inform.this.getTextByType(
+			 * Inform.ADDFRIEND_UNPROCESSED_NOTSELF, item); break; } return new
+			 * UnprocessToState(map); } //
+			 * ///////////////////////////////////////////////////////////
+			 */
 		case Inform.REQUEST_STATUS_PERMITTED: {
 			switch ((Integer) item.get("type")) {
 			case Inform.REQUEST_TYPE_BORROW:
@@ -424,7 +447,7 @@ public class Inform {
 				}
 			case Inform.REQUEST_TYPE_RETURN:
 
-				if (username.equals(item.get("from"))) {
+				if (username.equals(obj.getString("holder"))) {
 					map = Inform.this.getTextByType(
 							Inform.RETURN_PERMITTED_SELF, item);
 					return new PermittedFromState(map);

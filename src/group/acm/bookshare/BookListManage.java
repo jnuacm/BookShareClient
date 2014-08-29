@@ -211,8 +211,13 @@ public class BookListManage {
 			String text;
 			OnClickListener listener;
 			if (localUser.getUserName().equals(book.get("owner"))) {
-				text = "删书";
-				listener = new DeleteBookListener(book);
+				if (((String) book.get("owner")).equals(book.get("holder"))) {
+					text = "删书";
+					listener = new DeleteBookListener(book);
+				} else {
+					text = "请求对方还书";
+					listener = new AskReturnListener(book);
+				}
 			} else {
 				text = "还书";
 				listener = new ReturnBookListener(book);
@@ -223,6 +228,19 @@ public class BookListManage {
 			builder.show();
 
 			return true;
+		}
+	}
+
+	private class AskReturnListener implements DialogInterface.OnClickListener {
+		private Map<String, Object> book;
+
+		public AskReturnListener(Map<String, Object> book) {
+			this.book = book;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			localUser.askReturn(book, new ReturnBookHandler());
 		}
 	}
 

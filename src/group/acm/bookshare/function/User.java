@@ -247,6 +247,8 @@ public class User {
 	}
 
 	public boolean deleteBook(Map<String, Object> book, Handler handler) {
+		if (!((String) book.get("owner")).equals(book.get("holder")))
+			return false;
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_delete_book);
@@ -257,22 +259,31 @@ public class User {
 
 	public void borrowBook(String aimName, Map<String, Object> book,
 			Handler handler) {
-		bookRequest(aimName, (Integer) book.get("id"), "借书消息",
+		bookRequest(aimName, book, "借书消息",
 				Inform.REQUEST_TYPE_BORROW, handler);
+	}
+
+	public void askReturn(Map<String, Object> book, Handler handler) {
+		String holder = (String) book.get("holder");
+		bookRequest(holder, book, "请快点还书",
+				Inform.REQUEST_TYPE_RETURN, handler);
 	}
 
 	public void returnBook(Map<String, Object> book, Handler handler) {
 		String owner = (String) book.get("owner");
-		bookRequest(owner, (Integer) book.get("id"), "还书啦",
+		bookRequest(owner, book, "还书啦",
 				Inform.REQUEST_TYPE_RETURN, handler);
 	}
 
-	private void bookRequest(String aimName, int bookid, String message,
+	private void bookRequest(String aimName, Map<String,Object> book, String message,
 			int type, Handler handler) {
+		int bookid = (Integer) book.get("id");
 		try {
 			JSONObject obj = new JSONObject();
 			obj.put("bookid", bookid);
 			obj.put("message", message);
+			obj.put("holder", (String)book.get("holder"));
+			obj.put("owner", (String)book.get("owner"));
 			String description = obj.toString();
 
 			String url = application.getResources()

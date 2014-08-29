@@ -268,7 +268,12 @@ public class InformListManage {
 			int id = (Integer) item.get("id");
 
 			Inform inform = new Inform();
-			inform.setState(item, localUser.getUserName());
+			try {
+				inform.setState(item, localUser.getUserName());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			int nextConfirmStatus = inform.getNextConfirmStatus();
 			int nextCancelStatus = inform.getNextCancelStatus();
 
