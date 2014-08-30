@@ -354,7 +354,7 @@ public class Inform {
 
 		@Override
 		public int getNextConfirmStatus() {
-			return REQUEST_STATUS_CONFIRM;
+			return REQUEST_STATUS_CANCEL;
 		}
 
 		@Override
