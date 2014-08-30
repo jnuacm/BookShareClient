@@ -80,9 +80,36 @@ public class InformListManage {
 				Bundle data = msg.getData();
 				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
 					localUser.deleteInformById(id);
-					updateInformData();
-					String content = "成功";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+					localUser.getBookList(new Handler() {
+						@Override
+						public void handleMessage(Message msg) {
+							switch (msg.what) {
+							case NetAccess.NETMSG_AFTER:
+								Bundle data = msg.getData();
+								if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
+									localUser.clearBookData();
+									localUser.addBookDataToList(data
+											.getString("response"));
+									updateInformData();
+									String content = "成功";
+									Toast.makeText(activity, content,
+											Toast.LENGTH_LONG).show();
+								} else {
+									String content = "失败:"
+											+ data.getString("response");
+									Toast.makeText(activity, content,
+											Toast.LENGTH_LONG).show();
+								}
+								break;
+							case NetAccess.NETMSG_ERROR:
+								String content = msg.getData().getString(
+										"error");
+								Toast.makeText(activity, content,
+										Toast.LENGTH_LONG).show();
+								break;
+							}
+						}
+					});
 				} else {
 					String content = "失败:" + data.getString("response");
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
@@ -228,17 +255,22 @@ public class InformListManage {
 					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
 						String tmp = "完成";
 						Toast.makeText(activity, tmp, Toast.LENGTH_LONG).show();
-						localUser.getBookList(new Handler(){
+						localUser.getBookList(new Handler() {
 							@Override
 							public void handleMessage(Message msg) {
 								switch (msg.what) {
 								case NetAccess.NETMSG_ERROR:
-									String content = msg.getData().getString("error");
-									Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+									String content = msg.getData().getString(
+											"error");
+									Toast.makeText(activity, content,
+											Toast.LENGTH_LONG).show();
 									break;
 								case NetAccess.NETMSG_AFTER:
 									if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-										localUser.addBookDataToList(msg.getData().getString("response"));
+										localUser.clearBookData();
+										localUser.addBookDataToList(msg
+												.getData()
+												.getString("response"));
 										reload();
 									}
 									break;
@@ -282,7 +314,7 @@ public class InformListManage {
 
 			int id = (Integer) item.get("id");
 
-			Inform inform = new Inform();
+			Inform inform = new Inform(localUser);
 			try {
 				inform.setState(item, localUser.getUserName());
 			} catch (JSONException e) {
@@ -385,14 +417,14 @@ public class InformListManage {
 						if ((Integer) book.get("id") == id) {
 							if (localUser.getUserName().equals(
 									book.get("holder"))) {
-								return false;
+								return true;
 							}
 						}
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-				return true;
+				return false;
 			}
 		}
 	}

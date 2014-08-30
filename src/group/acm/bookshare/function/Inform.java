@@ -48,6 +48,12 @@ public class Inform {
 
 	public static final int EMPTY_STATUS = -1;
 
+	private User localUser;
+
+	public Inform(User localUser) {
+		this.localUser = localUser;
+	}
+
 	public static Map<String, Object> objToSend(JSONObject item)
 			throws JSONException {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -106,20 +112,27 @@ public class Inform {
 		int confirmVisibility = View.INVISIBLE;
 		int cancelVisibility = View.INVISIBLE;
 		try {
+			Map<String, Object> book;
 			JSONObject obj = new JSONObject((String) item.get("description"));
 
 			switch (type) {
 			case BORROW_UNPROCESSED_SELF:
-				title = "借书未确认:" + (String) item.get("from");
-				content = "向" + (String) item.get("to") + "借书;  " + "Message:"
+				title = "借书对方未确认:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				if (book == null)
+					Log.i("book", "bookid:" + obj.getInt("bookid"));
+				content = obj.getString("bookname") + ":向"
+						+ obj.getString("holder") + "借"
 						+ obj.getString("message");
 				cancel = "取消";
 				confirmVisibility = View.INVISIBLE;
 				cancelVisibility = View.VISIBLE;
 				break;
 			case BORROW_UNPROCESSED_NOTSELF:
-				title = "借书未处理请求:" + (String) item.get("to");
-				content = "来自" + (String) item.get("from") + "的借书请求:"
+				title = "借书未处理请求:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = (String) book.get("bookname") + ":"
+						+ (String) item.get("from") + "请求借书:"
 						+ obj.getString("message");
 				confirm = "同意";
 				cancel = "拒绝";
@@ -127,39 +140,48 @@ public class Inform {
 				cancelVisibility = View.VISIBLE;
 				break;
 			case BORROW_PERMITTED_SELF:
-				title = "借书对方已允许:" + (String) item.get("from");
-				content = (String) item.get("to") + "实在是太好人了";
+				title = "借书对方已允许:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = obj.getString("bookname")
+						+ obj.getString("owner") + "实在是太好人了";
 				confirm = "显码";
 				cancel = "取消";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.VISIBLE;
 				break;
 			case BORROW_PERMITTED_NOTSELF:
-				title = "借书我已允许:" + (String) item.get("to");
-				content = (String) item.get("to") + "实在是太好人了";
+				title = "借书我已允许:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = (String) book.get("bookname") + ":我已同意借了,等待扫码";
 				confirm = "扫码";
 				cancel = "取消";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.VISIBLE;
 				break;
 			case BORROW_REFUSED_SELF:
-				title = "借书，被拒绝了:" + (String) item.get("from");
-				content = (String) item.get("to") + "实在太残忍了";
+				title = "借书，被拒绝了:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = obj.getString("bookname") + ":"
+						+ obj.getString("holder") + "实在太残忍了";
 				confirm = "确认";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.INVISIBLE;
 				break;
 			case RETURN_UNPROCESSED_SELF:
-				title = "还书未确认:" + (String) item.get("from");
-				content = "向" + (String) item.get("to") + "还书;  " + "Message:"
+				title = "还书未确认:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = (String) book.get("bookname") + ":"
+						+ (String) book.get("owner") + "还没回应," + "Message:"
 						+ obj.getString("message");
 				cancel = "取消";
 				confirmVisibility = View.INVISIBLE;
 				cancelVisibility = View.VISIBLE;
 				break;
 			case RETURN_UNPROCESSED_NOTSELF:
-				title = "还书未处理:" + (String) item.get("to");
-				content = "来自" + (String) item.get("from") + "的还书请求:"
+				title = "还书未处理:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = (String) book.get("bookname") + ":来自"
+						+ (String) book.get("holder") + "的还书请求:"
 						+ obj.getString("message");
 				confirm = "已还";
 				cancel = "未还";
@@ -167,24 +189,28 @@ public class Inform {
 				cancelVisibility = View.VISIBLE;
 				break;
 			case RETURN_PERMITTED_SELF:
-				title = "还书对方已确认:" + (String) item.get("from");
-				content = "来自:" + (String) item.get("to");
+				title = "还书对方已确认:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = (String) book.get("bookname") + ":等待扫码";
 				confirm = "扫码";
 				cancel = "取消";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.VISIBLE;
 				break;
 			case RETURN_PERMITTED_NOTSELF:
-				title = "还书我已确认:" + (String) item.get("to");
-				content = "来自:" + (String) item.get("to");
+				title = "还书我已确认:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = (String) book.get("bookname") + ":等待拿书";
 				confirm = "显码";
 				cancel = "取消";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.VISIBLE;
 				break;
 			case RETURN_REFUSED_SELF:
-				title = "还书失败:" + (String) item.get("from");
-				content = "来自:" + (String) item.get("to");
+				title = "还书失败:";
+				book = localUser.getBookById(obj.getInt("bookid"));
+				content = (String) book.get("bookname") + ":"
+						+ (String) book.get("holder") + "没有还到书";
 				confirm = "确认";
 				confirmVisibility = View.VISIBLE;
 				cancelVisibility = View.INVISIBLE;
@@ -232,7 +258,8 @@ public class Inform {
 		return map;
 	}
 
-	public void setState(Map<String, Object> item, String username) throws JSONException {
+	public void setState(Map<String, Object> item, String username)
+			throws JSONException {
 		curState = getCurState(item, username);
 	}
 
@@ -371,7 +398,8 @@ public class Inform {
 
 	}
 
-	private InformState getCurState(Map<String, Object> item, String username) throws JSONException {
+	private InformState getCurState(Map<String, Object> item, String username)
+			throws JSONException {
 		Map<String, Object> map = new HashMap<String, Object>();
 		JSONObject obj = new JSONObject((String) item.get("description"));
 		switch ((Integer) item.get("status")) {

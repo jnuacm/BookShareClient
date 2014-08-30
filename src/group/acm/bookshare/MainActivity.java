@@ -265,7 +265,7 @@ public class MainActivity extends Activity {
 				}
 				break;
 			case Utils.ACTIVITY_REQUEST_SHOWCODE:
-				informmanage.reload();
+				bookmanage.reload();
 				break;
 			}
 		}

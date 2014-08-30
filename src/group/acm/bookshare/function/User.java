@@ -102,7 +102,7 @@ public class User {
 	public void clearBookData() {
 		books.clear();
 	}
-	
+
 	public void clearInformData() {
 		informs.clear();
 	}
@@ -278,11 +278,13 @@ public class User {
 
 	private void bookRequest(String aimName, Map<String, Object> book,
 			String message, int type, Handler handler) {
-		int bookid = (Integer) book.get("id");
 		try {
 			JSONObject obj = new JSONObject();
-			obj.put("bookid", bookid);
 			obj.put("message", message);
+			obj.put("bookid", (Integer) book.get("id"));
+			obj.put("bookname", (String) book.get("name"));
+			Log.i("owner/holder", "owner:" + (String) book.get("owner")
+					+ " holder:" + (String) book.get("holder"));
 			obj.put("holder", (String) book.get("holder"));
 			obj.put("owner", (String) book.get("owner"));
 			String description = obj.toString();
@@ -469,5 +471,13 @@ public class User {
 			}
 		}
 		return true;
+	}
+
+	public Map<String, Object> getBookById(int id) {
+		for (Map<String, Object> book : books) {
+			if ((Integer) book.get("id") == id)
+				return book;
+		}
+		return null;
 	}
 }

@@ -119,11 +119,10 @@ public class Book {
 		return ret;
 	}
 
-	public static List<Map<String, Object>> responseToBooks(String response) {
+	public static List<Map<String, Object>> jsonArrayToBooks(JSONArray array) {
 		List<Map<String, Object>> books = new ArrayList<Map<String, Object>>();
 		Map<String, Object> item = new HashMap<String, Object>();
 		try {
-			JSONArray array = new JSONArray(response);
 			for (int i = 0; i < array.length(); i++) {
 				JSONObject obj = array.getJSONObject(i);
 				item = new HashMap<String, Object>();
@@ -133,6 +132,8 @@ public class Book {
 				item.put("authors", obj.getString("author"));
 				item.put("publisher", obj.getString("publisher"));
 				item.put("description", obj.getString("description"));
+				item.put("holder", obj.getString("holder"));
+				item.put("owner", obj.getString("owner"));
 				item.put("status", obj.getInt("status"));
 				books.add(item);
 			}

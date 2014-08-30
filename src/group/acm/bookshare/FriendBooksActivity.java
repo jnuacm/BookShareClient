@@ -1,7 +1,6 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
-import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,7 +43,7 @@ public class FriendBooksActivity extends Activity {
 
 		try {
 			JSONObject obj = new JSONObject(response);
-			books = Book.responseToBooks(obj.getString("own_book"));
+			books = Book.jsonArrayToBooks(new JSONArray(obj.getString("own_book")));
 			if (books.isEmpty())
 				Log.i("FriendBooksActivity", "ЮЊПе");
 		} catch (JSONException e) {
