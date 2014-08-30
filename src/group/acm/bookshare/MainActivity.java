@@ -3,6 +3,7 @@ package group.acm.bookshare;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.TripleDESUtil;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,6 +201,19 @@ public class MainActivity extends Activity {
 			animation.setFillAfter(true);// True:图片停在动画结束位置
 			animation.setDuration(300);
 			underlined.startAnimation(animation);
+
+			// 每次页面被选中都进行一次数据更新显示
+			switch (currIndex) {
+			case 0:
+				bookmanage.updateDisplay();
+				break;
+			case 1:
+				friendmanage.updateDisplay();
+				break;
+			case 2:
+				informmanage.updateDisplay();
+				break;
+			}
 		}
 
 	}
@@ -213,14 +227,16 @@ public class MainActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
 		if (RESULT_OK == resultCode) {
-			Bundle bundle = data.getExtras();
-			String scanModel = bundle.getString("model");
-			if (0 == scanModel.compareTo("addBook")) {
+			Bundle bundle;
+			switch (requestCode) {
+			case Utils.ACTIVITY_REQUEST_ADDBOOK:
+				bundle = data.getExtras();
 				String isbn = bundle.getString("result");
-				localUser.addBook(isbn, bookmanage.getAddBookHandler());
-			} else if (0 == scanModel.compareTo("borrowBook")
-					|| 0 == scanModel.compareTo("returnBook")) {
-
+				localUser.addBook(isbn, bookmanage.getBookChangeHandler());
+				break;
+			case Utils.ACTIVITY_REQUEST_BORROWBOOK:
+			case Utils.ACTIVITY_REQUEST_RETURNBOOK:
+				bundle = data.getExtras();
 				String res = bundle.getString("result");
 				Log.i("result", res);
 				showToast(res);
@@ -236,7 +252,7 @@ public class MainActivity extends Activity {
 					TripleDESUtil desUtil = new TripleDESUtil(desKey1, desKey2);
 					contentString = desUtil.getDec(contentString);
 					int id = Integer.parseInt(contentString);
-					if (0 == scanModel.compareTo("borrowBook"))
+					if (requestCode == Utils.ACTIVITY_REQUEST_BORROWBOOK)
 						localUser.updateBorrowRequest(id,
 								informmanage.getConfirmHandler(id));
 					else
@@ -247,6 +263,10 @@ public class MainActivity extends Activity {
 				} catch (Exception e) {
 					this.showToast(e.toString());
 				}
+				break;
+			case Utils.ACTIVITY_REQUEST_SHOWCODE:
+				informmanage.reload();
+				break;
 			}
 		}
 	}

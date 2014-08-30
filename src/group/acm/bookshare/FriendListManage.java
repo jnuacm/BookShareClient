@@ -42,11 +42,11 @@ public class FriendListManage {
 	AlertDialog addFriendDialog;
 	AlertDialog.Builder builder;
 
-	Activity activity;
+	MainActivity activity;
 
 	User localUser;
 
-	public FriendListManage(Activity activity) {
+	public FriendListManage(MainActivity activity) {
 		this.activity = activity;
 		localUser = ((LocalApp) activity.getApplication()).getUser();
 	}
@@ -282,6 +282,10 @@ public class FriendListManage {
 			}
 		});
 
+	}
+
+	public void updateDisplay() {
+		friendAdapter.notifyDataSetChanged();
 	}
 
 }

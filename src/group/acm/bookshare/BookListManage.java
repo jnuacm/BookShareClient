@@ -4,6 +4,7 @@ import group.acm.bookshare.function.Book;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.util.Utils;
 
 import java.util.List;
 import java.util.Map;
@@ -36,15 +37,12 @@ import android.widget.Toast;
 
 //BookListManage负责对书本列表的界面、动作交互进行管理
 public class BookListManage {
-	public static final int SCANREQUEST_ADDBOOK = 1;
-	public static final int SCANREQUEST_BOOKCONFIRM = 2;
-
 	ListView mybookslistview;
 	BookListAdapter bookAdapter;
-	Activity activity;
+	MainActivity activity;
 	User localUser;
 
-	public BookListManage(Activity activity) {
+	public BookListManage(MainActivity activity) {
 		this.activity = activity;
 		localUser = ((LocalApp) activity.getApplication()).getUser();
 	}
@@ -53,22 +51,22 @@ public class BookListManage {
 		return mybookslistview;
 	}
 
-	public Handler getAddBookHandler() {
-		return new AddBookHandler();
+	public Handler getBookChangeHandler() {
+		return new BookChangeHandler();
 	}
 
 	@SuppressLint("HandlerLeak")
-	private class AddBookHandler extends Handler {
+	private class BookChangeHandler extends Handler {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				Bundle data = msg.getData();
 				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
 					reload(data.getString("response"));
-					String content = "添加成功";
+					String content = "成功";
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				} else {
-					String content = "添加失败:" + data.getString("response");
+					String content = "失败:" + data.getString("response");
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				}
 				break;
@@ -171,8 +169,8 @@ public class BookListManage {
 				if (0 == position) {
 
 					Intent intent = new Intent(activity, CaptureActivity.class);
-					intent.putExtra("model", "addBook");
-					activity.startActivityForResult(intent, SCANREQUEST_ADDBOOK);
+					activity.startActivityForResult(intent,
+							Utils.ACTIVITY_REQUEST_ADDBOOK);
 				} else {
 					List<Map<String, Object>> bookList = localUser
 							.getBookListData();
@@ -266,7 +264,7 @@ public class BookListManage {
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			localUser.deleteBook(book, new DeleteBookHandler());
+			localUser.deleteBook(book, new BookChangeHandler());
 		}
 	}
 
@@ -291,34 +289,17 @@ public class BookListManage {
 		}
 	}
 
-	private class DeleteBookHandler extends Handler {
-
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_BEFORE:
-				break;
-			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-					reload(msg.getData().getString("response"));
-					bookAdapter.notifyDataSetChanged();
-					String content = "删书成功";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				} else {
-					String content = "删书失败";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				}
-				break;
-			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString("error");
-				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				break;
-			}
-		}
+	public void reload() {
+		localUser.getBookList(getBookChangeHandler());
 	}
 
 	public void reload(String response) {
 		localUser.clearBookData();
 		localUser.addBookDataToList(response);
+		updateDisplay();
+	}
+	
+	public void updateDisplay(){
 		bookAdapter.notifyDataSetChanged();
 	}
 }

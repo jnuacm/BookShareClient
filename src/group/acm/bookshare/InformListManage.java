@@ -4,6 +4,7 @@ import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.util.Utils;
 
 import java.util.List;
 import java.util.Map;
@@ -35,10 +36,10 @@ public class InformListManage {
 	private ListView informlistview;
 	private InformListAdapter informAdapter;
 
-	private Activity activity;
+	private MainActivity activity;
 	private User localUser;
 
-	public InformListManage(Activity activity) {
+	public InformListManage(MainActivity activity) {
 		this.activity = activity;
 		localUser = ((LocalApp) activity.getApplication()).getUser();
 	}
@@ -125,8 +126,7 @@ public class InformListManage {
 
 			@Override
 			public void onClick(View v) {
-				localUser.getInformListData().clear();
-				localUser.getSendInformList(new SendInformHandler());
+				reload();
 			}
 		});
 
@@ -137,8 +137,8 @@ public class InformListManage {
 				// 打开扫描界面扫描条形码或二维码
 				Intent openCameraIntent = new Intent(activity,
 						CaptureActivity.class);
-				openCameraIntent.putExtra("model", "borrowBook");
-				activity.startActivityForResult(openCameraIntent, 0);
+				activity.startActivityForResult(openCameraIntent,
+						Utils.ACTIVITY_REQUEST_BORROWBOOK);
 
 			}
 		});
@@ -228,8 +228,23 @@ public class InformListManage {
 					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
 						String tmp = "完成";
 						Toast.makeText(activity, tmp, Toast.LENGTH_LONG).show();
-						informs.remove(position);
-						informAdapter.notifyDataSetChanged();
+						localUser.getBookList(new Handler(){
+							@Override
+							public void handleMessage(Message msg) {
+								switch (msg.what) {
+								case NetAccess.NETMSG_ERROR:
+									String content = msg.getData().getString("error");
+									Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+									break;
+								case NetAccess.NETMSG_AFTER:
+									if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+										localUser.addBookDataToList(msg.getData().getString("response"));
+										reload();
+									}
+									break;
+								}
+							}
+						});
 					}
 					break;
 				}
@@ -271,7 +286,6 @@ public class InformListManage {
 			try {
 				inform.setState(item, localUser.getUserName());
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			int nextConfirmStatus = inform.getNextConfirmStatus();
@@ -300,7 +314,7 @@ public class InformListManage {
 
 		public class InformClickListener implements OnClickListener {
 			int id;
-			int status;
+			int nextStatus;
 			int position;
 			Map<String, Object> item;
 			boolean flag;
@@ -309,7 +323,7 @@ public class InformListManage {
 					int id, int status, int position) {
 				this.flag = flag;
 				this.id = id;
-				this.status = status;
+				this.nextStatus = status;
 				this.position = position;
 				this.item = item;
 			}
@@ -317,7 +331,7 @@ public class InformListManage {
 			@Override
 			public void onClick(View v) {
 				if (flag
-						&& status == Inform.REQUEST_STATUS_CONFIRM
+						&& nextStatus == Inform.REQUEST_STATUS_CONFIRM
 						&& (Integer) item.get("status") == Inform.REQUEST_STATUS_PERMITTED) {
 					if ((Integer) item.get("type") == Inform.REQUEST_TYPE_BORROW) {
 						if (isBookHolder()) {
@@ -325,8 +339,8 @@ public class InformListManage {
 							// 打开扫描界面扫描条形码或二维码
 							Intent openCameraIntent = new Intent(activity,
 									CaptureActivity.class);
-							openCameraIntent.putExtra("model", "borrowBook");
-							activity.startActivityForResult(openCameraIntent, 0);
+							activity.startActivityForResult(openCameraIntent,
+									Utils.ACTIVITY_REQUEST_BORROWBOOK);
 						} else {
 							// 显示码
 							Log.i("click", (Integer) item.get("id") + "");
@@ -334,7 +348,8 @@ public class InformListManage {
 									GenerateQRCodeActivity.class);
 							intent.putExtra("ContentString",
 									(Integer) item.get("id") + "");
-							activity.startActivity(intent);
+							activity.startActivityForResult(intent,
+									Utils.ACTIVITY_REQUEST_SHOWCODE);
 						}
 						return;
 					} else if ((Integer) item.get("type") == Inform.REQUEST_TYPE_RETURN) {
@@ -344,20 +359,21 @@ public class InformListManage {
 									GenerateQRCodeActivity.class);
 							intent.putExtra("ContentString",
 									(Integer) item.get("id") + "");
-							activity.startActivity(intent);
+							activity.startActivityForResult(intent,
+									Utils.ACTIVITY_REQUEST_SHOWCODE);
 						} else {
 							// 扫码
 							// 打开扫描界面扫描条形码或二维码
 							Intent openCameraIntent = new Intent(activity,
 									CaptureActivity.class);
-							openCameraIntent.putExtra("model", "returnBook");
-							activity.startActivityForResult(openCameraIntent, 0);
+							activity.startActivityForResult(openCameraIntent,
+									Utils.ACTIVITY_REQUEST_RETURNBOOK);
 						}
 						return;
 					}
 				}
-				localUser.updateRequest(id, status,
-						new RequestHandler(position));
+				localUser.updateRequest(id, nextStatus, new RequestHandler(
+						position));
 			}
 
 			private boolean isBookHolder() {
@@ -379,5 +395,14 @@ public class InformListManage {
 				return true;
 			}
 		}
+	}
+
+	public void reload() {
+		localUser.clearInformData();
+		localUser.getSendInformList(new SendInformHandler());
+	}
+
+	public void updateDisplay() {
+		informAdapter.notifyDataSetChanged();
 	}
 }

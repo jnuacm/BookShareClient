@@ -60,10 +60,6 @@ public class CaptureActivity extends Activity implements Callback {
 		cancelScanButton = (Button) this.findViewById(R.id.btn_cancel_scan);
 		hasSurface = false;
 		inactivityTimer = new InactivityTimer(this);
-
-		Intent intent = getIntent();
-		model = intent.getStringExtra("model");
-		Log.i("in onactivityresult!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", model);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -137,7 +133,6 @@ public class CaptureActivity extends Activity implements Callback {
 			Intent resultIntent = new Intent();
 			Bundle bundle = new Bundle();
 			bundle.putString("result", resultString);
-			bundle.putString("model", model);
 			resultIntent.putExtras(bundle);
 			this.setResult(RESULT_OK, resultIntent);
 		}

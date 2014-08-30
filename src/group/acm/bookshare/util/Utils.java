@@ -6,6 +6,11 @@ import java.util.regex.Pattern;
 import android.os.Handler;
 
 public class Utils {
+	public static final int ACTIVITY_REQUEST_ADDBOOK = 1;
+	public static final int ACTIVITY_REQUEST_BORROWBOOK = 2;
+	public static final int ACTIVITY_REQUEST_RETURNBOOK = 3;
+	public static final int ACTIVITY_REQUEST_SHOWCODE = 4;
+	
 	private static boolean first = true;
 	private static long lastTime;
 	
