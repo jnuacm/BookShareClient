@@ -11,20 +11,33 @@
         android:layout_height="200dp"
         android:contentDescription="@string/login_logo_image"
         android:src="@drawable/logo" />
-
-    <EditText
-        android:id="@+id/USERNAME"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/LOGO"
-        android:hint="@string/login_username_hint"
-        android:inputType="textPersonName" />
+	<LinearLayout 
+	    android:id="@+id/USERNAME_linear_layout"
+	    android:layout_below="@id/LOGO"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" 
+	    android:gravity="center_horizontal"
+	    android:layout_marginTop="50dp">   
+	    <EditText
+        	android:id="@+id/USERNAME"
+        	android:layout_width="360dp"
+        	android:singleLine="true"
+        	android:layout_height="40dp"
+        	android:hint="@string/login_username_hint"
+        	android:inputType="textPersonName" />
+	    <ImageView 
+	        android:id="@+id/btn_select" 
+	        android:layout_width="40dp" 
+	        android:layout_height="40dp"   
+	        android:src="@drawable/down_pull" 
+	        android:scaleType="fitXY"/>  
+	 </LinearLayout> 
 
     <EditText
         android:id="@+id/PASSWORD"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/USERNAME"
+        android:layout_height="40dp"
+        android:layout_below="@id/USERNAME_linear_layout"
         android:hint="@string/login_password_hint"
         android:inputType="textPassword" />
 
