@@ -119,6 +119,25 @@ public class Book {
 		return ret;
 	}
 
+	public static Map<String, Object> objToBook(JSONObject item) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		try {
+			map.put("id", item.getInt("id"));
+			map.put("isbn", item.getString("isbn"));
+			map.put("bookname", item.getString("name"));
+			map.put("coverurl", R.drawable.default_book_big);
+			map.put("description", item.getString("description"));
+			map.put("authors", item.getString("author"));
+
+			map.put("owner", item.getString("owner"));
+			map.put("holder", item.getString("holder"));
+			map.put("status", item.getInt("status"));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static List<Map<String, Object>> jsonArrayToBooks(JSONArray array) {
 		List<Map<String, Object>> books = new ArrayList<Map<String, Object>>();
 		Map<String, Object> item = new HashMap<String, Object>();
@@ -128,7 +147,7 @@ public class Book {
 				item = new HashMap<String, Object>();
 				item.put("id", obj.getInt("id"));
 				item.put("isbn", obj.getString("isbn"));
-				item.put("name", obj.getString("name"));
+				item.put("bookname", obj.getString("name"));
 				item.put("authors", obj.getString("author"));
 				item.put("publisher", obj.getString("publisher"));
 				item.put("description", obj.getString("description"));

@@ -150,7 +150,6 @@ public class InformListManage {
 				R.layout.inform_listview_top, null);
 		Button refresh = (Button) head.findViewById(R.id.button_refresh);
 		refresh.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				reload();
@@ -165,7 +164,7 @@ public class InformListManage {
 				Intent openCameraIntent = new Intent(activity,
 						CaptureActivity.class);
 				activity.startActivityForResult(openCameraIntent,
-						Utils.ACTIVITY_REQUEST_BORROWBOOK);
+						Utils.REQUEST_SCANBOOK_UPDATESTATUS);
 
 			}
 		});
@@ -190,7 +189,7 @@ public class InformListManage {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-					localUser.addSendDataToList(msg.getData().getString(
+					localUser.addInformDataToList(msg.getData().getString(
 							"response"));
 					localUser.getReceiveInformList(new ReceiveInformHandler());
 				}
@@ -204,7 +203,7 @@ public class InformListManage {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-					localUser.addReceiveDataToList(msg.getData().getString(
+					localUser.addInformDataToList(msg.getData().getString(
 							"response"));
 					informAdapter.notifyDataSetChanged();
 				}
@@ -314,117 +313,116 @@ public class InformListManage {
 
 			int id = (Integer) item.get("id");
 
-			Inform inform = new Inform(localUser);
+			Inform inform = null;
 			try {
-				inform.setState(item, localUser.getUserName());
+				inform = new Inform(item, localUser, new InformAction(item,
+						position));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			int nextConfirmStatus = inform.getNextConfirmStatus();
-			int nextCancelStatus = inform.getNextCancelStatus();
+			Map<String, Object> textData = inform.getText();
+			views.title.setText((String) textData.get(Inform.TITLE));
+			views.content.setText((String) textData.get(Inform.CONTENT));
 
-			if (nextConfirmStatus != Inform.EMPTY_STATUS) {
-				views.confirm.setOnClickListener(new InformClickListener(true,
-						item, id, nextConfirmStatus, position));
-			}
-			if (nextCancelStatus != Inform.EMPTY_STATUS) {
-				views.cancel.setOnClickListener(new InformClickListener(false,
-						item, id, nextCancelStatus, position));
-			}
-			Map<String, Object> showingData = inform.getContent();
-			views.title.setText((String) showingData.get(Inform.TITLE));
-			views.content.setText((String) showingData.get(Inform.CONTENT));
-			views.confirm.setText((String) showingData.get(Inform.CONFIRM));
-			views.cancel.setText((String) showingData.get(Inform.CANCEL));
-			views.confirm.setVisibility((Integer) showingData
+			Map<String, Object> buttonData = inform.getButtonShow();
+
+			views.confirm.setText((String) buttonData.get(Inform.CONFIRM));
+			views.cancel.setText((String) buttonData.get(Inform.CANCEL));
+			views.confirm.setVisibility((Integer) buttonData
 					.get(Inform.CONFIRM_VISIBILITY));
-			views.cancel.setVisibility((Integer) showingData
+			views.cancel.setVisibility((Integer) buttonData
 					.get(Inform.CANCEL_VISIBILITY));
+
+			views.confirm.setOnClickListener(new ConfirmClickListener(inform));
+			views.cancel.setOnClickListener(new CancelClickListener(inform));
 
 			return convertView;
 		}
 
-		public class InformClickListener implements OnClickListener {
-			int id;
-			int nextStatus;
-			int position;
-			Map<String, Object> item;
-			boolean flag;
+		private class ConfirmClickListener implements OnClickListener {
+			private Inform inform;
 
-			public InformClickListener(boolean flag, Map<String, Object> item,
-					int id, int status, int position) {
-				this.flag = flag;
-				this.id = id;
-				this.nextStatus = status;
-				this.position = position;
-				this.item = item;
+			public ConfirmClickListener(Inform inform) {
+				this.inform = inform;
 			}
 
 			@Override
 			public void onClick(View v) {
-				if (flag
-						&& nextStatus == Inform.REQUEST_STATUS_CONFIRM
-						&& (Integer) item.get("status") == Inform.REQUEST_STATUS_PERMITTED) {
-					if ((Integer) item.get("type") == Inform.REQUEST_TYPE_BORROW) {
-						if (isBookHolder()) {
-							// 扫码
-							// 打开扫描界面扫描条形码或二维码
-							Intent openCameraIntent = new Intent(activity,
-									CaptureActivity.class);
-							activity.startActivityForResult(openCameraIntent,
-									Utils.ACTIVITY_REQUEST_BORROWBOOK);
-						} else {
-							// 显示码
-							Log.i("click", (Integer) item.get("id") + "");
-							Intent intent = new Intent(activity,
-									GenerateQRCodeActivity.class);
-							intent.putExtra("ContentString",
-									(Integer) item.get("id") + "");
-							activity.startActivityForResult(intent,
-									Utils.ACTIVITY_REQUEST_SHOWCODE);
-						}
-						return;
-					} else if ((Integer) item.get("type") == Inform.REQUEST_TYPE_RETURN) {
-						if (!isBookHolder()) {
-							// 显码
-							Intent intent = new Intent(activity,
-									GenerateQRCodeActivity.class);
-							intent.putExtra("ContentString",
-									(Integer) item.get("id") + "");
-							activity.startActivityForResult(intent,
-									Utils.ACTIVITY_REQUEST_SHOWCODE);
-						} else {
-							// 扫码
-							// 打开扫描界面扫描条形码或二维码
-							Intent openCameraIntent = new Intent(activity,
-									CaptureActivity.class);
-							activity.startActivityForResult(openCameraIntent,
-									Utils.ACTIVITY_REQUEST_RETURNBOOK);
-						}
-						return;
-					}
-				}
-				localUser.updateRequest(id, nextStatus, new RequestHandler(
-						position));
+				inform.clickConfirm();
+			}
+		}
+
+		private class CancelClickListener implements OnClickListener {
+			private Inform inform;
+
+			public CancelClickListener(Inform inform) {
+				this.inform = inform;
 			}
 
-			private boolean isBookHolder() {
-				try {
-					JSONObject obj = new JSONObject(
-							(String) item.get("description"));
-					int id = obj.getInt("bookid");
-					for (Map<String, Object> book : localUser.getBookListData()) {
-						if ((Integer) book.get("id") == id) {
-							if (localUser.getUserName().equals(
-									book.get("holder"))) {
-								return true;
-							}
-						}
-					}
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-				return false;
+			@Override
+			public void onClick(View v) {
+				inform.clickCancel();
+			}
+		}
+
+		private class InformAction implements Inform.ButtonsAction {
+			private Map<String, Object> item;
+			private int position;
+
+			public InformAction(Map<String, Object> item, int position) {
+				this.item = item;
+				this.position = position;
+			}
+
+			@Override
+			public void permitted() {
+				localUser.updateRequest((Integer) item.get("id"),
+						Inform.REQUEST_STATUS_PERMITTED, new RequestHandler(
+								position));
+			}
+
+			@Override
+			public void showCode() {
+				Intent intent = new Intent(activity,
+						GenerateQRCodeActivity.class);
+				intent.putExtra("ContentString", (Integer) item.get("id") + "");
+				activity.startActivityForResult(intent,
+						Utils.ACTIVITY_REQUEST_SHOWCODE);
+			}
+
+			@Override
+			public void scanCode() {
+				Intent openCameraIntent = new Intent(activity,
+						CaptureActivity.class);
+				activity.startActivityForResult(openCameraIntent,
+						Utils.REQUEST_SCANBOOK_UPDATESTATUS);
+			}
+
+			@Override
+			public void readConfirm() {
+				localUser.updateRead((Integer) item.get("id"), true,
+						new RequestHandler(position));
+			}
+
+			@Override
+			public void refused() {
+				localUser.updateRequest((Integer) item.get("id"),
+						Inform.REQUEST_STATUS_REFUSED, new RequestHandler(
+								position));
+			}
+
+			@Override
+			public void cancel() {
+				localUser.updateRequest((Integer) item.get("id"),
+						Inform.REQUEST_STATUS_CANCEL, new RequestHandler(
+								position));
+			}
+
+			@Override
+			public void confirm() {
+				localUser.updateRequest((Integer) item.get("id"),
+						Inform.REQUEST_STATUS_CONFIRM, new RequestHandler(
+								position));
 			}
 		}
 	}
@@ -437,4 +435,5 @@ public class InformListManage {
 	public void updateDisplay() {
 		informAdapter.notifyDataSetChanged();
 	}
+
 }

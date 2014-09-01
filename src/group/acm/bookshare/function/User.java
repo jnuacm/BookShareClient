@@ -121,23 +121,15 @@ public class User {
 		}
 	}
 
-	public void addBookDataToList(JSONArray jsonarray) throws JSONException {
-		Map<String, Object> map;
+	public void addBookDataToList(JSONArray jsonarray) {
 		for (int i = 0; i < jsonarray.length(); i++) {
-			JSONObject item = jsonarray.getJSONObject(i);
-
-			map = new HashMap<String, Object>();
-			map.put("id", item.getInt("id"));
-			map.put("isbn", item.getString("isbn"));
-			map.put("bookname", item.getString("name"));
-			map.put("coverurl", R.drawable.default_book_big);
-			map.put("description", item.getString("description"));
-			map.put("authors", item.getString("author"));
-
-			map.put("owner", item.getString("owner"));
-			map.put("holder", item.getString("holder"));
-			map.put("status", item.getInt("status"));
-			books.add(map);
+			JSONObject item;
+			try {
+				item = jsonarray.getJSONObject(i);
+				books.add(Book.objToBook(item));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -174,6 +166,52 @@ public class User {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public boolean addInformDataToList(String response) {
+		JSONArray jsonarray;
+		try {
+			jsonarray = new JSONArray(response);
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				Map<String, Object> tmp = Inform.objToInform(item);
+				if (!showThisInform(tmp))
+					continue;
+				informs.add(tmp);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	private boolean showThisInform(Map<String, Object> item) {
+		if ((Integer) item.get("read") == Inform.READ)
+			return false;
+		try {
+			Inform inform = new Inform(item,this,null);
+			switch(inform.state){
+			case 5:
+			case 7:
+			case 8:
+			case 9:
+			case 15:
+			case 16:
+			case 18:
+			case 19:
+			case 23:
+			case 25:
+			case 26:
+			case 27:
+			case 28:
+			case 29:
+			case 30:return false;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 
 	public void addBook(String isbn, Handler handler) {
@@ -323,47 +361,6 @@ public class User {
 		return false;
 	}
 
-	public boolean addSendDataToList(String response) {
-
-		JSONArray jsonarray;
-		try {
-			jsonarray = new JSONArray(response);
-			for (int i = 0; i < jsonarray.length(); i++) {
-				JSONObject item = jsonarray.getJSONObject(i);
-				Map<String, Object> tmp = Inform.objToSend(item);
-				if ((Integer) tmp.get("status") == Inform.REQUEST_STATUS_CONFIRM
-						|| (Integer) tmp.get("status") == Inform.REQUEST_STATUS_CANCEL)
-					continue;
-				informs.add(tmp);
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-
-	public boolean addReceiveDataToList(String response) {
-		try {
-			JSONArray jsonarray = new JSONArray(response);
-			for (int i = 0; i < jsonarray.length(); i++) {
-				JSONObject item = jsonarray.getJSONObject(i);
-				Map<String, Object> tmp = Inform.objToReceive(item);
-				int curStatus = (Integer) tmp.get("status");
-				if (curStatus == Inform.REQUEST_STATUS_CONFIRM
-						|| curStatus == Inform.REQUEST_STATUS_CANCEL
-						|| curStatus == Inform.REQUEST_STATUS_REFUSED
-						|| ((Integer) tmp.get("type") == Inform.REQUEST_TYPE_ADDFRIEND && curStatus == Inform.REQUEST_STATUS_PERMITTED))
-					continue;
-				informs.add(tmp);
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-
 	public void getSendInformList(Handler handler) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_send_inform);
@@ -383,24 +380,6 @@ public class User {
 		net.createGetThread(url, handler);
 	}
 
-	public void updateBorrowRequest(int id, Handler handler) {
-		for (Map<String, Object> inform : informs) {
-			if ((Integer) inform.get("id") == id) {
-				updateRequest(id, Inform.REQUEST_STATUS_CONFIRM, handler);
-				return;
-			}
-		}
-	}
-
-	public void updateReturnRequest(int id, Handler handler) {
-		for (Map<String, Object> inform : informs) {
-			if ((Integer) inform.get("id") == id) {
-				updateRequest(id, Inform.REQUEST_STATUS_CONFIRM, handler);
-				return;
-			}
-		}
-	}
-
 	public void updateRequest(int id, int status, Handler handler) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_inform_update);
@@ -409,6 +388,23 @@ public class User {
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("status", Integer.toString(status)));
+
+		net.createPutThread(url, nvps, handler);
+	}
+
+	public void updateRead(Integer id, boolean readState, Handler handler) {
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources().getString(R.string.url_inform_update);
+		url += Integer.toString(id);
+		NetAccess net = NetAccess.getInstance();
+
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		int read;
+		if (readState)
+			read = 1;
+		else
+			read = 0;
+		nvps.add(new BasicNameValuePair("read", Integer.toString(read)));
 
 		net.createPutThread(url, nvps, handler);
 	}

@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.TripleDESUtil;
 import group.acm.bookshare.function.User;
@@ -234,8 +235,7 @@ public class MainActivity extends Activity {
 				String isbn = bundle.getString("result");
 				localUser.addBook(isbn, bookmanage.getBookChangeHandler());
 				break;
-			case Utils.ACTIVITY_REQUEST_BORROWBOOK:
-			case Utils.ACTIVITY_REQUEST_RETURNBOOK:
+			case Utils.REQUEST_SCANBOOK_UPDATESTATUS:
 				bundle = data.getExtras();
 				String res = bundle.getString("result");
 				Log.i("result", res);
@@ -252,12 +252,8 @@ public class MainActivity extends Activity {
 					TripleDESUtil desUtil = new TripleDESUtil(desKey1, desKey2);
 					contentString = desUtil.getDec(contentString);
 					int id = Integer.parseInt(contentString);
-					if (requestCode == Utils.ACTIVITY_REQUEST_BORROWBOOK)
-						localUser.updateBorrowRequest(id,
-								informmanage.getConfirmHandler(id));
-					else
-						localUser.updateReturnRequest(id,
-								informmanage.getConfirmHandler(id));
+					localUser.updateRequest(id, Inform.REQUEST_STATUS_CONFIRM,
+							informmanage.getConfirmHandler(id));
 					Log.i("contentString", contentString);
 
 				} catch (Exception e) {

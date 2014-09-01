@@ -44,10 +44,7 @@ public class FriendBooksActivity extends Activity {
 		try {
 			JSONObject obj = new JSONObject(response);
 			books = Book.jsonArrayToBooks(new JSONArray(obj.getString("own_book")));
-			if (books.isEmpty())
-				Log.i("FriendBooksActivity", "为空");
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		FriendBooksAdapter bookAdapter = new FriendBooksAdapter(this, books);
@@ -141,6 +138,7 @@ public class FriendBooksActivity extends Activity {
 					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
 						Toast.makeText(FriendBooksActivity.this, "发送成功",
 								Toast.LENGTH_SHORT).show();
+						finish();
 					} else {
 						Toast.makeText(FriendBooksActivity.this, "发送失败",
 								Toast.LENGTH_SHORT).show();

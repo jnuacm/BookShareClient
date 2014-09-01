@@ -11,6 +11,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 public class Inform {
+	public static final int TYPE_SUM = 3;
+	public static final int STATUS_SUM = 5;
+	public static final int IDENTITY_SUM = 2;
+
 	public static final int REQUEST_TYPE_BORROW = 1;
 	public static final int REQUEST_TYPE_RETURN = 2;
 	public static final int REQUEST_TYPE_ADDFRIEND = 3;
@@ -21,21 +25,23 @@ public class Inform {
 	public static final int REQUEST_STATUS_CONFIRM = 3;
 	public static final int REQUEST_STATUS_CANCEL = 4;
 
-	public static final int BORROW_UNPROCESSED_SELF = 0;
-	public static final int BORROW_UNPROCESSED_NOTSELF = 1;
-	public static final int BORROW_PERMITTED_SELF = 2;
-	public static final int BORROW_PERMITTED_NOTSELF = 3;
-	public static final int BORROW_REFUSED_SELF = 4;
-	public static final int RETURN_UNPROCESSED_SELF = 6;
-	public static final int RETURN_UNPROCESSED_NOTSELF = 7;
-	public static final int RETURN_PERMITTED_SELF = 8;
-	public static final int RETURN_PERMITTED_NOTSELF = 9;
-	public static final int RETURN_REFUSED_SELF = 10;
-	public static final int ADDFRIEND_UNPROCESSED_SELF = 12;
-	public static final int ADDFRIEND_UNPROCESSED_NOTSELF = 13;
-	public static final int ADDFRIEND_PERMITTED_SELF = 14;
-	public static final int ADDFRIEND_PERMITTED_NOTSELF = 15;
-	public static final int ADDFRIEND_REFUSED_SELF = 16;
+	public static final int SELF = 1;
+	public static final int NOT_SELF = 0;
+	public static final int READ = 1;
+	public static final int NOT_READ = 0;
+
+	public static final String[] confirmButton = { "", "同意", "显码", "扫码", "确认",
+			"", "确认", "", "", "", "", "已还", "扫码", "显码", "确认", "", "", "确认", "",
+			"", "", "同意", "确认", "", "确认", "", "", "", "", "" };
+	public static final int[] confirmVisibility = { 4, 0, 0, 0, 0, 4, 0, 4, 4,
+			4, 4, 0, 0, 0, 0, 4, 4, 0, 4, 4, 4, 0, 0, 4, 0, 4, 4, 4, 4, 4 };
+	public static final String[] cancelButton = { "取消", "拒绝", "取消", "取消", "",
+			"", "", "", "", "", "取消", "未还", "取消", "取消", "", "", "", "", "", "",
+			"取消", "拒绝", "", "", "", "", "", "", "", "" };
+	public static final int[] cancelVisibility = { 0, 0, 0, 0, 4, 4, 4, 4, 4,
+			4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, };
+
+	public static final int EMPTY_STATUS = -1;
 
 	public static final String TITLE = "title";
 	public static final String CONTENT = "content";
@@ -44,469 +50,265 @@ public class Inform {
 	public static final String CONFIRM_VISIBILITY = "confirm_visibility";
 	public static final String CANCEL_VISIBILITY = "cancel_visibility";
 
-	private InformState curState = null;
-
-	public static final int EMPTY_STATUS = -1;
-
+	private Map<String, Object> inform;
 	private User localUser;
+	public int type;
+	public int status;
+	public int isSelf;
+	public int isRead;
+	public int state;
 
-	public Inform(User localUser) {
+	private ButtonsAction action;
+
+	public interface ButtonsAction {
+		public abstract void permitted();
+
+		public abstract void showCode();
+
+		public abstract void scanCode();
+
+		public abstract void readConfirm();
+
+		public abstract void confirm();
+
+		public abstract void refused();
+
+		public abstract void cancel();
+	}
+
+	public Inform(Map<String, Object> inform, User localUser,
+			ButtonsAction action) throws JSONException {
+		this.inform = inform;
 		this.localUser = localUser;
+		this.action = action;
+		type = (Integer) inform.get("type");
+		status = (Integer) inform.get("status");
+		isRead = (Integer) inform.get("read");
+		isSelf = getIdentityJudge(type, status).isSelf(inform, localUser);
+		state = type * STATUS_SUM * IDENTITY_SUM + status * IDENTITY_SUM
+				+ isSelf;
 	}
 
-	public static Map<String, Object> objToSend(JSONObject item)
-			throws JSONException {
-		Map<String, Object> map = new HashMap<String, Object>();
-		int id = item.getInt("id");
-		String time = item.getString("time");
-		String from = item.getString("from");
-		String to = item.getString("to");
-		int type = item.getInt("type");
-		String description = item.getString("description");
-		int status = item.getInt("status");
-
-		map = new HashMap<String, Object>();
-		map.put("id", id);
-		map.put("time", time);
-		map.put("from", from);
-		map.put("to", to);
-		map.put("type", type);
-		map.put("description", description);
-		map.put("status", status);
-
-		return map;
+	private IdentityJudge getIdentityJudge(int type, int status) {
+		switch (type) {
+		case Inform.REQUEST_TYPE_BORROW:
+			return new IdentityJudge();
+		case Inform.REQUEST_TYPE_RETURN:
+			return new ReturnIdentityJudge();
+		case Inform.REQUEST_TYPE_ADDFRIEND:
+			return new IdentityJudge();
+		}
+		return null;
 	}
 
-	public static Map<String, Object> objToReceive(JSONObject item)
-			throws JSONException {
-		Map<String, Object> map = new HashMap<String, Object>();
-		int id = item.getInt("id");
-		String time = item.getString("time");
-		String from = item.getString("from");
-		String to = item.getString("to");
-		int type = item.getInt("type");
-		String description = item.getString("description");
-		int status = item.getInt("status");
-
-		map = new HashMap<String, Object>();
-		map.put("id", id);
-		map.put("time", time);
-		map.put("from", from);
-		map.put("to", to);
-		map.put("type", type);
-		map.put("description", description);
-		map.put("status", status);
-
-		return map;
+	private class IdentityJudge {
+		public int isSelf(Map<String, Object> inform, User localUser) {
+			if (localUser.getUserName().equals(inform.get("from")))
+				return SELF;
+			else
+				return NOT_SELF;
+		}
 	}
 
-	public boolean stateIsNull() {
-		if (curState == null)
-			return true;
-		return false;
+	private class ReturnIdentityJudge extends IdentityJudge {
+		public int isSelf(Map<String, Object> inform, User localUser) {
+			try {
+				JSONObject obj = new JSONObject(
+						(String) inform.get("description"));
+				int id = obj.getInt("bookid");
+				for (Map<String, Object> book : localUser.getBookListData()) {
+					if ((Integer) book.get("id") == id) {
+						if (localUser.getUserName().equals(book.get("holder"))) {
+							return SELF;
+						}
+					}
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			return NOT_SELF;
+		}
 	}
 
-	public Map<String, Object> getTextByType(int type, Map<String, Object> item) {
-		Log.i("Inform type", Integer.toString(type));
-		String title = "", content = "", confirm = "", cancel = "";
-		int confirmVisibility = View.INVISIBLE;
-		int cancelVisibility = View.INVISIBLE;
+	public Map<String, Object> getText() {
+		String title = "", content = "", notself = "", message = "";
+
 		try {
-			Map<String, Object> book;
-			JSONObject obj = new JSONObject((String) item.get("description"));
+			JSONObject obj;
+			obj = new JSONObject((String) inform.get("description"));
+			message = obj.getString("message");
 
 			switch (type) {
-			case BORROW_UNPROCESSED_SELF:
-				title = "借书对方未确认:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				if (book == null)
-					Log.i("book", "bookid:" + obj.getInt("bookid"));
-				content = obj.getString("bookname") + ":向"
-						+ obj.getString("holder") + "借"
-						+ obj.getString("message");
-				cancel = "取消";
-				confirmVisibility = View.INVISIBLE;
-				cancelVisibility = View.VISIBLE;
+			case Inform.REQUEST_TYPE_BORROW:
+				title = "借书请求:";
+				message = "借书," + obj.getString("bookname") + ",message:"
+						+ message;
+				if (isSelf == SELF) {
+					notself = obj.getString("owner");
+				} else {
+					notself = (String) inform.get("from");
+				}
 				break;
-			case BORROW_UNPROCESSED_NOTSELF:
-				title = "借书未处理请求:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = (String) book.get("bookname") + ":"
-						+ (String) item.get("from") + "请求借书:"
-						+ obj.getString("message");
-				confirm = "同意";
-				cancel = "拒绝";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.VISIBLE;
+			case Inform.REQUEST_TYPE_RETURN:
+				title = "还书请求:";
+				message = "接受还书," + obj.getString("bookname") + ",message:"
+						+ message;
+				if (isSelf == SELF) {
+					notself = obj.getString("owner");
+				} else {
+					notself = obj.getString("holder");
+				}
 				break;
-			case BORROW_PERMITTED_SELF:
-				title = "借书对方已允许:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = obj.getString("bookname")
-						+ obj.getString("owner") + "实在是太好人了";
-				confirm = "显码";
-				cancel = "取消";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.VISIBLE;
+			case Inform.REQUEST_TYPE_ADDFRIEND:
+				title = "加好友:";
+				message = "加好友,message:" + message;
+				if (isSelf == SELF) {
+					notself = obj.getString("to");
+				} else {
+					notself = obj.getString("from");
+				}
 				break;
-			case BORROW_PERMITTED_NOTSELF:
-				title = "借书我已允许:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = (String) book.get("bookname") + ":我已同意借了,等待扫码";
-				confirm = "扫码";
-				cancel = "取消";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.VISIBLE;
-				break;
-			case BORROW_REFUSED_SELF:
-				title = "借书，被拒绝了:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = obj.getString("bookname") + ":"
-						+ obj.getString("holder") + "实在太残忍了";
-				confirm = "确认";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.INVISIBLE;
-				break;
-			case RETURN_UNPROCESSED_SELF:
-				title = "还书未确认:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = (String) book.get("bookname") + ":"
-						+ (String) book.get("owner") + "还没回应," + "Message:"
-						+ obj.getString("message");
-				cancel = "取消";
-				confirmVisibility = View.INVISIBLE;
-				cancelVisibility = View.VISIBLE;
-				break;
-			case RETURN_UNPROCESSED_NOTSELF:
-				title = "还书未处理:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = (String) book.get("bookname") + ":来自"
-						+ (String) book.get("holder") + "的还书请求:"
-						+ obj.getString("message");
-				confirm = "已还";
-				cancel = "未还";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.VISIBLE;
-				break;
-			case RETURN_PERMITTED_SELF:
-				title = "还书对方已确认:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = (String) book.get("bookname") + ":等待扫码";
-				confirm = "扫码";
-				cancel = "取消";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.VISIBLE;
-				break;
-			case RETURN_PERMITTED_NOTSELF:
-				title = "还书我已确认:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = (String) book.get("bookname") + ":等待拿书";
-				confirm = "显码";
-				cancel = "取消";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.VISIBLE;
-				break;
-			case RETURN_REFUSED_SELF:
-				title = "还书失败:";
-				book = localUser.getBookById(obj.getInt("bookid"));
-				content = (String) book.get("bookname") + ":"
-						+ (String) book.get("holder") + "没有还到书";
-				confirm = "确认";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.INVISIBLE;
-				break;
-			case ADDFRIEND_UNPROCESSED_SELF:
-				title = "加好友未处理：" + (String) item.get("from");
-				content = "我是发送方";
-				confirmVisibility = View.INVISIBLE;
-				cancelVisibility = View.INVISIBLE;
-				break;
-			case ADDFRIEND_UNPROCESSED_NOTSELF:
-				title = "加好友未处理" + (String) item.get("to");
-				content = "我是接收方";
-				confirm = "同意";
-				cancel = "拒绝";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.VISIBLE;
-				break;
-			case ADDFRIEND_PERMITTED_SELF:
-				title = "加好友同意" + (String) item.get("from");
-				content = "对方已同意";
-				confirm = "确认";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.INVISIBLE;
-				break;
-			case ADDFRIEND_REFUSED_SELF:
-				title = "加好友拒绝" + (String) item.get("to");
-				content = "对方已拒绝";
-				confirm = "确认";
-				confirmVisibility = View.VISIBLE;
-				cancelVisibility = View.INVISIBLE;
-				break;
-
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+		switch (status) {
+		case Inform.REQUEST_STATUS_UNPROCESSED:
+			content = "未处理:";
+			break;
+		case Inform.REQUEST_STATUS_PERMITTED:
+			content = "同意:";
+			break;
+		case Inform.REQUEST_STATUS_REFUSED:
+			content = "拒绝:";
+			break;
+		case Inform.REQUEST_STATUS_CONFIRM:
+			content = "已完成:";
+			break;
+		case Inform.REQUEST_STATUS_CANCEL:
+			content = "取消:";
+			break;
+		}
+
+		if (isSelf == SELF) {
+			content += "请求" + notself;
+		} else {
+			content += notself + "请求";
+		}
+
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put(TITLE, title);
 		map.put(CONTENT, content);
-		map.put(CONFIRM, confirm);
-		map.put(CANCEL, cancel);
-		map.put(CONFIRM_VISIBILITY, confirmVisibility);
-		map.put(CANCEL_VISIBILITY, cancelVisibility);
 		return map;
 	}
 
-	public void setState(Map<String, Object> item, String username)
-			throws JSONException {
-		curState = getCurState(item, username);
-	}
-
-	public Map<String, Object> getContent() {
-		return curState.getContent();
-	}
-
-	public int getNextConfirmStatus() {
-		return curState.getNextConfirmStatus();
-	}
-
-	public int getNextCancelStatus() {
-		return curState.getNextCancelStatus();
-	}
-
-	public abstract class InformState {
-		protected OnClickListener listenerConfirm;
-		protected OnClickListener listenerCancel;
-		protected Map<String, Object> showingData;
-
-		public InformState(Map<String, Object> showingData) {
-			this.showingData = showingData;
-		}
-
-		public Map<String, Object> getContent() {
-			return showingData;
-		}
-
-		public abstract int getNextConfirmStatus();
-
-		public abstract int getNextCancelStatus();
-	}
-
-	public class UnprocessFromState extends InformState {
-
-		public UnprocessFromState(Map<String, Object> data) {
-			super(data);
-		}
-
-		@Override
-		public int getNextConfirmStatus() {
-			return EMPTY_STATUS;
-		}
-
-		@Override
-		public int getNextCancelStatus() {
-			return Inform.REQUEST_STATUS_CANCEL;
-		}
-
-	}
-
-	public class UnprocessToState extends InformState {
-
-		public UnprocessToState(Map<String, Object> data) {
-			super(data);
-		}
-
-		@Override
-		public int getNextConfirmStatus() {
-			return REQUEST_STATUS_PERMITTED;
-		}
-
-		@Override
-		public int getNextCancelStatus() {
-			return REQUEST_STATUS_REFUSED;
-		}
-	}
-
-	public class PermittedFromState extends InformState {
-
-		public PermittedFromState(Map<String, Object> data) {
-			super(data);
-		}
-
-		@Override
-		public int getNextConfirmStatus() {
-			return REQUEST_STATUS_CONFIRM;
-		}
-
-		@Override
-		public int getNextCancelStatus() {
-			return REQUEST_STATUS_CANCEL;
-		}
-
-	}
-
-	public class RefusedFromState extends InformState {
-
-		public RefusedFromState(Map<String, Object> data) {
-			super(data);
-		}
-
-		@Override
-		public int getNextConfirmStatus() {
-			return REQUEST_STATUS_CANCEL;
-		}
-
-		@Override
-		public int getNextCancelStatus() {
-			return EMPTY_STATUS;
-		}
-	}
-
-	public class RefusedToState extends InformState {
-
-		public RefusedToState(Map<String, Object> data) {
-			super(data);
-		}
-
-		@Override
-		public int getNextConfirmStatus() {
-			return EMPTY_STATUS;
-		}
-
-		@Override
-		public int getNextCancelStatus() {
-			return EMPTY_STATUS;
-		}
-	}
-
-	public class PermittedToState extends InformState {
-
-		public PermittedToState(Map<String, Object> data) {
-			super(data);
-		}
-
-		@Override
-		public int getNextConfirmStatus() {
-			return REQUEST_STATUS_CONFIRM;
-		}
-
-		@Override
-		public int getNextCancelStatus() {
-			return REQUEST_STATUS_CANCEL;
-		}
-
-	}
-
-	private InformState getCurState(Map<String, Object> item, String username)
+	public static Map<String, Object> objToInform(JSONObject item)
 			throws JSONException {
 		Map<String, Object> map = new HashMap<String, Object>();
-		JSONObject obj = new JSONObject((String) item.get("description"));
-		switch ((Integer) item.get("status")) {
-		case Inform.REQUEST_STATUS_UNPROCESSED:
-			// /////////////////////////////////////////
-			switch ((Integer) item.get("type")) {
-			case Inform.REQUEST_TYPE_BORROW:
-				if (username.equals(item.get("from"))) {
-					map = Inform.this.getTextByType(
-							Inform.BORROW_UNPROCESSED_SELF, item);
-					return new UnprocessFromState(map);
-				} else {
-					map = Inform.this.getTextByType(
-							Inform.BORROW_UNPROCESSED_NOTSELF, item);
-					return new UnprocessToState(map);
-				}
-			case Inform.REQUEST_TYPE_RETURN:
-				if (username.equals(obj.getString("holder"))) {
-					map = Inform.this.getTextByType(
-							Inform.RETURN_UNPROCESSED_SELF, item);
-					return new UnprocessFromState(map);
-				} else {
-					map = Inform.this.getTextByType(
-							Inform.RETURN_UNPROCESSED_NOTSELF, item);
-					return new UnprocessToState(map);
-				}
-			case Inform.REQUEST_TYPE_ADDFRIEND:
-				if (username.equals(item.get("from"))) {
-					map = Inform.this.getTextByType(
-							Inform.ADDFRIEND_UNPROCESSED_SELF, item);
-					return new UnprocessFromState(map);
-				} else {
-					map = Inform.this.getTextByType(
-							Inform.ADDFRIEND_UNPROCESSED_NOTSELF, item);
-					return new UnprocessToState(map);
-				}
-			}
+		int id = item.getInt("id");
+		String time = item.getString("time");
+		String from = item.getString("from");
+		String to = item.getString("to");
+		int type = item.getInt("type");
+		String description = item.getString("description");
+		int status = item.getInt("status");
 
-			// ///////////////////////////////////////////
-			/*
-			 * if (username.equals(item.get("from"))) { switch ((Integer)
-			 * item.get("type")) { case Inform.REQUEST_TYPE_BORROW: map =
-			 * Inform.this.getTextByType( Inform.BORROW_UNPROCESSED_SELF, item);
-			 * break; case Inform.REQUEST_TYPE_RETURN: map =
-			 * Inform.this.getTextByType( Inform.RETURN_UNPROCESSED_SELF, item);
-			 * break; case Inform.REQUEST_TYPE_ADDFRIEND: map =
-			 * Inform.this.getTextByType( Inform.ADDFRIEND_UNPROCESSED_SELF,
-			 * item); break; } return new UnprocessFromState(map);
-			 * 
-			 * } else { switch ((Integer) item.get("type")) { case
-			 * Inform.REQUEST_TYPE_BORROW: map = Inform.this.getTextByType(
-			 * Inform.BORROW_UNPROCESSED_NOTSELF, item); break; case
-			 * Inform.REQUEST_TYPE_RETURN: map = Inform.this.getTextByType(
-			 * Inform.RETURN_UNPROCESSED_NOTSELF, item); break; case
-			 * Inform.REQUEST_TYPE_ADDFRIEND: map = Inform.this.getTextByType(
-			 * Inform.ADDFRIEND_UNPROCESSED_NOTSELF, item); break; } return new
-			 * UnprocessToState(map); } //
-			 * ///////////////////////////////////////////////////////////
-			 */
-		case Inform.REQUEST_STATUS_PERMITTED: {
-			switch ((Integer) item.get("type")) {
-			case Inform.REQUEST_TYPE_BORROW:
+		map = new HashMap<String, Object>();
+		map.put("id", id);
+		map.put("time", time);
+		map.put("from", from);
+		map.put("to", to);
+		map.put("type", type);
+		map.put("description", description);
+		map.put("status", status);
 
-				if (username.equals(item.get("from"))) {
-					map = Inform.this.getTextByType(
-							Inform.BORROW_PERMITTED_SELF, item);
-					return new PermittedFromState(map);
-				} else {
-					map = Inform.this.getTextByType(
-							Inform.BORROW_PERMITTED_NOTSELF, item);
-					return new PermittedToState(map);
-				}
-			case Inform.REQUEST_TYPE_RETURN:
+		return map;
+	}
 
-				if (username.equals(obj.getString("holder"))) {
-					map = Inform.this.getTextByType(
-							Inform.RETURN_PERMITTED_SELF, item);
-					return new PermittedFromState(map);
-				} else {
-					map = Inform.this.getTextByType(
-							Inform.RETURN_PERMITTED_NOTSELF, item);
-					return new PermittedToState(map);
-				}
-			case Inform.REQUEST_TYPE_ADDFRIEND:
-				map = Inform.this.getTextByType(
-						Inform.ADDFRIEND_PERMITTED_SELF, item);
-				return new PermittedFromState(map);
-			}
+	public Map<String, Object> getButtonShow() {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		ret.put(CONFIRM, confirmButton[state]);
+		ret.put(CONFIRM_VISIBILITY, confirmButton[state]);
+		ret.put(CANCEL, confirmButton[state]);
+		ret.put(CANCEL_VISIBILITY, confirmButton[state]);
+		return ret;
+	}
+
+	public void clickConfirm() {
+		switch(state){
+		case 0:break;
+		case 1:action.permitted();break;
+		case 2:action.showCode();break;
+		case 3:action.scanCode();break;
+		case 4:action.readConfirm();break;
+		case 5:break;
+		case 6:action.readConfirm();break;
+		case 7:break;
+		case 8:break;
+		case 9:break;
+		case 10:break;
+		case 11:action.permitted();break;
+		case 12:action.scanCode();break;
+		case 13:action.showCode();break;
+		case 14:action.readConfirm();break;
+		case 15:break;
+		case 16:break;
+		case 17:action.readConfirm();break;
+		case 18:break;
+		case 19:break;
+		case 20:break;
+		case 21:action.permitted();break;
+		case 22:action.confirm();break;
+		case 23:break;
+		case 24:action.readConfirm();break;
+		case 25:break;
+		case 26:break;
+		case 27:break;
+		case 28:break;
+		case 29:break;
 		}
-		case Inform.REQUEST_STATUS_REFUSED: {
-			switch ((Integer) item.get("type")) {
-			case Inform.REQUEST_TYPE_BORROW:
-				map = Inform.this.getTextByType(Inform.BORROW_REFUSED_SELF,
-						item);
-				break;
-			case Inform.REQUEST_TYPE_RETURN:
-				map = Inform.this.getTextByType(Inform.RETURN_REFUSED_SELF,
-						item);
-				break;
-			case Inform.REQUEST_TYPE_ADDFRIEND:
-				map = Inform.this.getTextByType(Inform.ADDFRIEND_REFUSED_SELF,
-						item);
-				break;
-			}
-			return new RefusedFromState(map);
+	}
+
+	public void clickCancel() {
+		switch(state){
+		case 0:action.cancel();break;
+		case 1:action.refused();break;
+		case 2:action.cancel();break;
+		case 3:action.cancel();break;
+		case 4:break;
+		case 5:break;
+		case 6:break;
+		case 7:break;
+		case 8:break;
+		case 9:break;
+		case 10:action.cancel();break;
+		case 11:action.refused();break;
+		case 12:action.cancel();break;
+		case 13:action.cancel();break;
+		case 14:break;
+		case 15:break;
+		case 16:break;
+		case 17:break;
+		case 18:break;
+		case 19:break;
+		case 20:action.cancel();break;
+		case 21:action.refused();break;
+		case 22:break;
+		case 23:break;
+		case 24:break;
+		case 25:break;
+		case 26:break;
+		case 27:break;
+		case 28:break;
+		case 29:break;
 		}
-		}
-		return null;
+	}
+
+	public boolean isRead() {
+		if (isRead == Inform.READ)
+			return true;
+		else
+			return false;
 	}
 }
