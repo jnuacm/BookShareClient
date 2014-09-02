@@ -175,41 +175,14 @@ public class User {
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject item = jsonarray.getJSONObject(i);
 				Map<String, Object> tmp = Inform.objToInform(item);
-				if (!showThisInform(tmp))
+				Inform inform = new Inform(tmp, this, null);
+				if (!inform.showThisInform())
 					continue;
 				informs.add(tmp);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
-		}
-		return true;
-	}
-
-	private boolean showThisInform(Map<String, Object> item) {
-		if ((Integer) item.get("read") == Inform.READ)
-			return false;
-		try {
-			Inform inform = new Inform(item,this,null);
-			switch(inform.state){
-			case 5:
-			case 7:
-			case 8:
-			case 9:
-			case 15:
-			case 16:
-			case 18:
-			case 19:
-			case 23:
-			case 25:
-			case 26:
-			case 27:
-			case 28:
-			case 29:
-			case 30:return false;
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
 		}
 		return true;
 	}
@@ -320,7 +293,7 @@ public class User {
 			JSONObject obj = new JSONObject();
 			obj.put("message", message);
 			obj.put("bookid", (Integer) book.get("id"));
-			obj.put("bookname", (String) book.get("name"));
+			obj.put("bookname", (String) book.get("bookname"));
 			Log.i("owner/holder", "owner:" + (String) book.get("owner")
 					+ " holder:" + (String) book.get("holder"));
 			obj.put("holder", (String) book.get("holder"));

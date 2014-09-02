@@ -105,7 +105,7 @@ public class FriendBooksActivity extends Activity {
 
 			int bookStatus = (Integer) item.get("status");
 
-			title.setText((String) item.get("name"));
+			title.setText((String) item.get("bookname"));
 			String[] text = { "不可借", "可借", "不可卖", "可卖" };
 			status.setText(text[bookStatus]);
 			if (bookStatus == 1)

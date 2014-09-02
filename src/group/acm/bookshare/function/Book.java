@@ -16,6 +16,7 @@ import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 @SuppressLint("HandlerLeak")
 public class Book {
@@ -23,6 +24,17 @@ public class Book {
 	public static final int STATUS_UNBORROW = 0;
 	public static final int STATUS_BUY = 2;
 	public static final int STATUS_UNBUY = 0;
+	
+	public static final String ID = "id";
+	public static final String NAME = "name";
+	public static final String PUBLISHER = "publisher";
+	public static final String DESCRIPTION = "description";
+	public static final String AUTHOR = "author";
+	public static final String COVERURL = "coverurl";
+	public static final String ISBN = "isbn";
+	public static final String OWNER = "owner";
+	public static final String HOLDER = "holder";
+	public static final String STATUS = "status";
 
 	public static String DEFAULT_BOOK_IMAGE_URL = "http://pica.nipic.com/2008-05-03/200853124434763_2.jpg";
 
@@ -128,10 +140,13 @@ public class Book {
 			map.put("coverurl", R.drawable.default_book_big);
 			map.put("description", item.getString("description"));
 			map.put("authors", item.getString("author"));
+			map.put("publisher", item.getString("publisher"));
 
 			map.put("owner", item.getString("owner"));
 			map.put("holder", item.getString("holder"));
 			map.put("status", item.getInt("status"));
+			
+			return map;
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -140,21 +155,9 @@ public class Book {
 
 	public static List<Map<String, Object>> jsonArrayToBooks(JSONArray array) {
 		List<Map<String, Object>> books = new ArrayList<Map<String, Object>>();
-		Map<String, Object> item = new HashMap<String, Object>();
 		try {
 			for (int i = 0; i < array.length(); i++) {
-				JSONObject obj = array.getJSONObject(i);
-				item = new HashMap<String, Object>();
-				item.put("id", obj.getInt("id"));
-				item.put("isbn", obj.getString("isbn"));
-				item.put("bookname", obj.getString("name"));
-				item.put("authors", obj.getString("author"));
-				item.put("publisher", obj.getString("publisher"));
-				item.put("description", obj.getString("description"));
-				item.put("holder", obj.getString("holder"));
-				item.put("owner", obj.getString("owner"));
-				item.put("status", obj.getInt("status"));
-				books.add(item);
+				books.add(objToBook(array.getJSONObject(i)));
 			}
 			return books;
 		} catch (JSONException e) {

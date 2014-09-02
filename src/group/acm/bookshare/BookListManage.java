@@ -9,11 +9,7 @@ import group.acm.bookshare.util.Utils;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
@@ -23,6 +19,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -298,8 +295,8 @@ public class BookListManage {
 		localUser.addBookDataToList(response);
 		updateDisplay();
 	}
-	
-	public void updateDisplay(){
+
+	public void updateDisplay() {
 		bookAdapter.notifyDataSetChanged();
 	}
 }
