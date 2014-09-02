@@ -129,7 +129,7 @@ public class LoginActivity extends Activity implements Callback{
 				break;
 			case NetAccess.NETMSG_ERROR:
 				Toast.makeText(LoginActivity.this,
-						msg.getData().getString("error"), Toast.LENGTH_LONG)
+						msg.getData().getString(NetAccess.ERROR), Toast.LENGTH_LONG)
 						.show();
 				break;
 			}
@@ -145,9 +145,9 @@ public class LoginActivity extends Activity implements Callback{
 	}
 
 	public void showResponse(Bundle data) {
-		int status = data.getInt("status");
+		int status = data.getInt(NetAccess.STATUS);
 		if (status == NetAccess.STATUS_SUCCESS) {
-			String response = data.getString("response");
+			String response = data.getString(NetAccess.RESPONSE);
 			localUser.clearBookData();
 			localUser.addBookDataToList(response);
 			localUser.addFriendDataToList(response);

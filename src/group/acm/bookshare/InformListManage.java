@@ -78,7 +78,7 @@ public class InformListManage {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				Bundle data = msg.getData();
-				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
+				if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 					localUser.deleteInformById(id);
 					localUser.getBookList(new Handler() {
 						@Override
@@ -86,24 +86,24 @@ public class InformListManage {
 							switch (msg.what) {
 							case NetAccess.NETMSG_AFTER:
 								Bundle data = msg.getData();
-								if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
+								if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 									localUser.clearBookData();
 									localUser.addBookDataToList(data
-											.getString("response"));
+											.getString(NetAccess.RESPONSE));
 									updateInformData();
 									String content = "成功";
 									Toast.makeText(activity, content,
 											Toast.LENGTH_LONG).show();
 								} else {
 									String content = "失败:"
-											+ data.getString("response");
+											+ data.getString(NetAccess.RESPONSE);
 									Toast.makeText(activity, content,
 											Toast.LENGTH_LONG).show();
 								}
 								break;
 							case NetAccess.NETMSG_ERROR:
 								String content = msg.getData().getString(
-										"error");
+										NetAccess.ERROR);
 								Toast.makeText(activity, content,
 										Toast.LENGTH_LONG).show();
 								break;
@@ -111,12 +111,12 @@ public class InformListManage {
 						}
 					});
 				} else {
-					String content = "失败:" + data.getString("response");
+					String content = "失败:" + data.getString(NetAccess.RESPONSE);
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				}
 				break;
 			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString("error");
+				String content = msg.getData().getString(NetAccess.ERROR);
 				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				break;
 			}
@@ -188,9 +188,9 @@ public class InformListManage {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 					localUser.addInformDataToList(msg.getData().getString(
-							"response"));
+							NetAccess.RESPONSE));
 					localUser.getReceiveInformList(new ReceiveInformHandler());
 				}
 				break;
@@ -202,9 +202,9 @@ public class InformListManage {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 					localUser.addInformDataToList(msg.getData().getString(
-							"response"));
+							NetAccess.RESPONSE));
 					informAdapter.notifyDataSetChanged();
 				}
 				break;
@@ -247,11 +247,11 @@ public class InformListManage {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_ERROR:
-					String content = msg.getData().getString("error");
+					String content = msg.getData().getString(NetAccess.ERROR);
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 					break;
 				case NetAccess.NETMSG_AFTER:
-					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+					if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 						String tmp = "完成";
 						Toast.makeText(activity, tmp, Toast.LENGTH_LONG).show();
 						localUser.getBookList(new Handler() {
@@ -260,16 +260,16 @@ public class InformListManage {
 								switch (msg.what) {
 								case NetAccess.NETMSG_ERROR:
 									String content = msg.getData().getString(
-											"error");
+											NetAccess.ERROR);
 									Toast.makeText(activity, content,
 											Toast.LENGTH_LONG).show();
 									break;
 								case NetAccess.NETMSG_AFTER:
-									if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+									if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 										localUser.clearBookData();
 										localUser.addBookDataToList(msg
 												.getData()
-												.getString("response"));
+												.getString(NetAccess.RESPONSE));
 										reload();
 									}
 									break;
@@ -311,7 +311,7 @@ public class InformListManage {
 
 			Map<String, Object> item = informs.get(position);
 
-			int id = (Integer) item.get("id");
+			int id = (Integer) item.get(Inform.ID);
 
 			Inform inform = null;
 			try {
@@ -376,7 +376,7 @@ public class InformListManage {
 
 			@Override
 			public void permitted() {
-				localUser.updateRequest((Integer) item.get("id"),
+				localUser.updateRequest((Integer) item.get(Inform.ID),
 						Inform.REQUEST_STATUS_PERMITTED, new RequestHandler(
 								position));
 			}
@@ -385,7 +385,7 @@ public class InformListManage {
 			public void showCode() {
 				Intent intent = new Intent(activity,
 						GenerateQRCodeActivity.class);
-				intent.putExtra("ContentString", (Integer) item.get("id") + "");
+				intent.putExtra("ContentString", (Integer) item.get(Inform.ID) + "");
 				activity.startActivityForResult(intent,
 						Utils.ACTIVITY_REQUEST_SHOWCODE);
 			}
@@ -400,27 +400,27 @@ public class InformListManage {
 
 			@Override
 			public void readConfirm() {
-				localUser.updateRead((Integer) item.get("id"), true,
+				localUser.updateRead((Integer) item.get(Inform.ID), true,
 						new RequestHandler(position));
 			}
 
 			@Override
 			public void refused() {
-				localUser.updateRequest((Integer) item.get("id"),
+				localUser.updateRequest((Integer) item.get(Inform.ID),
 						Inform.REQUEST_STATUS_REFUSED, new RequestHandler(
 								position));
 			}
 
 			@Override
 			public void cancel() {
-				localUser.updateRequest((Integer) item.get("id"),
+				localUser.updateRequest((Integer) item.get(Inform.ID),
 						Inform.REQUEST_STATUS_CANCEL, new RequestHandler(
 								position));
 			}
 
 			@Override
 			public void confirm() {
-				localUser.updateRequest((Integer) item.get("id"),
+				localUser.updateRequest((Integer) item.get(Inform.ID),
 						Inform.REQUEST_STATUS_CONFIRM, new RequestHandler(
 								position));
 			}

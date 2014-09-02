@@ -37,6 +37,14 @@ public class Inform {
 	public static final String CANCEL = "cancel";
 	public static final String CONFIRM_VISIBILITY = "confirm_visibility";
 	public static final String CANCEL_VISIBILITY = "cancel_visibility";
+	
+	public static final String ID = "id";
+	public static final String FROM = "from";
+	public static final String TO = "to";
+	public static final String DESCRIPTION = "description";
+	public static final String TIME ="time";
+	public static final String TYPE = "type";
+	public static final String STATUS = "status";
 
 	public static final String[] confirmButton =
 		{
@@ -90,8 +98,8 @@ public class Inform {
 		this.inform = inform;
 		this.localUser = localUser;
 		this.action = action;
-		type = (Integer) inform.get("type");
-		status = (Integer) inform.get("status");
+		type = (Integer) inform.get(Inform.TYPE);
+		status = (Integer) inform.get(Inform.STATUS);
 		isRead = 0;//(Integer) inform.get("read");
 		isSelf = getIdentityJudge().isSelf(inform, localUser);
 		int posSelf = (isSelf == SELF) ? 0 : 1;
@@ -115,7 +123,7 @@ public class Inform {
 
 	private class IdentityJudge {
 		public int isSelf(Map<String, Object> inform, User localUser) {
-			if (localUser.getUserName().equals(inform.get("from")))
+			if (localUser.getUserName().equals(inform.get(Inform.FROM)))
 				return SELF;
 			else
 				return NOT_SELF;
@@ -126,11 +134,11 @@ public class Inform {
 		public int isSelf(Map<String, Object> inform, User localUser) {
 			try {
 				JSONObject obj = new JSONObject(
-						(String) inform.get("description"));
+						(String) inform.get(Inform.DESCRIPTION));
 				int id = obj.getInt("bookid");
 				for (Map<String, Object> book : localUser.getBookListData()) {
-					if ((Integer) book.get("id") == id) {
-						if (localUser.getUserName().equals(book.get("holder"))) {
+					if ((Integer) book.get(Book.ID) == id) {
+						if (localUser.getUserName().equals(book.get(Book.HOLDER))) {
 							return SELF;
 						}
 					}
@@ -148,37 +156,37 @@ public class Inform {
 
 		try {
 			JSONObject obj;
-			obj = new JSONObject((String) inform.get("description"));
+			obj = new JSONObject((String) inform.get(Inform.DESCRIPTION));
 			message = obj.getString("message");
 
 			switch (type) {
 			case Inform.REQUEST_TYPE_BORROW:
 				title = "借书请求:";
-				message = "借书," + obj.getString("bookname") + ",message:"
+				message = "借书," + obj.getString(Book.NAME) + ",message:"
 						+ message;
 				if (isSelf == SELF) {
-					notself = obj.getString("owner");
+					notself = obj.getString(Book.OWNER);
 				} else {
-					notself = (String) inform.get("from");
+					notself = (String) inform.get(Inform.FROM);
 				}
 				break;
 			case Inform.REQUEST_TYPE_RETURN:
 				title = "还书请求:";
-				message = "接受还书," + obj.getString("bookname") + ",message:"
+				message = "接受还书," + obj.getString(Book.NAME) + ",message:"
 						+ message;
 				if (isSelf == SELF) {
-					notself = obj.getString("owner");
+					notself = obj.getString(Book.OWNER);
 				} else {
-					notself = obj.getString("holder");
+					notself = obj.getString(Book.HOLDER);
 				}
 				break;
 			case Inform.REQUEST_TYPE_ADDFRIEND:
 				title = "加好友:";
 				message = "加好友,message:" + message;
 				if (isSelf == SELF) {
-					notself = obj.getString("to");
+					notself = obj.getString(Inform.TO);
 				} else {
-					notself = obj.getString("from");
+					notself = obj.getString(Inform.FROM);
 				}
 				break;
 			}
@@ -305,22 +313,22 @@ public class Inform {
 	public static Map<String, Object> objToInform(JSONObject item)
 			throws JSONException {
 		Map<String, Object> map = new HashMap<String, Object>();
-		int id = item.getInt("id");
-		String time = item.getString("time");
-		String from = item.getString("from");
-		String to = item.getString("to");
-		int type = item.getInt("type");
-		String description = item.getString("description");
-		int status = item.getInt("status");
+		int id = item.getInt(Inform.ID);
+		String time = item.getString(Inform.TIME);
+		String from = item.getString(Inform.FROM);
+		String to = item.getString(Inform.TO);
+		int type = item.getInt(Inform.TYPE);
+		String description = item.getString(Inform.DESCRIPTION);
+		int status = item.getInt(Inform.STATUS);
 
 		map = new HashMap<String, Object>();
-		map.put("id", id);
-		map.put("time", time);
-		map.put("from", from);
-		map.put("to", to);
-		map.put("type", type);
-		map.put("description", description);
-		map.put("status", status);
+		map.put(Inform.ID, id);
+		map.put(Inform.TIME, time);
+		map.put(Inform.FROM, from);
+		map.put(Inform.TO, to);
+		map.put(Inform.TYPE, type);
+		map.put(Inform.DESCRIPTION, description);
+		map.put(Inform.STATUS, status);
 
 		return map;
 	}

@@ -177,14 +177,14 @@ public class GroupActivity extends Activity {
 			case NetAccess.NETMSG_BEFORE:
 				break;
 			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-					reload(msg.getData().getString("response"));
+				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
+					reload(msg.getData().getString(NetAccess.RESPONSE));
 					GroupActivity.this.showToast("退出组群成功");
 				} else
 					GroupActivity.this.showToast("退出组群失败");
 				break;
 			case NetAccess.NETMSG_ERROR:
-				GroupActivity.this.showToast(msg.getData().getString("error"));
+				GroupActivity.this.showToast(msg.getData().getString(NetAccess.ERROR));
 				break;
 			}
 		}

@@ -50,13 +50,14 @@ public class FriendsInformationActivity extends Activity {
 							public void handleMessage(Message msg) {
 								switch (msg.what) {
 								case NetAccess.NETMSG_AFTER:
-									if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+									if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 										Bundle bookData = new Bundle();
 										bookData.putString("friendname",
 												friendName);
-										bookData.putString("response", msg
-												.getData()
-												.getString("response"));
+										bookData.putString(
+												NetAccess.RESPONSE,
+												msg.getData().getString(
+														NetAccess.RESPONSE));
 										Intent intent = new Intent(
 												FriendsInformationActivity.this,
 												FriendBooksActivity.class);

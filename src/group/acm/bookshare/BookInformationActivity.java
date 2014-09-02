@@ -24,12 +24,12 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 public class BookInformationActivity extends Activity {
-	String				bookName;
-	String 				bookIsbn;
-	String 				bookDescription;
-	int    				bookImage;
-	NoScrollListView	listview;
-	
+	String bookName;
+	String bookIsbn;
+	String bookDescription;
+	int bookImage;
+	NoScrollListView listview;
+
 	List<Map<String, Object>> commentList;
 	SimpleAdapter commentAdapter;
 
@@ -37,54 +37,53 @@ public class BookInformationActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_book_information);
-		
-		TextView bookNameView = (TextView)findViewById(R.id.book_name);
-		TextView bookDescriptionView = (TextView)findViewById(R.id.book_description);
-		ImageView bookImageView = (ImageView)findViewById(R.id.book_image);
-		
-		Intent intent =getIntent();// 收取 email 
-		Bundle bundle =intent.getBundleExtra("key");// 打开 email 
+
+		TextView bookNameView = (TextView) findViewById(R.id.book_name);
+		TextView bookDescriptionView = (TextView) findViewById(R.id.book_description);
+		ImageView bookImageView = (ImageView) findViewById(R.id.book_image);
+
+		Intent intent = getIntent();// 收取 email
+		Bundle bundle = intent.getBundleExtra("key");// 打开 email
 		bookName = bundle.getString("bookName");
-		bookIsbn = bundle.getString("bookIsbn"); 
+		bookIsbn = bundle.getString("bookIsbn");
 		bookDescription = bundle.getString("bookDescription");
 		bookImage = bundle.getInt("bookImage");
-		
-		bookNameView.setText("《"+bookName+"》");
+
+		bookNameView.setText("《" + bookName + "》");
 		bookNameView.setTextSize(30);
-		bookDescriptionView.setText("        "+bookDescription);
+		bookDescriptionView.setText("        " + bookDescription);
 		bookDescriptionView.setTextSize(15);
 		bookImageView.setImageResource(bookImage);
-		
+
 		listview = (NoScrollListView) findViewById(R.id.bookDetail_comments);
 		initListView();
 		loadComments();
 		commentAdapter.notifyDataSetChanged();
-		setListViewHeightBasedOnChildren(listview); 
-		
+		setListViewHeightBasedOnChildren(listview);
+
 		setButtonEvent();
 	}
-	
-	
-	
-    public void setListViewHeightBasedOnChildren(ListView listView) {
-    	  // 获取ListView对应的Adapter
-    	  ListAdapter listAdapter = listView.getAdapter();
-    	  if (listAdapter == null) {
-    	   return;
-    	  }
-    	  
-    	  int totalHeight = 0;
-    	  for (int i = 0; i < listAdapter.getCount(); i++) { // listAdapter.getCount()返回数据项的数目
-    		  View listItem = listAdapter.getView(i, null, listView);
-    		  listItem.measure(0, 0); // 计算子项View 的宽高
-    		  totalHeight += listItem.getMeasuredHeight(); // 统计所有子项的总高度
-    	  }
-    	  
-    	  ViewGroup.LayoutParams params = listView.getLayoutParams();
-    	  params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
 
-    	  listView.setLayoutParams(params);
-    }
+	public void setListViewHeightBasedOnChildren(ListView listView) {
+		// 获取ListView对应的Adapter
+		ListAdapter listAdapter = listView.getAdapter();
+		if (listAdapter == null) {
+			return;
+		}
+
+		int totalHeight = 0;
+		for (int i = 0; i < listAdapter.getCount(); i++) { // listAdapter.getCount()返回数据项的数目
+			View listItem = listAdapter.getView(i, null, listView);
+			listItem.measure(0, 0); // 计算子项View 的宽高
+			totalHeight += listItem.getMeasuredHeight(); // 统计所有子项的总高度
+		}
+
+		ViewGroup.LayoutParams params = listView.getLayoutParams();
+		params.height = totalHeight
+				+ (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+
+		listView.setLayoutParams(params);
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -95,7 +94,7 @@ public class BookInformationActivity extends Activity {
 
 	private void initListView() {
 		commentList = new ArrayList<Map<String, Object>>();
-		
+
 		commentAdapter = new SimpleAdapter(BookInformationActivity.this,
 				commentList, R.layout.bookdetail_listview_item, new String[] {
 						"owner", "content", "date" }, new int[] {
@@ -113,25 +112,24 @@ public class BookInformationActivity extends Activity {
 			}
 		});
 	}
-	
-	
-	/////////////////////////////////////////////////////
-	//////////////////以下用于测试///////////////////////////
-	/////////////////////////////////////////////////////
+
+	// ///////////////////////////////////////////////////
+	// ////////////////以下用于测试///////////////////////////
+	// ///////////////////////////////////////////////////
 	public String radomString() {
 
 		Random rand = new Random();
-		
+
 		final int A = 'A', z = 'Z';
-		int r = rand.nextInt(50)+rand.nextInt(200);
+		int r = rand.nextInt(50) + rand.nextInt(200);
 		StringBuilder sb = new StringBuilder();
-		while(sb.length() < r){
+		while (sb.length() < r) {
 			int number = rand.nextInt(z + 1);
-			if(number >= A){
-				sb.append((char)number);
+			if (number >= A) {
+				sb.append((char) number);
 			}
 		}
-					
+
 		return sb.toString();
 
 	}
@@ -140,11 +138,11 @@ public class BookInformationActivity extends Activity {
 		Map<String, Object> map;
 		Random rand = new Random();
 		int ll = rand.nextInt(50);
-		Log.i("rand.nextInt(50); = ",ll+"");
+		Log.i("rand.nextInt(50); = ", ll + "");
 		for (int i = 0; i < ll; i++) {
 			map = new HashMap<String, Object>();
 			map.put("owner", "luo" + i);
-			map.put("content",radomString());
+			map.put("content", radomString());
 			map.put("date", "2014/07/17");
 			commentList.add(map);
 		}

@@ -19,7 +19,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,17 +57,17 @@ public class BookListManage {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				Bundle data = msg.getData();
-				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
-					reload(data.getString("response"));
+				if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
+					reload(data.getString(NetAccess.RESPONSE));
 					String content = "成功";
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				} else {
-					String content = "失败:" + data.getString("response");
+					String content = "失败:" + data.getString(NetAccess.RESPONSE);
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				}
 				break;
 			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString("error");
+				String content = msg.getData().getString(NetAccess.ERROR);
 				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				break;
 			}
@@ -134,13 +133,13 @@ public class BookListManage {
 			Map<String, Object> item = datas.get(position);
 
 			coverView.setImageResource(R.drawable.default_book_big);
-			titleView.setText((String) item.get("bookname"));
+			titleView.setText((String) item.get(Book.NAME));
 			String text;
-			if (localUser.getUserName().equals(item.get("owner")))
+			if (localUser.getUserName().equals(item.get(Book.OWNER)))
 				text = "owner:";
 			else
 				text = "borrowed:";
-			switch ((Integer) item.get("status")) {
+			switch ((Integer) item.get(Book.STATUS)) {
 			case Book.STATUS_BUY | Book.STATUS_BORROW:
 				text += "可卖/可借";
 				break;
@@ -175,13 +174,13 @@ public class BookListManage {
 							BookInformationActivity.class);
 					Bundle bundle = new Bundle();
 					bundle.putString("bookName",
-							(String) bookList.get(position - 1).get("bookname"));
+							(String) bookList.get(position - 1).get(Book.NAME));
 					bundle.putString("bookIsbn",
-							(String) bookList.get(position - 1).get("isbn"));
+							(String) bookList.get(position - 1).get(Book.ISBN));
 					bundle.putString(
 							"bookDescription",
 							(String) bookList.get(position - 1).get(
-									"description"));
+									Book.DESCRIPTION));
 					bundle.putInt("bookImage", R.drawable.default_book_big);
 					intent.putExtra("key", bundle);
 					activity.startActivity(intent);
@@ -205,8 +204,8 @@ public class BookListManage {
 			Map<String, Object> book = books.get(position - 1);
 			String text;
 			OnClickListener listener;
-			if (localUser.getUserName().equals(book.get("owner"))) {
-				if (((String) book.get("owner")).equals(book.get("holder"))) {
+			if (localUser.getUserName().equals(book.get(Book.OWNER))) {
+				if (((String) book.get(Book.OWNER)).equals(book.get(Book.HOLDER))) {
 					text = "删书";
 					listener = new DeleteBookListener(book);
 				} else {
@@ -270,16 +269,16 @@ public class BookListManage {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				Bundle data = msg.getData();
-				if (data.getInt("status") == NetAccess.STATUS_SUCCESS) {
+				if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 					String content = "发送成功";
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				} else {
-					String content = "发送失败:" + data.getString("response");
+					String content = "发送失败:" + data.getString(NetAccess.RESPONSE);
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				}
 				break;
 			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString("error");
+				String content = msg.getData().getString(NetAccess.ERROR);
 				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				break;
 			}

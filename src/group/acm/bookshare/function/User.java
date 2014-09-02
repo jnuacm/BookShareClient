@@ -203,12 +203,12 @@ public class User {
 			switch (msg.what) {
 			case NetAccess.NETMSG_AFTER:
 				Bundle repData = msg.getData();
-				if (repData.getInt("status") == NetAccess.STATUS_ERROR) {
+				if (repData.getInt(NetAccess.STATUS) == NetAccess.STATUS_ERROR) {
 					Message tmsg = Message.obtain();
 					tmsg.what = NetAccess.NETMSG_AFTER;
 					Bundle data = new Bundle();
-					data.putInt("status", NetAccess.STATUS_ERROR);
-					data.putString("response", repData.getString("response"));
+					data.putInt(NetAccess.STATUS, NetAccess.STATUS_ERROR);
+					data.putString(NetAccess.RESPONSE, repData.getString("response"));
 					tmsg.setData(data);
 					handler.sendMessage(tmsg);
 				} else {
@@ -228,14 +228,14 @@ public class User {
 	private void addToDB(Bundle data, Handler handler) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
-		nvps.add(new BasicNameValuePair("name", data.getString("name")));
-		nvps.add(new BasicNameValuePair("isbn", data.getString("isbn")));
-		nvps.add(new BasicNameValuePair("author", data.getString("authors")));
-		nvps.add(new BasicNameValuePair("description", data
-				.getString("description")));
-		nvps.add(new BasicNameValuePair("publisher", data
-				.getString("publisher")));
-		nvps.add(new BasicNameValuePair("status", Integer
+		nvps.add(new BasicNameValuePair(Book.NAME, data.getString(Book.NAME)));
+		nvps.add(new BasicNameValuePair(Book.ISBN, data.getString(Book.ISBN)));
+		nvps.add(new BasicNameValuePair(Book.AUTHOR, data.getString(Book.AUTHOR)));
+		nvps.add(new BasicNameValuePair(Book.DESCRIPTION, data
+				.getString(Book.DESCRIPTION)));
+		nvps.add(new BasicNameValuePair(Book.PUBLISHER, data
+				.getString(Book.PUBLISHER)));
+		nvps.add(new BasicNameValuePair(Book.STATUS, Integer
 				.toString(Book.STATUS_BORROW)));
 
 		NetAccess network = NetAccess.getInstance();
@@ -262,12 +262,12 @@ public class User {
 	}
 
 	public boolean deleteBook(Map<String, Object> book, Handler handler) {
-		if (!((String) book.get("owner")).equals(book.get("holder")))
+		if (!((String) book.get(Book.OWNER)).equals(book.get(Book.HOLDER)))
 			return false;
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_delete_book);
-		url += Integer.toString(((Integer) book.get("id")));
+		url += Integer.toString(((Integer) book.get(Book.ID)));
 		net.createDeleteThread(url, handler);
 		return true;
 	}
@@ -278,12 +278,12 @@ public class User {
 	}
 
 	public void askReturn(Map<String, Object> book, Handler handler) {
-		String holder = (String) book.get("holder");
+		String holder = (String) book.get(Book.HOLDER);
 		bookRequest(holder, book, "请快点还书", Inform.REQUEST_TYPE_RETURN, handler);
 	}
 
 	public void returnBook(Map<String, Object> book, Handler handler) {
-		String owner = (String) book.get("owner");
+		String owner = (String) book.get(Book.OWNER);
 		bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, handler);
 	}
 
@@ -292,12 +292,12 @@ public class User {
 		try {
 			JSONObject obj = new JSONObject();
 			obj.put("message", message);
-			obj.put("bookid", (Integer) book.get("id"));
-			obj.put("bookname", (String) book.get("bookname"));
-			Log.i("owner/holder", "owner:" + (String) book.get("owner")
-					+ " holder:" + (String) book.get("holder"));
-			obj.put("holder", (String) book.get("holder"));
-			obj.put("owner", (String) book.get("owner"));
+			obj.put("bookid", (Integer) book.get(Book.ID));
+			obj.put(Book.NAME, (String) book.get(Book.NAME));
+			Log.i("owner/holder", "owner:" + (String) book.get(Book.OWNER)
+					+ " holder:" + (String) book.get(Book.HOLDER));
+			obj.put(Book.HOLDER, (String) book.get(Book.HOLDER));
+			obj.put(Book.OWNER, (String) book.get(Book.OWNER));
 			String description = obj.toString();
 
 			String url = application.getResources()
@@ -306,9 +306,9 @@ public class User {
 					R.string.url_inform_create);
 
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			nvps.add(new BasicNameValuePair("type", Integer.toString(type)));
-			nvps.add(new BasicNameValuePair("description", description));
-			nvps.add(new BasicNameValuePair("to", aimName));
+			nvps.add(new BasicNameValuePair(Inform.TYPE, Integer.toString(type)));
+			nvps.add(new BasicNameValuePair(Inform.DESCRIPTION, description));
+			nvps.add(new BasicNameValuePair(Inform.TO, aimName));
 
 			NetAccess net = NetAccess.getInstance();
 			net.createPostThread(url, nvps, handler);
@@ -360,7 +360,7 @@ public class User {
 		NetAccess net = NetAccess.getInstance();
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		nvps.add(new BasicNameValuePair("status", Integer.toString(status)));
+		nvps.add(new BasicNameValuePair(Inform.STATUS, Integer.toString(status)));
 
 		net.createPutThread(url, nvps, handler);
 	}
@@ -402,11 +402,11 @@ public class User {
 	}
 
 	public String getInformString(Map<String, Object> item) {
-		String ret = (String) item.get("time");
-		ret += ("\nfrom:" + item.get("from"));
-		ret += ("\nto:" + item.get("to"));
+		String ret = (String) item.get(Inform.TIME);
+		ret += ("\nfrom:" + item.get(Inform.FROM));
+		ret += ("\nto:" + item.get(Inform.TO));
 		ret += "\n请求:";
-		switch ((Integer) item.get("type")) {
+		switch ((Integer) item.get(Inform.TYPE)) {
 		case Inform.REQUEST_TYPE_BORROW:
 			ret += "借书";
 			break;
@@ -417,7 +417,7 @@ public class User {
 
 		ret += "\n";
 
-		switch ((Integer) item.get("status")) {
+		switch ((Integer) item.get(Inform.STATUS)) {
 		case Inform.REQUEST_STATUS_UNPROCESSED:
 			ret += "未处理";
 			break;
@@ -434,7 +434,7 @@ public class User {
 	public boolean deleteInformById(int id) {
 		for (int i = 0; i < informs.size(); i++) {
 			Map<String, Object> item = informs.get(i);
-			if ((Integer) item.get("id") == id) {
+			if ((Integer) item.get(Inform.ID) == id) {
 				informs.remove(i);
 				break;
 			}
@@ -444,7 +444,7 @@ public class User {
 
 	public Map<String, Object> getBookById(int id) {
 		for (Map<String, Object> book : books) {
-			if ((Integer) book.get("id") == id)
+			if ((Integer) book.get(Book.ID) == id)
 				return book;
 		}
 		return null;

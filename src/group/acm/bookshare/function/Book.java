@@ -24,7 +24,7 @@ public class Book {
 	public static final int STATUS_UNBORROW = 0;
 	public static final int STATUS_BUY = 2;
 	public static final int STATUS_UNBUY = 0;
-	
+
 	public static final String ID = "id";
 	public static final String NAME = "name";
 	public static final String PUBLISHER = "publisher";
@@ -74,11 +74,11 @@ public class Book {
 			case NetAccess.NETMSG_AFTER:
 				try {
 					if (NetAccess.STATUS_SUCCESS == msg.getData().getInt(
-							"status")) {
+							NetAccess.STATUS)) {
 						Bundle data = doubanStrToBundle((String) msg.getData()
-								.get("response"));
-						data.putInt("status", NetAccess.STATUS_SUCCESS);
-						data.putString("isbn", isbn);
+								.get(NetAccess.RESPONSE));
+						data.putInt(NetAccess.STATUS, NetAccess.STATUS_SUCCESS);
+						data.putString(Book.ISBN, isbn);
 						msg = Message.obtain();
 						msg.what = NetAccess.NETMSG_AFTER;
 						msg.setData(data);
@@ -96,8 +96,8 @@ public class Book {
 
 		private void sendFailMessage(String error) {
 			Bundle data = new Bundle();
-			data.putInt("status", NetAccess.STATUS_ERROR);
-			data.putString("response", error);
+			data.putInt(NetAccess.STATUS, NetAccess.STATUS_ERROR);
+			data.putString(NetAccess.RESPONSE, error);
 			Message msg = Message.obtain();
 			msg.what = NetAccess.NETMSG_AFTER;
 			msg.setData(data);
@@ -123,10 +123,10 @@ public class Book {
 		publisher = bookObj.getJSONArray("db:attribute").getJSONObject(5)
 				.getString("$t");
 
-		ret.putString("authors", authors);
-		ret.putString("description", description);
-		ret.putString("name", name);
-		ret.putString("publisher", publisher);
+		ret.putString(Book.AUTHOR, authors);
+		ret.putString(Book.DESCRIPTION, description);
+		ret.putString(Book.NAME, name);
+		ret.putString(Book.PUBLISHER, publisher);
 
 		return ret;
 	}
@@ -134,18 +134,18 @@ public class Book {
 	public static Map<String, Object> objToBook(JSONObject item) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		try {
-			map.put("id", item.getInt("id"));
-			map.put("isbn", item.getString("isbn"));
-			map.put("bookname", item.getString("name"));
-			map.put("coverurl", R.drawable.default_book_big);
-			map.put("description", item.getString("description"));
-			map.put("authors", item.getString("author"));
-			map.put("publisher", item.getString("publisher"));
+			map.put(Book.ID, item.getInt(Book.ID));
+			map.put(Book.ISBN, item.getString(Book.ISBN));
+			map.put(Book.NAME, item.getString(Book.NAME));
+			map.put(Book.COVERURL, R.drawable.default_book_big);
+			map.put(Book.DESCRIPTION, item.getString(Book.DESCRIPTION));
+			map.put(Book.AUTHOR, item.getString(Book.AUTHOR));
+			map.put(Book.PUBLISHER, item.getString(Book.PUBLISHER));
 
-			map.put("owner", item.getString("owner"));
-			map.put("holder", item.getString("holder"));
-			map.put("status", item.getInt("status"));
-			
+			map.put(Book.OWNER, item.getString(Book.OWNER));
+			map.put(Book.HOLDER, item.getString(Book.HOLDER));
+			map.put(Book.STATUS, item.getInt(Book.STATUS));
+
 			return map;
 		} catch (JSONException e) {
 			e.printStackTrace();

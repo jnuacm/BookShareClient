@@ -178,8 +178,8 @@ public class FriendListManage {
 			case NetAccess.NETMSG_BEFORE:
 				break;
 			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
-					reload(msg.getData().getString("response"));
+				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
+					reload(msg.getData().getString(NetAccess.RESPONSE));
 					// friendmanage.friendAdapter.notifyDataSetChanged();
 					String content = "删除好友成功";
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
@@ -189,7 +189,7 @@ public class FriendListManage {
 				}
 				break;
 			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString("error");
+				String content = msg.getData().getString(NetAccess.ERROR);
 				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				break;
 			}
@@ -202,10 +202,10 @@ public class FriendListManage {
 			case NetAccess.NETMSG_BEFORE:
 				break;
 			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 					Log.i("update_resposnse:",
-							msg.getData().getString("response"));
-					reload(msg.getData().getString("response"));
+							msg.getData().getString(NetAccess.RESPONSE));
+					reload(msg.getData().getString(NetAccess.RESPONSE));
 
 					String content = "更新好友成功";
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
@@ -216,7 +216,7 @@ public class FriendListManage {
 				}
 				break;
 			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString("error");
+				String content = msg.getData().getString(NetAccess.ERROR);
 				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				break;
 			}

@@ -47,7 +47,6 @@ public class CaptureActivity extends Activity implements Callback {
 	private static final float BEEP_VOLUME = 0.10f;
 	private boolean vibrate;
 	private Button cancelScanButton;
-	private String model;
 
 	/** Called when the activity is first created. */
 	@Override

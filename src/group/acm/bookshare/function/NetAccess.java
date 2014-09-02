@@ -67,6 +67,10 @@ public class NetAccess {
 	public static final int NETMSG_PROCESS = 20;
 	public static final int NETMSG_AFTER = 30;
 	public static final int NETMSG_ERROR = 40;
+	
+	public static final String STATUS = "status";
+	public static final String RESPONSE = "response";
+	public static final String ERROR = "error";
 
 	private HttpClient httpClient;
 
@@ -333,14 +337,14 @@ public class NetAccess {
 				Message msg = Message.obtain();
 				msg.what = NetAccess.NETMSG_ERROR;
 				Bundle data = new Bundle();
-				data.putString("error", e.toString());
+				data.putString(NetAccess.ERROR, e.toString());
 				msg.setData(data);
 				handler.sendMessage(msg);
 			}
 
 			Bundle data = new Bundle();
-			data.putInt("status", status);
-			data.putString("response", response);
+			data.putInt(NetAccess.STATUS, status);
+			data.putString(NetAccess.RESPONSE, response);
 
 			Log.i("NetAccess:url", url);
 			Log.i("NetAccess:status", Integer.toString(status));

@@ -103,9 +103,9 @@ public class FriendBooksActivity extends Activity {
 
 			Map<String, Object> item = datas.get(position);
 
-			int bookStatus = (Integer) item.get("status");
+			int bookStatus = (Integer) item.get(Book.STATUS);
 
-			title.setText((String) item.get("bookname"));
+			title.setText((String) item.get(Book.NAME));
 			String[] text = { "不可借", "可借", "不可卖", "可卖" };
 			status.setText(text[bookStatus]);
 			if (bookStatus == 1)
@@ -135,7 +135,7 @@ public class FriendBooksActivity extends Activity {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_AFTER:
-					if (msg.getData().getInt("status") == NetAccess.STATUS_SUCCESS) {
+					if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
 						Toast.makeText(FriendBooksActivity.this, "发送成功",
 								Toast.LENGTH_SHORT).show();
 						finish();
