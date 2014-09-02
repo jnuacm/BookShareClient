@@ -219,9 +219,9 @@ public class Inform {
 	public Map<String, Object> getButtonShow() {
 		Map<String, Object> ret = new HashMap<String, Object>();
 		ret.put(CONFIRM, confirmButton[state]);
-		ret.put(CONFIRM_VISIBILITY, confirmButton[state]);
+		ret.put(CONFIRM_VISIBILITY, confirmVisibility[state]);
 		ret.put(CANCEL, cancelButton[state]);
-		ret.put(CANCEL_VISIBILITY, cancelButton[state]);
+		ret.put(CANCEL_VISIBILITY, cancelVisibility[state]);
 		return ret;
 	}
 
