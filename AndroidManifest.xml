@@ -87,6 +87,10 @@
             android:label="@string/title_activity_generate_qrcode"
             android:screenOrientation="portrait" >
         </activity>
+        <activity
+            android:name="group.acm.bookshare.PersonInfoActivity"
+            android:screenOrientation="portrait" >
+        </activity>
     </application>
 
 </manifest>

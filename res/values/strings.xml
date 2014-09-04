@@ -22,6 +22,7 @@
     <string name="register_email_hint">E-mail</string>
     <string name="register_area_hint">地区</string>
     <!-- MainActivity-book listview -->
+    <string name="action_personal_info">查看个人信息</string>
     <string name="action_check_own">查看自己的书</string>
     <string name="action_check_borrow">查看借来的书</string>
     <string name="action_sort">排序</string>
@@ -42,6 +43,7 @@
     <string name="url_receive_inform">bookshareyii/index.php/api/request/to/</string>
     <string name="url_inform_update">bookshareyii/index.php/api/request/</string>
     <string name="url_inform_create">bookshareyii/index.php/api/request</string>
+    <string name="url_avatar_create">bookshareyii/index.php/api/avatar/</string>
     <string name="path_api">bookshareyii/index.php/api</string>
     <string name="action_book">/all</string>
     <string name="action_ownbook">/own/</string>
@@ -54,9 +56,9 @@
     <string name="group">组群</string>
     <string name="title_activity_group">GroupActivity</string>
     <string name="hello_world">Hello world!</string>
-
     <string name="title_activity_capture">CaptureActivity</string>
     <string name="title_activity_bar_code_test">BarCodeTestActivity</string>
     <string name="title_activity_generate_qrcode">GenerateQRCodeActivity</string>
+    <string name="title_activity_person_info">PersonInfoActivity</string>
 
 </resources>

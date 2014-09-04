@@ -3,10 +3,14 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.util.Utils;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -67,7 +71,7 @@ public class NetAccess {
 	public static final int NETMSG_PROCESS = 20;
 	public static final int NETMSG_AFTER = 30;
 	public static final int NETMSG_ERROR = 40;
-	
+
 	public static final String STATUS = "status";
 	public static final String RESPONSE = "response";
 	public static final String ERROR = "error";
@@ -82,101 +86,93 @@ public class NetAccess {
 			trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
 			trustStore.load(null, null);
 
-	         SSLSocketFactory sf = new SSLSocketFactoryEx(trustStore);
-	         sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);  //允许所有主机的验证
+			SSLSocketFactory sf = new SSLSocketFactoryEx(trustStore);
+			sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER); // 允许所有主机的验证
 
-	         HttpParams params = new BasicHttpParams();
+			HttpParams params = new BasicHttpParams();
 
-	         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-	         HttpProtocolParams.setContentCharset(params,
-	                 HTTP.DEFAULT_CONTENT_CHARSET);
-	         HttpProtocolParams.setUseExpectContinue(params, true);
+			HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+			HttpProtocolParams.setContentCharset(params,
+					HTTP.DEFAULT_CONTENT_CHARSET);
+			HttpProtocolParams.setUseExpectContinue(params, true);
 
-	         // 设置连接管理器的超时
-	         ConnManagerParams.setTimeout(params, 10000);
-	         // 设置连接超时
-	         HttpConnectionParams.setConnectionTimeout(params, 10000);
-	         // 设置socket超时
-	         HttpConnectionParams.setSoTimeout(params, 10000);
+			// 设置连接管理器的超时
+			ConnManagerParams.setTimeout(params, 10000);
+			// 设置连接超时
+			HttpConnectionParams.setConnectionTimeout(params, 10000);
+			// 设置socket超时
+			HttpConnectionParams.setSoTimeout(params, 10000);
 
-	         // 设置http https支持
-	         SchemeRegistry schReg = new SchemeRegistry();
-	         schReg.register(new Scheme("http", PlainSocketFactory
-	                 .getSocketFactory(), 80));
-	         schReg.register(new Scheme("https", sf, 443));
+			// 设置http https支持
+			SchemeRegistry schReg = new SchemeRegistry();
+			schReg.register(new Scheme("http", PlainSocketFactory
+					.getSocketFactory(), 80));
+			schReg.register(new Scheme("https", sf, 443));
 
-	         ClientConnectionManager conManager = new ThreadSafeClientConnManager(params, schReg);
+			ClientConnectionManager conManager = new ThreadSafeClientConnManager(
+					params, schReg);
 
-	        this.httpClient = new DefaultHttpClient(conManager, params);
-			
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
+			this.httpClient = new DefaultHttpClient(conManager, params);
+
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/*httpClient = new DefaultHttpClient();
-		httpClient.getParams().setParameter(
-				CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);*/
+		/*
+		 * httpClient = new DefaultHttpClient();
+		 * httpClient.getParams().setParameter(
+		 * CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);
+		 */
 	}
-	
+
 	class SSLSocketFactoryEx extends SSLSocketFactory {
-		 
-	    SSLContext sslContext = SSLContext.getInstance("TLS");
-	 
-	    public SSLSocketFactoryEx(KeyStore truststore)
-	            throws NoSuchAlgorithmException, KeyManagementException,
-	            KeyStoreException, UnrecoverableKeyException {
-	        super(truststore);
-	 
-	        TrustManager tm = new X509TrustManager() {
-	 
-	            @Override
-	            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-	                return null;
-	            }
-	 
-	            @Override
-	            public void checkClientTrusted(
-	                    java.security.cert.X509Certificate[] chain, String authType)
-	                    throws java.security.cert.CertificateException {
-	 
-	            }
-	 
-	            @Override
-	            public void checkServerTrusted(
-	                    java.security.cert.X509Certificate[] chain, String authType)
-	                    throws java.security.cert.CertificateException {
-	 
-	            }
-	        };
-	 
-	        sslContext.init(null, new TrustManager[] { tm }, null);
-	    }
-	    @Override  
-	    public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {  
-	        return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);  
-	    }  
-	  
-	    @Override  
-	    public Socket createSocket() throws IOException {  
-	        return sslContext.getSocketFactory().createSocket();  
-	    }  
+
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+
+		public SSLSocketFactoryEx(KeyStore truststore)
+				throws NoSuchAlgorithmException, KeyManagementException,
+				KeyStoreException, UnrecoverableKeyException {
+			super(truststore);
+
+			TrustManager tm = new X509TrustManager() {
+
+				@Override
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+
+				@Override
+				public void checkClientTrusted(
+						java.security.cert.X509Certificate[] chain,
+						String authType)
+						throws java.security.cert.CertificateException {
+
+				}
+
+				@Override
+				public void checkServerTrusted(
+						java.security.cert.X509Certificate[] chain,
+						String authType)
+						throws java.security.cert.CertificateException {
+
+				}
+			};
+
+			sslContext.init(null, new TrustManager[] { tm }, null);
+		}
+
+		@Override
+		public Socket createSocket(Socket socket, String host, int port,
+				boolean autoClose) throws IOException, UnknownHostException {
+			return sslContext.getSocketFactory().createSocket(socket, host,
+					port, autoClose);
+		}
+
+		@Override
+		public Socket createSocket() throws IOException {
+			return sslContext.getSocketFactory().createSocket();
+		}
 	}
-	
 
 	// 获取实例对象的唯一方法
 	public static NetAccess getInstance() {
@@ -239,6 +235,131 @@ public class NetAccess {
 			msg.setData(data);
 			handler.sendMessage(msg);
 		}
+	}
+
+	public void createUrlPost(String aimUrl, UrlConnectProcess process,
+			Handler handler) {
+		try {
+			new UrlPostThread(aimUrl, process, handler).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void createUrlGet(String aimUrl, UrlConnectProcess process,
+			Handler handler) {
+		try {
+			new UrlGetThread(aimUrl, process, handler).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void createUrlPut(String aimUrl, UrlConnectProcess process,
+			Handler handler) {
+		try {
+			new UrlPutThread(aimUrl, process, handler).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void createUrlDelete(String aimUrl, UrlConnectProcess process,
+			Handler handler) {
+		try {
+			new UrlDeleteThread(aimUrl, process, handler).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public abstract class UrlConnectionThread extends Thread {
+		protected HttpURLConnection con;
+		protected UrlConnectProcess process;
+		protected Handler handler;
+
+		public UrlConnectionThread(String aimUrl, UrlConnectProcess process,
+				Handler handler) throws Exception {
+			URL url = new URL(aimUrl);
+			con = (HttpURLConnection) url.openConnection();
+			this.process = process;
+			this.handler = handler;
+		}
+
+		public void run() {
+			try {
+				con.setDoInput(true);
+				con.setUseCaches(false);
+				setProperty();
+				process.writeOutputStream(con);
+				InputStream is = con.getInputStream();
+				process.getInputStream(is);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		public abstract void setProperty() throws Exception;
+	}
+
+	public interface UrlConnectProcess {
+		public abstract void writeOutputStream(HttpURLConnection con)
+				throws Exception;
+
+		public abstract void getInputStream(InputStream is) throws Exception;
+	}
+
+	public class UrlPostThread extends UrlConnectionThread {
+		public UrlPostThread(String aimUrl, UrlConnectProcess process,
+				Handler handler) throws Exception {
+			super(aimUrl, process, handler);
+		}
+
+		public void setProperty() throws Exception {
+			con.setDoOutput(true);
+			con.setRequestMethod("POST");
+		}
+
+	}
+
+	public class UrlGetThread extends UrlConnectionThread {
+		public UrlGetThread(String aimUrl, UrlConnectProcess process,
+				Handler handler) throws Exception {
+			super(aimUrl, process, handler);
+		}
+
+		public void setProperty() throws Exception {
+			con.setDoOutput(true);
+			con.setRequestMethod("GET");
+		}
+
+	}
+
+	public class UrlPutThread extends UrlConnectionThread {
+		public UrlPutThread(String aimUrl, UrlConnectProcess process,
+				Handler handler) throws Exception {
+			super(aimUrl, process, handler);
+		}
+
+		public void setProperty() throws Exception {
+			con.setDoOutput(true);
+			con.setRequestMethod("PUT");
+		}
+
+	}
+
+	public class UrlDeleteThread extends UrlConnectionThread {
+		public UrlDeleteThread(String aimUrl, UrlConnectProcess process,
+				Handler handler) throws Exception {
+			super(aimUrl, process, handler);
+		}
+
+		public void setProperty() throws Exception {
+			con.setDoOutput(true);
+			con.setRequestMethod("DELETE");
+		}
+
 	}
 
 	public class BitmapThread extends Thread {

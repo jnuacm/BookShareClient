@@ -34,11 +34,14 @@ public class User {
 
 	private Application application;
 
+	private ImageProcess image;
+
 	public User(Application application) {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
 		groups = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
+		image = new ImageProcess(application);
 		this.application = application;
 	}
 
@@ -208,7 +211,8 @@ public class User {
 					tmsg.what = NetAccess.NETMSG_AFTER;
 					Bundle data = new Bundle();
 					data.putInt(NetAccess.STATUS, NetAccess.STATUS_ERROR);
-					data.putString(NetAccess.RESPONSE, repData.getString("response"));
+					data.putString(NetAccess.RESPONSE,
+							repData.getString("response"));
 					tmsg.setData(data);
 					handler.sendMessage(tmsg);
 				} else {
@@ -230,7 +234,8 @@ public class User {
 
 		nvps.add(new BasicNameValuePair(Book.NAME, data.getString(Book.NAME)));
 		nvps.add(new BasicNameValuePair(Book.ISBN, data.getString(Book.ISBN)));
-		nvps.add(new BasicNameValuePair(Book.AUTHOR, data.getString(Book.AUTHOR)));
+		nvps.add(new BasicNameValuePair(Book.AUTHOR, data
+				.getString(Book.AUTHOR)));
 		nvps.add(new BasicNameValuePair(Book.DESCRIPTION, data
 				.getString(Book.DESCRIPTION)));
 		nvps.add(new BasicNameValuePair(Book.PUBLISHER, data
@@ -448,5 +453,9 @@ public class User {
 				return book;
 		}
 		return null;
+	}
+
+	public void createAvatar(String path, Handler handler) {
+		image.createAvatar(username, path, handler);
 	}
 }

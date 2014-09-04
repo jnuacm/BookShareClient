@@ -94,6 +94,10 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.action_personal_info:
+			Intent intent = new Intent(this, PersonInfoActivity.class);
+			startActivity(intent);
+			break;
 		case R.id.action_sort:
 			break;
 		case R.id.action_check_own:
