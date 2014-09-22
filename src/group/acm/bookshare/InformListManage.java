@@ -206,6 +206,7 @@ public class InformListManage {
 					localUser.addInformDataToList(msg.getData().getString(
 							NetAccess.RESPONSE));
 					informAdapter.notifyDataSetChanged();
+					Utils.setHasUpdate(activity, false);
 				}
 				break;
 			}

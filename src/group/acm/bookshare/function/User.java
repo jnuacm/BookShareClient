@@ -1,6 +1,7 @@
 package group.acm.bookshare.function;
 
 import group.acm.bookshare.R;
+import group.acm.bookshare.util.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import android.util.Log;
 public class User {
 	private String username;
 	private String password;
+	private String userid;
 
 	private List<Map<String, Object>> books;
 	private List<Map<String, Object>> friends;
@@ -45,9 +47,10 @@ public class User {
 		this.application = application;
 	}
 
-	public void setUser(String username, String password) {
+	public void setUser(String username, String password, String userid) {
 		this.username = username;
 		this.password = password;
+		this.userid = userid;
 	}
 
 	public String getUserName() {
@@ -58,6 +61,7 @@ public class User {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("username", username));
 		nvps.add(new BasicNameValuePair("password", password));
+		nvps.add(new BasicNameValuePair("userid", userid));
 
 		String url = application.getString(R.string.url_host);
 		url += application.getString(R.string.url_login);
@@ -107,6 +111,7 @@ public class User {
 	}
 
 	public void clearInformData() {
+		Utils.setHasUpdate(application, false);
 		informs.clear();
 	}
 

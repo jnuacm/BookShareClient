@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -82,6 +83,12 @@ public class MainActivity extends Activity {
 		viewPager.setCurrentItem(0);
 		viewPager.setOnPageChangeListener(new MyOnPageChangeListener());
 		textViews.get(currIndex).setTextColor(Color.rgb(50, 189, 189));
+
+		IntentFilter filter = new IntentFilter();
+		filter.addAction("com.baidu.android.pushservice.action.MESSAGE");
+		filter.addAction("com.baidu.android.pushservice.action.RECEIVE");
+		filter.addAction("com.baidu.android.pushservice.action.notification.CLICK");
+		registerReceiver(new PushMessageReceiver(this), filter);
 	}
 
 	@Override
@@ -89,6 +96,12 @@ public class MainActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+
+	@Override
+	public void onResume() {
+		checkUpdate();
+		super.onResume();
 	}
 
 	@Override
@@ -106,6 +119,14 @@ public class MainActivity extends Activity {
 			break;
 		}
 		return false;
+	}
+
+	public void checkUpdate() {
+		if (Utils.hasUpdate(getApplicationContext())) {
+			((TextView) textViews.get(2)).setText("有更新");
+		} else {
+			((TextView) textViews.get(2)).setText("消息");
+		}
 	}
 
 	private void InitImageView() {
@@ -219,6 +240,8 @@ public class MainActivity extends Activity {
 				informmanage.updateDisplay();
 				break;
 			}
+
+			checkUpdate();
 		}
 
 	}
