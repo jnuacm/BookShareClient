@@ -13,6 +13,8 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
@@ -31,6 +33,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +49,8 @@ public class MainActivity extends Activity {
 
 	private List<View> viewList;
 	private ViewPager viewPager;// viewpager
+
+	private Button mainButton; // 底部按钮
 
 	private User localUser;
 
@@ -67,6 +72,7 @@ public class MainActivity extends Activity {
 		informmanage = new InformListManage(this);
 
 		viewList = new ArrayList<View>();
+		// 初始化后获取view
 		bookmanage.initBookList();
 		viewList.add(bookmanage.getView());
 		friendmanage.initFriendList();
@@ -84,11 +90,28 @@ public class MainActivity extends Activity {
 		viewPager.setOnPageChangeListener(new MyOnPageChangeListener());
 		textViews.get(currIndex).setTextColor(Color.rgb(50, 189, 189));
 
+		// 页面底部按钮设置点击动作
+		mainButton = (Button) findViewById(R.id.main_button);
+		mainButton.setOnClickListener(new BottomButtonClickListener());
+
+		// 注册接收到推送时的更新receiver
+		registerUpdateReceiver();
+	}
+
+	private void registerUpdateReceiver() {
 		IntentFilter filter = new IntentFilter();
-		filter.addAction("com.baidu.android.pushservice.action.MESSAGE");
-		filter.addAction("com.baidu.android.pushservice.action.RECEIVE");
-		filter.addAction("com.baidu.android.pushservice.action.notification.CLICK");
-		registerReceiver(new PushMessageReceiver(this), filter);
+		filter.addAction("group.acm.bookshare.action.UPDATEMESSAGE");
+		registerReceiver(new MessageUpdateReceiver(), filter);
+	}
+
+	private class MessageUpdateReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(
+					"group.acm.bookshare.action.UPDATEMESSAGE"))
+				checkUpdate();
+		}
 	}
 
 	@Override
@@ -231,17 +254,38 @@ public class MainActivity extends Activity {
 			// 每次页面被选中都进行一次数据更新显示
 			switch (currIndex) {
 			case 0:
+				mainButton.setText("添加书籍");
 				bookmanage.updateDisplay();
 				break;
 			case 1:
+				mainButton.setText("添加好友");
 				friendmanage.updateDisplay();
 				break;
 			case 2:
+				mainButton.setText("刷新");
 				informmanage.updateDisplay();
 				break;
 			}
 
 			checkUpdate();
+		}
+
+	}
+
+	private class BottomButtonClickListener implements OnClickListener {
+		@Override
+		public void onClick(View v) {
+			switch (currIndex) {
+			case 0:
+				Intent intent = new Intent(MainActivity.this,
+						CaptureActivity.class);
+				startActivityForResult(intent, Utils.ACTIVITY_REQUEST_ADDBOOK);
+				break;
+			case 1:
+				break;
+			case 2:
+				break;
+			}
 		}
 
 	}

@@ -56,4 +56,12 @@
         android:flipInterval="30"
         android:persistentDrawingCache="animation" />
 
+    <Button
+        android:id="@+id/main_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_green"
+        android:text="添加书籍"
+        android:textColor="@color/buttonfont_white" />
+
 </LinearLayout>

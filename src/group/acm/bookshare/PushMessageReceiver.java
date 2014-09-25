@@ -33,12 +33,6 @@ import com.baidu.frontia.api.FrontiaPushMessageReceiver;
 public class PushMessageReceiver extends FrontiaPushMessageReceiver {
 	/** TAG to Log */
 	public static final String TAG = PushMessageReceiver.class.getSimpleName();
-	
-	private MainActivity activity;
-	
-	public PushMessageReceiver(MainActivity activity){
-		this.activity = activity;
-	}
 
 	/**
 	 * 调用PushManager.startWork后，sdk将对push
@@ -65,13 +59,14 @@ public class PushMessageReceiver extends FrontiaPushMessageReceiver {
 		String responseString = "onBind errorCode=" + errorCode + " appid="
 				+ appid + " userId=" + userId + " channelId=" + channelId
 				+ " requestId=" + requestId;
-		Log.i(TAG, responseString);
+		Log.i(Utils.getLineInfo(), responseString);
 
 		// 绑定成功，设置已绑定flag，可以有效的减少不必要的绑定请求
 		if (errorCode == 0) {
 			Utils.setBind(context, true);
 		}
 
+		// 記錄推送的userid
 		Utils.setPushInfo(context.getApplicationContext(), userId);
 	}
 
@@ -108,8 +103,10 @@ public class PushMessageReceiver extends FrontiaPushMessageReceiver {
 		}
 
 		// Demo更新界面展示代码，应用请在这里加入自己的处理逻辑
+		// 更新标志并发送更新广播
 		Utils.setHasUpdate(context.getApplicationContext(), true);
-		activity.checkUpdate();
+		context.sendBroadcast(new Intent(
+				"group.acm.bookshare.action.UPDATEMESSAGE"));
 	}
 
 	/**

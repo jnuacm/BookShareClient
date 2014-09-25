@@ -82,10 +82,7 @@ public class BookListManage {
 				R.layout.activity_submain_book, null);
 		mybookslistview = (ListView) view.findViewById(R.id.mybookslistview);
 
-		setListener();
-
-		mybookslistview.addHeaderView(LayoutInflater.from(this.activity)
-				.inflate(R.layout.mybooks_listview_top, null));
+		setItemListener();
 		mybookslistview.setAdapter(bookAdapter);
 	}
 
@@ -134,57 +131,78 @@ public class BookListManage {
 
 			coverView.setImageResource(R.drawable.default_book_big);
 			titleView.setText((String) item.get(Book.NAME));
-			String text;
-			if (localUser.getUserName().equals(item.get(Book.OWNER)))
-				text = "owner:";
-			else
-				text = "borrowed:";
-			switch ((Integer) item.get(Book.STATUS)) {
-			case Book.STATUS_BUY | Book.STATUS_BORROW:
-				text += "可卖/可借";
-				break;
-			case Book.STATUS_BUY | Book.STATUS_UNBORROW:
-				text += "可卖/不可借";
-				break;
-			case Book.STATUS_UNBUY | Book.STATUS_BORROW:
-				text += "不可卖/可借";
-				break;
-			case Book.STATUS_UNBUY | Book.STATUS_UNBORROW:
-				text += "不可卖/不可借";
-				break;
-			}
-			statusView.setText(text);
+			statusView.setText(getText(item)); // 状态显示
+			setDivider(position, convertView, item); // 设置是否显示分界
+
 			return convertView;
+		}
+
+		private String getText(Map<String, Object> item) {
+			String text = "";
+			if (localUser.getUserName().equals(item.get(Book.OWNER)))
+			{
+				switch ((Integer) item.get(Book.STATUS)) {
+				case Book.STATUS_BUY | Book.STATUS_BORROW:
+					text += "可卖/可借";
+					break;
+				case Book.STATUS_BUY | Book.STATUS_UNBORROW:
+					text += "可卖/不可借";
+					break;
+				case Book.STATUS_UNBUY | Book.STATUS_BORROW:
+					text += "不可卖/可借";
+					break;
+				case Book.STATUS_UNBUY | Book.STATUS_UNBORROW:
+					text += "已借出";
+					break;
+				}
+			} else {
+				text = "非本人";
+			}
+			
+
+			return text;
+		}
+
+		private void setDivider(int position, View convertView,
+				Map<String, Object> item) {
+			TextView dividerView = (TextView) convertView
+					.findViewById(R.id.mybookslistviewitem_divider);
+			if (0 == position) {
+				dividerView.setVisibility(View.VISIBLE);
+				if (localUser.getUserName().equals(item.get(Book.OWNER)))
+					dividerView.setText("Personal Books");
+				else
+					dividerView.setText("Borrowed Books");
+			} else if (position > 0
+					&& !localUser.getUserName().equals(item.get(Book.OWNER))
+					&& localUser.getUserName().equals(
+							datas.get(position - 1).get(Book.OWNER))) {
+				dividerView.setVisibility(View.VISIBLE);
+				dividerView.setText("Borrowed Books");
+			} else {
+				dividerView.setVisibility(View.GONE);
+			}
 		}
 	}
 
-	private void setListener() {
+	private void setItemListener() {
 		mybookslistview.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				if (0 == position) {
-
-					Intent intent = new Intent(activity, CaptureActivity.class);
-					activity.startActivityForResult(intent,
-							Utils.ACTIVITY_REQUEST_ADDBOOK);
-				} else {
-					List<Map<String, Object>> bookList = localUser
-							.getBookListData();
-					Intent intent = new Intent(activity,
-							BookInformationActivity.class);
-					Bundle bundle = new Bundle();
-					bundle.putString("bookName",
-							(String) bookList.get(position - 1).get(Book.NAME));
-					bundle.putString("bookIsbn",
-							(String) bookList.get(position - 1).get(Book.ISBN));
-					bundle.putString(
-							"bookDescription",
-							(String) bookList.get(position - 1).get(
-									Book.DESCRIPTION));
-					bundle.putInt("bookImage", R.drawable.default_book_big);
-					intent.putExtra("key", bundle);
-					activity.startActivity(intent);
-				}
+				List<Map<String, Object>> bookList = localUser
+						.getBookListData();
+				Intent intent = new Intent(activity,
+						BookInformationActivity.class);
+				Bundle bundle = new Bundle();
+				bundle.putString("bookName", (String) bookList.get(position)
+						.get(Book.NAME));
+				bundle.putString("bookIsbn", (String) bookList.get(position)
+						.get(Book.ISBN));
+				bundle.putString("bookDescription",
+						(String) bookList.get(position).get(Book.DESCRIPTION));
+				bundle.putInt("bookImage", R.drawable.default_book_big);
+				intent.putExtra("key", bundle);
+				activity.startActivity(intent);
 			}
 		});
 
@@ -201,11 +219,12 @@ public class BookListManage {
 			Builder builder = new AlertDialog.Builder(activity)
 					.setTitle("Confirm");
 			List<Map<String, Object>> books = localUser.getBookListData();
-			Map<String, Object> book = books.get(position - 1);
+			Map<String, Object> book = books.get(position);
 			String text;
 			OnClickListener listener;
 			if (localUser.getUserName().equals(book.get(Book.OWNER))) {
-				if (((String) book.get(Book.OWNER)).equals(book.get(Book.HOLDER))) {
+				if (((String) book.get(Book.OWNER)).equals(book
+						.get(Book.HOLDER))) {
 					text = "删书";
 					listener = new DeleteBookListener(book);
 				} else {
@@ -273,7 +292,8 @@ public class BookListManage {
 					String content = "发送成功";
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				} else {
-					String content = "发送失败:" + data.getString(NetAccess.RESPONSE);
+					String content = "发送失败:"
+							+ data.getString(NetAccess.RESPONSE);
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				}
 				break;

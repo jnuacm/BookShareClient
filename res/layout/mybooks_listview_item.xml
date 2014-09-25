@@ -3,23 +3,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+    <TextView
+        android:id="@+id/mybookslistviewitem_divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:background="#22333333"
+        android:gravity="center_horizontal"
+        android:text="Large Text"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <ImageView
         android:id="@+id/mybookslistitem_bookimage"
         android:layout_width="40dp"
         android:layout_height="60dp"
         android:layout_alignParentLeft="true"
+        android:layout_below="@id/mybookslistviewitem_divider"
         android:layout_marginLeft="5dp" />
 
     <TextView
         android:id="@+id/mybookslistitem_bookname"
         android:layout_width="wrap_content"
         android:layout_height="60dp"
-        android:layout_toRightOf="@id/mybookslistitem_bookimage" />
+        android:layout_below="@id/mybookslistviewitem_divider"
+        android:layout_toRightOf="@id/mybookslistitem_bookimage"
+        android:text="bookname" />
 
     <TextView
         android:id="@+id/mybookslistitem_bookstate"
         android:layout_width="wrap_content"
         android:layout_height="60dp"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/mybookslistviewitem_divider"
+        android:text="state" />
 
 </RelativeLayout>

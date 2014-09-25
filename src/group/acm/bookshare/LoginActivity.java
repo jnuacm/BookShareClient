@@ -23,6 +23,7 @@ import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -62,7 +63,7 @@ public class LoginActivity extends Activity implements Callback {
 		setContentView(R.layout.activity_login);
 		LocalApp localapp = (LocalApp) getApplication();
 		localUser = localapp.getUser();
-		initWithApiKey();
+		initWithApiKey(); // 绑定推送service
 		// fillInInfo();
 	}
 
@@ -71,25 +72,6 @@ public class LoginActivity extends Activity implements Callback {
 		PushManager.startWork(getApplicationContext(),
 				PushConstants.LOGIN_TYPE_API_KEY,
 				Utils.getMetaValue(LoginActivity.this, "api_key"));
-	}
-
-	private void fillInInfo() {
-		SharedPreferences info = this.getSharedPreferences("user_info",
-				Context.MODE_PRIVATE);
-		((TextView) findViewById(R.id.USERNAME)).setText(info.getString(
-				"username", ""));
-
-		((TextView) findViewById(R.id.PASSWORD)).setText(info.getString(
-				"password", ""));
-	}
-
-	private void recordInfo(String username, String password) {
-		SharedPreferences info = this.getSharedPreferences("user_info",
-				Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = info.edit();
-		editor.putString("username", username);
-		editor.putString("password", password);
-		editor.commit();
 	}
 
 	public void Login(View v) { // 登录回调函数
