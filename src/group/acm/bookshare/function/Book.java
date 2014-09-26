@@ -52,65 +52,45 @@ public class Book {
 		this.application = application;
 	}
 
-	public void getBookByIsbn(String isbn, Handler handler) {
+	public void getBookByIsbn(String isbn, NetProgress progress) {
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.douban_url);
 		url += isbn;
 		url += application.getString(R.string.douban_form);
-		network.createDoubanThread(url, new BookHandler(isbn, handler));
+		network.createDoubanThread(url, new BookProgress(isbn, progress));
 	}
 
-	private class BookHandler extends Handler {
-		private Handler handler;
+	private class BookProgress extends HttpProcessBase {
+		private NetProgress progress;
 		private String isbn;
 
-		public BookHandler(String isbn, Handler handler) {
-			this.handler = handler;
+		public BookProgress(String isbn, NetProgress progress) {
+			this.progress = progress;
 			this.isbn = isbn;
 		}
-
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				try {
-					if (NetAccess.STATUS_SUCCESS == msg.getData().getInt(
-							NetAccess.STATUS)) {
-						Bundle data = doubanStrToBundle((String) msg.getData()
-								.get(NetAccess.RESPONSE));
-						data.putInt(NetAccess.STATUS, NetAccess.STATUS_SUCCESS);
-						data.putString(Book.ISBN, isbn);
-						msg = Message.obtain();
-						msg.what = NetAccess.NETMSG_AFTER;
-						msg.setData(data);
-						handler.sendMessage(msg);
-					} else {
-						sendFailMessage("∂π∞Í∑√Œ ¥ÌŒÛ");
-					}
-				} catch (JSONException e) {
-					sendFailMessage(e.toString());
-					break;
-				}
-				break;
-			}
+		
+		public void error(String content){
+			progress.setError(content);
 		}
 
-		private void sendFailMessage(String error) {
-			Bundle data = new Bundle();
-			data.putInt(NetAccess.STATUS, NetAccess.STATUS_ERROR);
-			data.putString(NetAccess.RESPONSE, error);
-			Message msg = Message.obtain();
-			msg.what = NetAccess.NETMSG_AFTER;
-			msg.setData(data);
-			handler.sendMessage(msg);
+		@Override
+		public void statusError(String response) {
+			progress.setError("∂π∞Í∑√Œ ¥ÌŒÛ");
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			progress.setAfter(NetAccess.STATUS_SUCCESS, response);
 		}
 	}
 
-	public Bundle doubanStrToBundle(String response) throws JSONException {
+	public static Bundle doubanStrToBundle(String response) throws JSONException {
 		Bundle ret = new Bundle();
 		String name = "";
 		String authors = "";
 		String description = "";
 		String publisher = "";
+		String isbn = "";
 
 		JSONObject bookObj = new JSONObject(response);
 		name = bookObj.getJSONObject("title").getString("$t");
@@ -120,13 +100,24 @@ public class Book {
 					.getString("$t") + " ");
 		}
 		description = bookObj.getJSONObject("summary").getString("$t");
-		publisher = bookObj.getJSONArray("db:attribute").getJSONObject(5)
-				.getString("$t");
+		JSONArray attrsArray = bookObj.getJSONArray("db:attribute");
+		
+		for(int i=0; i<attrsArray.length(); i++)
+		{
+			JSONObject obj = attrsArray.getJSONObject(i);
+			if ("publisher".equals(obj.getString("@name"))){
+				publisher = obj.getString("$t");
+			}
+			else if("isbn13".equals(obj.getString("@name"))){
+				isbn = obj.getString("$t");
+			}
+		}
 
 		ret.putString(Book.AUTHOR, authors);
 		ret.putString(Book.DESCRIPTION, description);
 		ret.putString(Book.NAME, name);
 		ret.putString(Book.PUBLISHER, publisher);
+		ret.putString(Book.ISBN, isbn);
 
 		return ret;
 	}

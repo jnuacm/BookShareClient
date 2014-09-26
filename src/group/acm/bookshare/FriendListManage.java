@@ -1,7 +1,7 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
-import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
 
 import java.util.HashMap;
@@ -12,13 +12,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,7 +60,7 @@ public class FriendListManage {
 		refresh.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				localUser.updateFriendship(new UpdateFriendshipHandler());
+				localUser.updateFriendship(new UpdateFriendshipProgress());
 			}
 		});
 
@@ -171,55 +168,45 @@ public class FriendListManage {
 		friendAdapter.notifyDataSetChanged();
 	}
 
-	private class DeleteFriendHandler extends Handler {
+	private class DeleteFriendProgress extends HttpProcessBase {
+		
+		public void error(String content){
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
 
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_BEFORE:
-				break;
-			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					reload(msg.getData().getString(NetAccess.RESPONSE));
-					// friendmanage.friendAdapter.notifyDataSetChanged();
-					String content = "删除好友成功";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				} else {
-					String content = "删除好友失败";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				}
-				break;
-			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString(NetAccess.ERROR);
-				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				break;
-			}
+		@Override
+		public void statusError(String response) {
+			String content = "删除好友失败";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			reload(response);
+			// friendmanage.friendAdapter.notifyDataSetChanged();
+			String content = "删除好友成功";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 		}
 	}
 
-	private class UpdateFriendshipHandler extends Handler {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_BEFORE:
-				break;
-			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					Log.i("update_resposnse:",
-							msg.getData().getString(NetAccess.RESPONSE));
-					reload(msg.getData().getString(NetAccess.RESPONSE));
+	private class UpdateFriendshipProgress extends HttpProcessBase {
+		public void error(String content) {
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
 
-					String content = "更新好友成功";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		@Override
+		public void statusError(String response) {
+			String content = "更新好友失败";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
 
-				} else {
-					String content = "更新好友失败";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				}
-				break;
-			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString(NetAccess.ERROR);
-				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				break;
-			}
+		@Override
+		public void statusSuccess(String response) {
+			Log.i("update_resposnse:", response);
+			reload(response);
+
+			String content = "更新好友成功";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 		}
 	}
 
@@ -245,7 +232,7 @@ public class FriendListManage {
 									localUser.deleteFriend(
 											friendList
 													.get(JudgeListener.this.position - 1),
-											new DeleteFriendHandler());
+											new DeleteFriendProgress());
 								}
 
 							}).setNegativeButton("No", null).show();

@@ -304,7 +304,7 @@ public class MainActivity extends Activity {
 			case Utils.ACTIVITY_REQUEST_ADDBOOK:
 				bundle = data.getExtras();
 				String isbn = bundle.getString("result");
-				localUser.addBook(isbn, bookmanage.getBookChangeHandler());
+				localUser.addBook(isbn, bookmanage.getBookChangeProgress());
 				break;
 			case Utils.REQUEST_SCANBOOK_UPDATESTATUS:
 				bundle = data.getExtras();
@@ -324,7 +324,7 @@ public class MainActivity extends Activity {
 					contentString = desUtil.getDec(contentString);
 					int id = Integer.parseInt(contentString);
 					localUser.updateRequest(id, Inform.REQUEST_STATUS_CONFIRM,
-							informmanage.getConfirmHandler(id));
+							informmanage.getConfirmProgress(id));
 					Log.i("contentString", contentString);
 
 				} catch (Exception e) {

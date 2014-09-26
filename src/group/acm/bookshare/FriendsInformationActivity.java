@@ -1,11 +1,11 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -46,30 +46,22 @@ public class FriendsInformationActivity extends Activity {
 				friendName = getIntent().getBundleExtra("key")
 						.getString("name");
 				((LocalApp) getApplication()).getUser().getBookList(friendName,
-						new Handler() {
-							public void handleMessage(Message msg) {
-								switch (msg.what) {
-								case NetAccess.NETMSG_AFTER:
-									if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-										Bundle bookData = new Bundle();
-										bookData.putString("friendname",
-												friendName);
-										bookData.putString(
-												NetAccess.RESPONSE,
-												msg.getData().getString(
-														NetAccess.RESPONSE));
-										Intent intent = new Intent(
-												FriendsInformationActivity.this,
-												FriendBooksActivity.class);
-										intent.putExtras(bookData);
-										startActivity(intent);
-									} else {
+						new HttpProcessBase() {
 
-									}
-									break;
-								case NetAccess.NETMSG_ERROR:
-									break;
-								}
+							@Override
+							public void statusError(String response) {
+							}
+
+							@Override
+							public void statusSuccess(String response) {
+								Bundle bookData = new Bundle();
+								bookData.putString("friendname", friendName);
+								bookData.putString(NetAccess.RESPONSE, response);
+								Intent intent = new Intent(
+										FriendsInformationActivity.this,
+										FriendBooksActivity.class);
+								intent.putExtras(bookData);
+								startActivity(intent);
 							}
 						});
 			}

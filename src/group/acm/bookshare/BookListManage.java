@@ -1,10 +1,11 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.NetProgress;
 import group.acm.bookshare.function.User;
-import group.acm.bookshare.util.Utils;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,30 +47,27 @@ public class BookListManage {
 		return mybookslistview;
 	}
 
-	public Handler getBookChangeHandler() {
-		return new BookChangeHandler();
+	public NetProgress getBookChangeProgress() {
+		return new BookChangeProgress();
 	}
 
-	@SuppressLint("HandlerLeak")
-	private class BookChangeHandler extends Handler {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				Bundle data = msg.getData();
-				if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					reload(data.getString(NetAccess.RESPONSE));
-					String content = "成功";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				} else {
-					String content = "失败:" + data.getString(NetAccess.RESPONSE);
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				}
-				break;
-			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString(NetAccess.ERROR);
-				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				break;
-			}
+	private class BookChangeProgress extends HttpProcessBase {
+
+		public void error(String content) {
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			String content = "失败:" + response;
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			reload(response);
+			String content = "成功";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 		}
 	}
 
@@ -139,8 +136,7 @@ public class BookListManage {
 
 		private String getText(Map<String, Object> item) {
 			String text = "";
-			if (localUser.getUserName().equals(item.get(Book.OWNER)))
-			{
+			if (localUser.getUserName().equals(item.get(Book.OWNER))) {
 				switch ((Integer) item.get(Book.STATUS)) {
 				case Book.STATUS_BUY | Book.STATUS_BORROW:
 					text += "可卖/可借";
@@ -158,7 +154,6 @@ public class BookListManage {
 			} else {
 				text = "非本人";
 			}
-			
 
 			return text;
 		}
@@ -253,7 +248,7 @@ public class BookListManage {
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			localUser.askReturn(book, new ReturnBookHandler());
+			localUser.askReturn(book, new ReturnBookProgress());
 		}
 	}
 
@@ -266,7 +261,7 @@ public class BookListManage {
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			localUser.returnBook(book, new ReturnBookHandler());
+			localUser.returnBook(book, new ReturnBookProgress());
 		}
 	}
 
@@ -279,34 +274,30 @@ public class BookListManage {
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			localUser.deleteBook(book, new BookChangeHandler());
+			localUser.deleteBook(book, new BookChangeProgress());
 		}
 	}
 
-	private class ReturnBookHandler extends Handler {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				Bundle data = msg.getData();
-				if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					String content = "发送成功";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				} else {
-					String content = "发送失败:"
-							+ data.getString(NetAccess.RESPONSE);
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				}
-				break;
-			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString(NetAccess.ERROR);
-				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				break;
-			}
+	private class ReturnBookProgress extends HttpProcessBase {
+		public void error(String content) {
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			String content = "发送成功";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			String content = "发送成功";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 		}
 	}
 
 	public void reload() {
-		localUser.getBookList(getBookChangeHandler());
+		localUser.getBookList(getBookChangeProgress());
 	}
 
 	public void reload(String response) {

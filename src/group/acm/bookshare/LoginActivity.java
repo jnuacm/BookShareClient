@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.LoginUserNameAdapter;
 import group.acm.bookshare.function.NetAccess;
@@ -21,10 +22,7 @@ import org.json.JSONObject;
 import android.annotation.SuppressLint;
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -99,7 +97,7 @@ public class LoginActivity extends Activity implements Callback {
 			return;
 		}
 		localUser.setUser(username, password, userid);
-		localUser.login(new LoginHandler());
+		localUser.login(new LoginProgress());
 	}
 
 	private void updata_accounts() {
@@ -120,21 +118,32 @@ public class LoginActivity extends Activity implements Callback {
 	}
 
 	@SuppressLint("HandlerLeak")
-	private class LoginHandler extends Handler {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_BEFORE:
-				findViewById(R.id.loginProgressBar).setVisibility(View.VISIBLE);
-				break;
-			case NetAccess.NETMSG_AFTER:
-				showResponse(msg.getData());
-				break;
-			case NetAccess.NETMSG_ERROR:
-				Toast.makeText(LoginActivity.this,
-						msg.getData().getString(NetAccess.ERROR),
-						Toast.LENGTH_LONG).show();
-				break;
-			}
+	private class LoginProgress extends HttpProcessBase {
+		public void before() {
+			findViewById(R.id.loginProgressBar).setVisibility(View.VISIBLE);
+		}
+
+		public void error(String content) {
+			Toast.makeText(LoginActivity.this, content, Toast.LENGTH_LONG)
+					.show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			findViewById(R.id.loginProgressBar).setVisibility(View.INVISIBLE);
+			Toast.makeText(LoginActivity.this,
+					LoginActivity.this.getString(R.string.login_error),
+					Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			localUser.clearBookData();
+			localUser.addBookDataToList(response);
+			localUser.addFriendDataToList(response);
+			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+			startActivity(intent);
+			finish();
 		}
 	}
 
@@ -144,24 +153,6 @@ public class LoginActivity extends Activity implements Callback {
 		Intent intent = new Intent();
 		intent.setClass(this, RegisterActivity.class);
 		startActivity(intent);
-	}
-
-	public void showResponse(Bundle data) {
-		int status = data.getInt(NetAccess.STATUS);
-		if (status == NetAccess.STATUS_SUCCESS) {
-			String response = data.getString(NetAccess.RESPONSE);
-			localUser.clearBookData();
-			localUser.addBookDataToList(response);
-			localUser.addFriendDataToList(response);
-			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-			startActivity(intent);
-			finish();
-		} else if (status == NetAccess.STATUS_ERROR) {
-			findViewById(R.id.loginProgressBar).setVisibility(View.INVISIBLE);
-			Toast.makeText(LoginActivity.this,
-					this.getString(R.string.login_error), Toast.LENGTH_LONG)
-					.show();
-		}
 	}
 
 	/**

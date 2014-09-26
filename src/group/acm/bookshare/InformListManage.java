@@ -1,8 +1,10 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.NetProgress;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.util.Utils;
 
@@ -10,16 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -63,63 +62,46 @@ public class InformListManage {
 		informlistview.setAdapter(informAdapter);
 	}
 
-	public Handler getConfirmHandler(int id) {
-		return new ConfirmInformHandler(id);
+	public NetProgress getConfirmProgress(int id) {
+		return new ConfirmInformProgress(id);
 	}
 
-	private class ConfirmInformHandler extends Handler {
+	private class ConfirmInformProgress extends HttpProcessBase {
 		int id;
 
-		public ConfirmInformHandler(int id) {
+		public ConfirmInformProgress(int id) {
 			this.id = id;
 		}
 
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				Bundle data = msg.getData();
-				if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					localUser.deleteInformById(id);
-					localUser.getBookList(new Handler() {
-						@Override
-						public void handleMessage(Message msg) {
-							switch (msg.what) {
-							case NetAccess.NETMSG_AFTER:
-								Bundle data = msg.getData();
-								if (data.getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-									localUser.clearBookData();
-									localUser.addBookDataToList(data
-											.getString(NetAccess.RESPONSE));
-									updateInformData();
-									String content = "成功";
-									Toast.makeText(activity, content,
-											Toast.LENGTH_LONG).show();
-								} else {
-									String content = "失败:"
-											+ data.getString(NetAccess.RESPONSE);
-									Toast.makeText(activity, content,
-											Toast.LENGTH_LONG).show();
-								}
-								break;
-							case NetAccess.NETMSG_ERROR:
-								String content = msg.getData().getString(
-										NetAccess.ERROR);
-								Toast.makeText(activity, content,
-										Toast.LENGTH_LONG).show();
-								break;
-							}
-						}
-					});
-				} else {
-					String content = "失败:" + data.getString(NetAccess.RESPONSE);
+		public void error(String content) {
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			String content = "失败:" + response;
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			localUser.deleteInformById(id);
+			localUser.getBookList(new HttpProcessBase() {
+				@Override
+				public void statusError(String response) {
+					String content = "失败:" + response;
 					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 				}
-				break;
-			case NetAccess.NETMSG_ERROR:
-				String content = msg.getData().getString(NetAccess.ERROR);
-				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				break;
-			}
+
+				@Override
+				public void statusSuccess(String response) {
+					localUser.clearBookData();
+					localUser.addBookDataToList(response);
+					updateInformData();
+					String content = "成功";
+					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+				}
+			});
 		}
 	}
 
@@ -183,33 +165,29 @@ public class InformListManage {
 		return head;
 	}
 
-	private class SendInformHandler extends Handler {
+	private class SendInformProgress extends HttpProcessBase {
+
 		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					localUser.addInformDataToList(msg.getData().getString(
-							NetAccess.RESPONSE));
-					localUser.getReceiveInformList(new ReceiveInformHandler());
-				}
-				break;
-			}
+		public void statusError(String response) {
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			localUser.addInformDataToList(response);
+			localUser.getReceiveInformList(new ReceiveInformProgress());
 		}
 	}
 
-	private class ReceiveInformHandler extends Handler {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					localUser.addInformDataToList(msg.getData().getString(
-							NetAccess.RESPONSE));
-					informAdapter.notifyDataSetChanged();
-					Utils.setHasUpdate(activity, false);
-				}
-				break;
-			}
+	private class ReceiveInformProgress extends HttpProcessBase {
+		@Override
+		public void statusError(String response) {
+			localUser.addInformDataToList(response);
+			informAdapter.notifyDataSetChanged();
+			Utils.setHasUpdate(activity, false);
+		}
+
+		@Override
+		public void statusSuccess(String response) {
 		}
 	}
 
@@ -237,49 +215,42 @@ public class InformListManage {
 			return position;
 		}
 
-		public class RequestHandler extends Handler {
+		public class RequestProgress extends HttpProcessBase {
 			private int position;
 
-			public RequestHandler(int position) {
+			public RequestProgress(int position) {
 				this.position = position;
 			}
 
+			public void error(String content) {
+				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+			}
+
 			@Override
-			public void handleMessage(Message msg) {
-				switch (msg.what) {
-				case NetAccess.NETMSG_ERROR:
-					String content = msg.getData().getString(NetAccess.ERROR);
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-					break;
-				case NetAccess.NETMSG_AFTER:
-					if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-						String tmp = "完成";
-						Toast.makeText(activity, tmp, Toast.LENGTH_LONG).show();
-						localUser.getBookList(new Handler() {
-							@Override
-							public void handleMessage(Message msg) {
-								switch (msg.what) {
-								case NetAccess.NETMSG_ERROR:
-									String content = msg.getData().getString(
-											NetAccess.ERROR);
-									Toast.makeText(activity, content,
-											Toast.LENGTH_LONG).show();
-									break;
-								case NetAccess.NETMSG_AFTER:
-									if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-										localUser.clearBookData();
-										localUser.addBookDataToList(msg
-												.getData()
-												.getString(NetAccess.RESPONSE));
-										reload();
-									}
-									break;
-								}
-							}
-						});
+			public void statusError(String response) {
+			}
+
+			@Override
+			public void statusSuccess(String response) {
+				String tmp = "完成";
+				Toast.makeText(activity, tmp, Toast.LENGTH_LONG).show();
+				localUser.getBookList(new HttpProcessBase() {
+					public void error(String content) {
+						Toast.makeText(activity, content, Toast.LENGTH_LONG)
+								.show();
 					}
-					break;
-				}
+
+					@Override
+					public void statusError(String response) {
+					}
+
+					@Override
+					public void statusSuccess(String response) {
+						localUser.clearBookData();
+						localUser.addBookDataToList(response);
+						reload();
+					}
+				});
 			}
 		}
 
@@ -378,7 +349,7 @@ public class InformListManage {
 			@Override
 			public void permitted() {
 				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_PERMITTED, new RequestHandler(
+						Inform.REQUEST_STATUS_PERMITTED, new RequestProgress(
 								position));
 			}
 
@@ -386,7 +357,8 @@ public class InformListManage {
 			public void showCode() {
 				Intent intent = new Intent(activity,
 						GenerateQRCodeActivity.class);
-				intent.putExtra("ContentString", (Integer) item.get(Inform.ID) + "");
+				intent.putExtra("ContentString", (Integer) item.get(Inform.ID)
+						+ "");
 				activity.startActivityForResult(intent,
 						Utils.ACTIVITY_REQUEST_SHOWCODE);
 			}
@@ -402,27 +374,27 @@ public class InformListManage {
 			@Override
 			public void readConfirm() {
 				localUser.updateRead((Integer) item.get(Inform.ID), true,
-						new RequestHandler(position));
+						new RequestProgress(position));
 			}
 
 			@Override
 			public void refused() {
 				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_REFUSED, new RequestHandler(
+						Inform.REQUEST_STATUS_REFUSED, new RequestProgress(
 								position));
 			}
 
 			@Override
 			public void cancel() {
 				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_CANCEL, new RequestHandler(
+						Inform.REQUEST_STATUS_CANCEL, new RequestProgress(
 								position));
 			}
 
 			@Override
 			public void confirm() {
 				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_CONFIRM, new RequestHandler(
+						Inform.REQUEST_STATUS_CONFIRM, new RequestProgress(
 								position));
 			}
 		}
@@ -430,7 +402,7 @@ public class InformListManage {
 
 	public void reload() {
 		localUser.clearInformData();
-		localUser.getSendInformList(new SendInformHandler());
+		localUser.getSendInformList(new SendInformProgress());
 	}
 
 	public void updateDisplay() {

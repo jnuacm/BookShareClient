@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
@@ -18,7 +19,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -122,7 +122,7 @@ public class GroupActivity extends Activity {
 										int which) {
 									localUser.deleteFriend(data
 											.get(JudgeListener.this.position),
-											new DeleteFriendHandler());
+											new DeleteFriendProgress());
 									removeListItem(
 											listView.getChildAt(JudgeListener.this.position),
 											JudgeListener.this.position);
@@ -170,23 +170,21 @@ public class GroupActivity extends Activity {
 		 */
 	}
 
-	private class DeleteFriendHandler extends Handler {
+	private class DeleteFriendProgress extends HttpProcessBase {
+		
+		public void error(String content){
+			showToast(content);
+		}
 
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_BEFORE:
-				break;
-			case NetAccess.NETMSG_AFTER:
-				if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-					reload(msg.getData().getString(NetAccess.RESPONSE));
-					GroupActivity.this.showToast("退出组群成功");
-				} else
-					GroupActivity.this.showToast("退出组群失败");
-				break;
-			case NetAccess.NETMSG_ERROR:
-				GroupActivity.this.showToast(msg.getData().getString(NetAccess.ERROR));
-				break;
-			}
+		@Override
+		public void statusError(String response) {
+			showToast("退出组群失败");
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			reload(response);
+			GroupActivity.this.showToast("退出组群成功");
 		}
 	}
 

@@ -182,15 +182,15 @@ public class NetAccess {
 	// 单独线程从豆瓣获取图书信息(直接用httpClient会出现500错误)
 	public class DoubanThread extends Thread {
 		String url;
-		Handler handler;
+		NetProgress progress;
 
-		public DoubanThread(String url, Handler handler) {
+		public DoubanThread(String url, NetProgress progress) {
 			this.url = url;
-			this.handler = handler;
+			this.progress = progress;
 		}
 
 		public void run() {
-			handler.sendEmptyMessage(NetAccess.NETMSG_BEFORE);
+			progress.setBefore();
 			int status = STATUS_DEFAULT;
 			String response = "";
 
@@ -216,24 +216,12 @@ public class NetAccess {
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
 				Log.i("NetAccess:response", response);
+				
+				progress.setAfter(status, response);
 
 			} catch (Exception e) {
-				Message msg = Message.obtain();
-				msg.what = NetAccess.NETMSG_ERROR;
-				Bundle data = new Bundle();
-				data.putString("error", e.toString());
-				msg.setData(data);
-				handler.sendMessage(msg);
+				progress.setError(e.toString());
 			}
-
-			Bundle data = new Bundle();
-			data.putInt("status", status);
-			data.putString("response", response);
-
-			Message msg = Message.obtain();
-			msg.what = NetAccess.NETMSG_AFTER;
-			msg.setData(data);
-			handler.sendMessage(msg);
 		}
 	}
 
@@ -396,29 +384,29 @@ public class NetAccess {
 
 	}
 
-	public void createDoubanThread(String url, Handler handler) {
-		new DoubanThread(url, handler).start();
+	public void createDoubanThread(String url, NetProgress progress) {
+		new DoubanThread(url, progress).start();
 	}
 
 	public void createPostThread(String url, List<NameValuePair> nvps,
-			Handler handler) {
-		PostThread thread = new PostThread(url, nvps, handler);
+			NetProgress progress) {
+		PostThread thread = new PostThread(url, nvps, progress);
 		thread.start();
 	}
 
-	public void createGetThread(String url, Handler handler) {
-		GetThread thread = new GetThread(url, handler);
+	public void createGetThread(String url, NetProgress progress) {
+		GetThread thread = new GetThread(url, progress);
 		thread.start();
 	}
 
 	public void createPutThread(String url, List<NameValuePair> nvps,
-			Handler handler) {
-		PutThread thread = new PutThread(url, nvps, handler);
+			NetProgress progress) {
+		PutThread thread = new PutThread(url, nvps, progress);
 		thread.start();
 	}
 
-	public void createDeleteThread(String url, Handler handler) {
-		DeleteThread thread = new DeleteThread(url, handler);
+	public void createDeleteThread(String url, NetProgress progress) {
+		DeleteThread thread = new DeleteThread(url, progress);
 		thread.start();
 	}
 
@@ -426,9 +414,10 @@ public class NetAccess {
 	public abstract class NetThread extends Thread {
 		protected String url;
 		protected List<NameValuePair> nvps;
-		protected Handler handler;
+		protected NetProgress progress;
 
-		private NetThread(String url, List<NameValuePair> nvps, Handler handler) {
+		private NetThread(String url, List<NameValuePair> nvps,
+				NetProgress progress) {
 			if (nvps != null) {
 				for (NameValuePair i : nvps) {
 					Log.i("nvps:", i.getName() + ":" + i.getValue());
@@ -436,13 +425,13 @@ public class NetAccess {
 			}
 			this.url = url;
 			this.nvps = nvps;
-			this.handler = handler;
+			this.progress = progress;
 		}
 
 		protected abstract HttpUriRequest getRequest() throws Exception;
 
 		public void run() {
-			handler.sendEmptyMessage(NetAccess.NETMSG_BEFORE);
+			progress.setBefore();
 			String response = "";
 			int status = STATUS_DEFAULT;
 			try {
@@ -454,39 +443,25 @@ public class NetAccess {
 				status = httpResponse.getStatusLine().getStatusCode();
 				HttpEntity entity = httpResponse.getEntity();
 				response = (entity != null ? EntityUtils.toString(entity) : "");
+				Log.i("NetAccess:url", url);
+				Log.i("NetAccess:status", Integer.toString(status));
+				Log.i("NetAccess:response", Utils.decode(response));
+				progress.setAfter(status, response);
 			} catch (Exception e) {
-				Message msg = Message.obtain();
-				msg.what = NetAccess.NETMSG_ERROR;
-				Bundle data = new Bundle();
-				data.putString(NetAccess.ERROR, e.toString());
-				msg.setData(data);
-				handler.sendMessage(msg);
+				progress.setError(e.toString());
 			}
-
-			Bundle data = new Bundle();
-			data.putInt(NetAccess.STATUS, status);
-			data.putString(NetAccess.RESPONSE, response);
-
-			Log.i("NetAccess:url", url);
-			Log.i("NetAccess:status", Integer.toString(status));
-			Log.i("NetAccess:response", Utils.decode(response));
-
-			Message msg = Message.obtain();
-			msg.what = NetAccess.NETMSG_AFTER;
-			msg.setData(data);
-			handler.sendMessage(msg);
 		}
 	}
 
 	// /////////////////////四种访问方法分别对应四种线程////////////////////////////////
 	public class PostThread extends NetThread {
-		private PostThread(String url, List<NameValuePair> nvps, Handler handler) {
-			super(url, nvps, handler);
+		private PostThread(String url, List<NameValuePair> nvps,
+				NetProgress progress) {
+			super(url, nvps, progress);
 		}
 
 		@Override
 		protected HttpUriRequest getRequest() throws Exception {
-			// TODO Auto-generated method stub
 			HttpPost post = new HttpPost(url);
 			HttpEntity entity = new UrlEncodedFormEntity(nvps, HTTP.UTF_8);
 			post.setEntity(entity);
@@ -495,21 +470,21 @@ public class NetAccess {
 	}
 
 	public class GetThread extends NetThread {
-		private GetThread(String url, Handler handler) {
-			super(url, null, handler);
+		private GetThread(String url, NetProgress progress) {
+			super(url, null, progress);
 		}
 
 		@Override
 		protected HttpUriRequest getRequest() {
-			// TODO Auto-generated method stub
 			HttpGet get = new HttpGet(url);
 			return get;
 		}
 	}
 
 	public class PutThread extends NetThread {
-		private PutThread(String url, List<NameValuePair> nvps, Handler handler) {
-			super(url, nvps, handler);
+		private PutThread(String url, List<NameValuePair> nvps,
+				NetProgress progress) {
+			super(url, nvps, progress);
 		}
 
 		@Override
@@ -522,8 +497,8 @@ public class NetAccess {
 	}
 
 	public class DeleteThread extends NetThread {
-		private DeleteThread(String url, Handler handler) {
-			super(url, null, handler);
+		private DeleteThread(String url, NetProgress progress) {
+			super(url, null, progress);
 		}
 
 		@Override

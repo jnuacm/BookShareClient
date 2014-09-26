@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.util.Utils;
 
@@ -12,7 +13,6 @@ import org.apache.http.message.BasicNameValuePair;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.View;
@@ -73,26 +73,20 @@ public class RegisterActivity extends Activity {
 		url += RegisterActivity.this.getString(R.string.url_register);
 		NetAccess network = NetAccess.getInstance();
 
-		Handler handler = new Handler() {
-			public void handleMessage(Message msg) {
-				switch (msg.what) {
-				case NetAccess.NETMSG_BEFORE:
+		network.createPostThread(url, nvps, new HttpProcessBase() {
 
-					break;
-				case NetAccess.NETMSG_AFTER:
-					Bundle data = msg.getData();
-					if (NetAccess.STATUS_SUCCESS == (data.getInt("status"))) {
-						Toast.makeText(RegisterActivity.this, "yes!success!",
-								Toast.LENGTH_LONG).show();
-					} else if (NetAccess.STATUS_ERROR == (data.getInt("status"))) {
-						Toast.makeText(RegisterActivity.this, "no!error!",
-								Toast.LENGTH_LONG).show();
-					}
-					break;
-				}
+			@Override
+			public void statusError(String response) {
+				Toast.makeText(RegisterActivity.this, "no!error!",
+						Toast.LENGTH_LONG).show();
 			}
-		};
-		network.createPostThread(url, nvps, handler);
+
+			@Override
+			public void statusSuccess(String response) {
+				Toast.makeText(RegisterActivity.this, "yes!success!",
+						Toast.LENGTH_LONG).show();
+			}
+		});
 	}
 
 	public void cancel(View v) {

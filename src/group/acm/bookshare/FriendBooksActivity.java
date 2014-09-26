@@ -1,6 +1,7 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 
@@ -15,9 +16,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -43,7 +42,8 @@ public class FriendBooksActivity extends Activity {
 
 		try {
 			JSONObject obj = new JSONObject(response);
-			books = Book.jsonArrayToBooks(new JSONArray(obj.getString("own_book")));
+			books = Book.jsonArrayToBooks(new JSONArray(obj
+					.getString("own_book")));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -126,29 +126,29 @@ public class FriendBooksActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				((LocalApp) getApplication()).getUser().borrowBook(friendName,
-						datas.get(position), new BorrowBookHandler());
+						datas.get(position), new BorrowBookProgress());
 			}
 
 		}
 
-		private class BorrowBookHandler extends Handler {
-			public void handleMessage(Message msg) {
-				switch (msg.what) {
-				case NetAccess.NETMSG_AFTER:
-					if (msg.getData().getInt(NetAccess.STATUS) == NetAccess.STATUS_SUCCESS) {
-						Toast.makeText(FriendBooksActivity.this, "·¢ËÍ³É¹¦",
-								Toast.LENGTH_SHORT).show();
-						finish();
-					} else {
-						Toast.makeText(FriendBooksActivity.this, "·¢ËÍÊ§°Ü",
-								Toast.LENGTH_SHORT).show();
-					}
-					break;
-				case NetAccess.NETMSG_ERROR:
-					Toast.makeText(FriendBooksActivity.this, "ÍøÂç´íÎó",
-							Toast.LENGTH_SHORT).show();
-					break;
-				}
+		private class BorrowBookProgress extends HttpProcessBase {
+
+			public void error(String content) {
+				Toast.makeText(FriendBooksActivity.this, "ÍøÂç´íÎó",
+						Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void statusError(String response) {
+				Toast.makeText(FriendBooksActivity.this, "·¢ËÍÊ§°Ü",
+						Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void statusSuccess(String response) {
+				Toast.makeText(FriendBooksActivity.this, "·¢ËÍ³É¹¦",
+						Toast.LENGTH_SHORT).show();
+				finish();
 			}
 		}
 	}

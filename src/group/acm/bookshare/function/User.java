@@ -57,7 +57,7 @@ public class User {
 		return username;
 	}
 
-	public void login(Handler mainHandler) {
+	public void login(NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("username", username));
 		nvps.add(new BasicNameValuePair("password", password));
@@ -67,7 +67,7 @@ public class User {
 		url += application.getString(R.string.url_login);
 
 		NetAccess network = NetAccess.getInstance();
-		network.createPostThread(url, nvps, mainHandler);
+		network.createPostThread(url, nvps, progress);
 	}
 
 	public void setBooks(List<Map<String, Object>> books) {
@@ -195,46 +195,37 @@ public class User {
 		return true;
 	}
 
-	public void addBook(String isbn, Handler handler) {
+	public void addBook(String isbn, NetProgress progress) {
 		Book book = new Book(this.application);
-		book.getBookByIsbn(isbn, new DoubanBookHandler(handler));
+		book.getBookByIsbn(isbn, new DoubanBookProgress(progress));
 	}
 
-	private class DoubanBookHandler extends Handler {
-		public Handler handler;
+	private class DoubanBookProgress extends HttpProcessBase {
+		public NetProgress progress;
 
-		public DoubanBookHandler(Handler handler) {
-			this.handler = handler;
+		public DoubanBookProgress(NetProgress progress) {
+			this.progress = progress;
 		}
 
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				Bundle repData = msg.getData();
-				if (repData.getInt(NetAccess.STATUS) == NetAccess.STATUS_ERROR) {
-					Message tmsg = Message.obtain();
-					tmsg.what = NetAccess.NETMSG_AFTER;
-					Bundle data = new Bundle();
-					data.putInt(NetAccess.STATUS, NetAccess.STATUS_ERROR);
-					data.putString(NetAccess.RESPONSE,
-							repData.getString("response"));
-					tmsg.setData(data);
-					handler.sendMessage(tmsg);
-				} else {
-					Message tmsg = Message.obtain();
-					tmsg.what = NetAccess.NETMSG_PROCESS;
-					Bundle data = new Bundle();
-					data.putInt("time", 50);
-					tmsg.setData(data);
-					handler.sendMessage(tmsg);
-					addToDB(repData, handler);
-				}
-				break;
+		@Override
+		public void statusError(String response) {
+			progress.setError(response);
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			
+			try {
+				addToDB(Book.doubanStrToBundle(response), progress);
+				progress.setProcess(50);
+			} catch (JSONException e) {
+				progress.setError(e.toString());
 			}
+			
 		}
 	}
 
-	private void addToDB(Bundle data, Handler handler) {
+	private void addToDB(Bundle data, NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
 		nvps.add(new BasicNameValuePair(Book.NAME, data.getString(Book.NAME)));
@@ -251,54 +242,55 @@ public class User {
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
 		url += application.getString(R.string.url_add_book);
-		network.createPostThread(url, nvps, new AddToDBHandler(handler));
+		network.createPostThread(url, nvps, new AddToDBProgress(progress));
 	}
 
-	private class AddToDBHandler extends Handler {
-		private Handler handler;
+	private class AddToDBProgress extends HttpProcessBase {
+		private NetProgress progress;
 
-		public AddToDBHandler(Handler handler) {
-			this.handler = handler;
+		public AddToDBProgress(NetProgress progress) {
+			this.progress = progress;
 		}
 
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case NetAccess.NETMSG_AFTER:
-				msg = Message.obtain(msg);
-				handler.sendMessage(msg);
-				break;
-			}
+		@Override
+		public void statusError(String response) {
+			progress.setError(response);
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			progress.setAfter(NetAccess.STATUS_SUCCESS, response);
 		}
 	}
 
-	public boolean deleteBook(Map<String, Object> book, Handler handler) {
+	public boolean deleteBook(Map<String, Object> book, NetProgress progress) {
 		if (!((String) book.get(Book.OWNER)).equals(book.get(Book.HOLDER)))
 			return false;
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_delete_book);
 		url += Integer.toString(((Integer) book.get(Book.ID)));
-		net.createDeleteThread(url, handler);
+		net.createDeleteThread(url, progress);
 		return true;
 	}
 
 	public void borrowBook(String aimName, Map<String, Object> book,
-			Handler handler) {
-		bookRequest(aimName, book, "借书消息", Inform.REQUEST_TYPE_BORROW, handler);
+			NetProgress progress) {
+		bookRequest(aimName, book, "借书消息", Inform.REQUEST_TYPE_BORROW, progress);
 	}
 
-	public void askReturn(Map<String, Object> book, Handler handler) {
+	public void askReturn(Map<String, Object> book, NetProgress progress) {
 		String holder = (String) book.get(Book.HOLDER);
-		bookRequest(holder, book, "请快点还书", Inform.REQUEST_TYPE_RETURN, handler);
+		bookRequest(holder, book, "请快点还书", Inform.REQUEST_TYPE_RETURN, progress);
 	}
 
-	public void returnBook(Map<String, Object> book, Handler handler) {
+	public void returnBook(Map<String, Object> book, NetProgress progress) {
 		String owner = (String) book.get(Book.OWNER);
-		bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, handler);
+		bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, progress);
 	}
 
 	private void bookRequest(String aimName, Map<String, Object> book,
-			String message, int type, Handler handler) {
+			String message, int type, NetProgress progress) {
 		try {
 			JSONObject obj = new JSONObject();
 			obj.put("message", message);
@@ -321,49 +313,49 @@ public class User {
 			nvps.add(new BasicNameValuePair(Inform.TO, aimName));
 
 			NetAccess net = NetAccess.getInstance();
-			net.createPostThread(url, nvps, handler);
+			net.createPostThread(url, nvps, progress);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void getBookList(Handler handler) {
-		getBookList(username, handler);
+	public void getBookList(NetProgress progress) {
+		getBookList(username, progress);
 	}
 
-	public void getBookList(String name, Handler handler) {
+	public void getBookList(String name, NetProgress progress) {
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_get_book);
 		url += name;
 		url += application.getResources().getString(R.string.action_book);
-		net.createGetThread(url, handler);
+		net.createGetThread(url, progress);
 	}
 
 	public boolean informIgnoreJudge() {
 		return false;
 	}
 
-	public void getSendInformList(Handler handler) {
+	public void getSendInformList(NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_send_inform);
 		url += username;
 
 		NetAccess net = NetAccess.getInstance();
-		net.createGetThread(url, handler);
+		net.createGetThread(url, progress);
 	}
 
-	public void getReceiveInformList(Handler handler) {
+	public void getReceiveInformList(NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources()
 				.getString(R.string.url_receive_inform);
 		url += username;
 
 		NetAccess net = NetAccess.getInstance();
-		net.createGetThread(url, handler);
+		net.createGetThread(url, progress);
 	}
 
-	public void updateRequest(int id, int status, Handler handler) {
+	public void updateRequest(int id, int status, NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_inform_update);
 		url += Integer.toString(id);
@@ -372,10 +364,10 @@ public class User {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair(Inform.STATUS, Integer.toString(status)));
 
-		net.createPutThread(url, nvps, handler);
+		net.createPutThread(url, nvps, progress);
 	}
 
-	public void updateRead(Integer id, boolean readState, Handler handler) {
+	public void updateRead(Integer id, boolean readState, NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_inform_update);
 		url += Integer.toString(id);
@@ -389,25 +381,25 @@ public class User {
 			read = 0;
 		nvps.add(new BasicNameValuePair("read", Integer.toString(read)));
 
-		net.createPutThread(url, nvps, handler);
+		net.createPutThread(url, nvps, progress);
 	}
 
-	public void updateFriendship(Handler handler) {
+	public void updateFriendship(NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(
 				R.string.url_friendship_inform);
 
 		NetAccess net = NetAccess.getInstance();
-		net.createGetThread(url, handler);
+		net.createGetThread(url, progress);
 	}
 
-	public boolean deleteFriend(Map<String, Object> friend, Handler handler) {
+	public boolean deleteFriend(Map<String, Object> friend, NetProgress progress) {
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_delete_friend);
 		url += (String) friend.get("username");
 		Log.i("delete user name is ", url);
-		net.createDeleteThread(url, handler);
+		net.createDeleteThread(url, progress);
 		return true;
 	}
 
