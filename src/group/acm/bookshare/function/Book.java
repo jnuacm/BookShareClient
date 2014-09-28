@@ -68,8 +68,8 @@ public class Book {
 			this.progress = progress;
 			this.isbn = isbn;
 		}
-		
-		public void error(String content){
+
+		public void error(String content) {
 			progress.setError(content);
 		}
 
@@ -84,31 +84,39 @@ public class Book {
 		}
 	}
 
-	public static Bundle doubanStrToBundle(String response) throws JSONException {
+	public static Bundle doubanStrToBundle(String response)
+			throws JSONException {
 		Bundle ret = new Bundle();
 		String name = "";
 		String authors = "";
 		String description = "";
-		String publisher = "";
+		String publisher = "empty";
 		String isbn = "";
 
 		JSONObject bookObj = new JSONObject(response);
 		name = bookObj.getJSONObject("title").getString("$t");
-		JSONArray array = bookObj.getJSONArray("author");
-		for (int i = 0; i < array.length(); i++) {
-			authors += (array.getJSONObject(i).getJSONObject("name")
-					.getString("$t") + " ");
-		}
-		description = bookObj.getJSONObject("summary").getString("$t");
-		JSONArray attrsArray = bookObj.getJSONArray("db:attribute");
-		
-		for(int i=0; i<attrsArray.length(); i++)
-		{
-			JSONObject obj = attrsArray.getJSONObject(i);
-			if ("publisher".equals(obj.getString("@name"))){
-				publisher = obj.getString("$t");
+		try {
+			JSONArray array = bookObj.getJSONArray("author");
+			for (int i = 0; i < array.length(); i++) {
+				authors += (array.getJSONObject(i).getJSONObject("name")
+						.getString("$t") + " ");
 			}
-			else if("isbn13".equals(obj.getString("@name"))){
+		} catch (JSONException e) {
+			authors = "empty";
+		}
+
+		try {
+			description = bookObj.getJSONObject("summary").getString("$t");
+		} catch (JSONException e) {
+			description = "empty";
+		}
+		JSONArray attrsArray = bookObj.getJSONArray("db:attribute");
+
+		for (int i = 0; i < attrsArray.length(); i++) {
+			JSONObject obj = attrsArray.getJSONObject(i);
+			if ("publisher".equals(obj.getString("@name"))) {
+				publisher = obj.getString("$t");
+			} else if ("isbn13".equals(obj.getString("@name"))) {
 				isbn = obj.getString("$t");
 			}
 		}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -31,6 +31,11 @@
         <item name="android:paddingRight">2dp</item>
         <item name="android:paddingBottom">0dp</item>
         <item name="android:background">@android:drawable/bottom_bar</item>
+    </style>
+
+    <style name="MainButton">
+        <item name="android:background">@color/background_green</item>
+        <item name="android:textColor">@color/buttonfont_white</item>
     </style>
 
     <style name="ButtonBarButton" />

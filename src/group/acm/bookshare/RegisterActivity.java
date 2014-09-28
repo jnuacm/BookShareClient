@@ -54,10 +54,8 @@ public class RegisterActivity extends Activity {
 		area = edittext.getText().toString();
 
 		if (!(username.length() > 0 && password.length() > 0 && email.length() > 0)) {
-			username = "amy";
-			password = "12345";
-			email = "kk@qd.com";
-			area = "shaoguan";
+			Toast.makeText(this, "请输入完整信息", Toast.LENGTH_LONG).show();
+			return;
 		}
 		if (area.length() <= 0)
 			area = "无";
@@ -77,14 +75,14 @@ public class RegisterActivity extends Activity {
 
 			@Override
 			public void statusError(String response) {
-				Toast.makeText(RegisterActivity.this, "no!error!",
-						Toast.LENGTH_LONG).show();
+				Toast.makeText(RegisterActivity.this, "注册失败", Toast.LENGTH_LONG)
+						.show();
 			}
 
 			@Override
 			public void statusSuccess(String response) {
-				Toast.makeText(RegisterActivity.this, "yes!success!",
-						Toast.LENGTH_LONG).show();
+				Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_LONG)
+						.show();
 			}
 		});
 	}

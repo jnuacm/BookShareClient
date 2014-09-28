@@ -96,6 +96,7 @@ public class MainActivity extends Activity {
 
 		// 注册接收到推送时的更新receiver
 		registerUpdateReceiver();
+		informmanage.reload();
 	}
 
 	private void registerUpdateReceiver() {
@@ -275,6 +276,8 @@ public class MainActivity extends Activity {
 	private class BottomButtonClickListener implements OnClickListener {
 		@Override
 		public void onClick(View v) {
+			if (Utils.isQuickClick())
+				return;
 			switch (currIndex) {
 			case 0:
 				Intent intent = new Intent(MainActivity.this,
@@ -282,12 +285,26 @@ public class MainActivity extends Activity {
 				startActivityForResult(intent, Utils.ACTIVITY_REQUEST_ADDBOOK);
 				break;
 			case 1:
+				friendmanage.addFriend();
 				break;
 			case 2:
+				informmanage.reload();
 				break;
 			}
 		}
 
+	}
+	
+	public void bookListReload(){
+		bookmanage.reload();
+	}
+	
+	public void friendListReload(){
+		//friendmanage.reload();
+	}
+	
+	public void InformListReload(){
+		informmanage.reload();
 	}
 
 	public void showToast(String content) {
@@ -325,6 +342,8 @@ public class MainActivity extends Activity {
 					int id = Integer.parseInt(contentString);
 					localUser.updateRequest(id, Inform.REQUEST_STATUS_CONFIRM,
 							informmanage.getConfirmProgress(id));
+					informmanage.reload();
+					bookmanage.reload();
 					Log.i("contentString", contentString);
 
 				} catch (Exception e) {
@@ -332,6 +351,7 @@ public class MainActivity extends Activity {
 				}
 				break;
 			case Utils.ACTIVITY_REQUEST_SHOWCODE:
+				informmanage.reload();
 				bookmanage.reload();
 				break;
 			}

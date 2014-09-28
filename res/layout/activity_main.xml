@@ -2,12 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@color/background_gray"
     android:orientation="vertical" >
 
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="fill_parent"
-        android:layout_height="40.0dip" >
+        android:layout_height="40dp" >
 
         <TextView
             android:id="@+id/text1"
@@ -58,10 +59,10 @@
 
     <Button
         android:id="@+id/main_button"
+        style="@style/MainButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/background_green"
+        android:layout_height="50dp"
         android:text="添加书籍"
-        android:textColor="@color/buttonfont_white" />
+        android:textSize="20sp" />
 
 </LinearLayout>

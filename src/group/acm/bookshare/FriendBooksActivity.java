@@ -1,9 +1,11 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
+import group.acm.bookshare.function.Friend;
 import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +38,10 @@ public class FriendBooksActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_friend_books);
 
+		// 获取名字、列表信息
 		List<Map<String, Object>> books = new ArrayList<Map<String, Object>>();
-		friendName = getIntent().getStringExtra("friendname");
-		String response = getIntent().getStringExtra("response");
+		friendName = getIntent().getStringExtra(Friend.NAME);
+		String response = getIntent().getStringExtra(NetAccess.RESPONSE);
 
 		try {
 			JSONObject obj = new JSONObject(response);
@@ -47,6 +50,8 @@ public class FriendBooksActivity extends Activity {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+		// 设置界面
 		FriendBooksAdapter bookAdapter = new FriendBooksAdapter(this, books);
 		ListView bookslistview = (ListView) findViewById(R.id.friend_book_listview);
 		bookslistview.setAdapter(bookAdapter);
@@ -125,6 +130,8 @@ public class FriendBooksActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				if (Utils.isQuickClick())
+					return;
 				((LocalApp) getApplication()).getUser().borrowBook(friendName,
 						datas.get(position), new BorrowBookProgress());
 			}

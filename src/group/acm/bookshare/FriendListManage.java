@@ -1,47 +1,40 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.Friend;
 import group.acm.bookshare.function.HttpProcessBase;
+import group.acm.bookshare.function.HttpProgress;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.Button;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class FriendListManage {
-	ListView myfriendslistview;
-	SimpleAdapter friendAdapter;
-	List<Map<String, Object>> friendList;
-	List<Map<String, Object>> groupList;
-	View addFrienView;
-	EditText addFriendEdit;
-	AlertDialog addFriendDialog;
-	AlertDialog.Builder builder;
-
 	MainActivity activity;
-
 	User localUser;
+
+	ListView myfriendslistview;
+	FriendListAdapter friendAdapter;
+	List<Map<String, Object>> friendList;
 
 	public FriendListManage(MainActivity activity) {
 		this.activity = activity;
@@ -53,124 +46,134 @@ public class FriendListManage {
 	}
 
 	public void initFriendList() {
-		View head = LayoutInflater.from(activity).inflate(
-				R.layout.myfriends_listview_top, null);
-
-		Button refresh = (Button) head.findViewById(R.id.button_friend_refresh);
-		refresh.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				localUser.updateFriendship(new UpdateFriendshipProgress());
-			}
-		});
-
-		Button group = (Button) head.findViewById(R.id.button_group);
-		group.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent();
-				intent.setClass(activity, GroupActivity.class);
-				activity.startActivity(intent);
-
-			}
-		});
-
-		addFrienView = LayoutInflater.from(activity).inflate(
-				R.layout.add_friend_alert_dialog, null);
-		addFriendEdit = (EditText) addFrienView
-				.findViewById(R.id.add_friend_name);
-		addFriendDialog = null;
-		builder = null;
-		builder = new AlertDialog.Builder(activity);
-		builder.setTitle("Friend");
-		builder.setMessage("Please input your firend'account.");
-		builder.setView(addFrienView);
-		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-
-				String addFriendName = addFriendEdit.getText().toString();
-				Log.i("will add the friend'name is", addFriendName);
-				addFriendEdit.setText("");
-			}
-
-		});
-		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				addFriendEdit.setText("");
-			}
-		});
-		addFriendDialog = builder.create();
-		Button add_friend = (Button) head.findViewById(R.id.button_add_friend);
-		add_friend.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				addFriendDialog.show();
-			}
-		});
-
 		friendList = localUser.getFriendListData();
-		groupList = localUser.getGroupListData();
 
-		friendAdapter = new SimpleAdapter(activity, friendList,
-				R.layout.myfriends_listview_item, new String[] { "image",
-						"username" }, new int[] {
-						R.id.myfriendslistitem_friendimage,
-						R.id.myfriendslistitem_friendname });
+		friendAdapter = new FriendListAdapter(activity, friendList);
 
 		View view = LayoutInflater.from(activity).inflate(
 				R.layout.activity_submain_friend, null);
 		myfriendslistview = (ListView) view
 				.findViewById(R.id.myfirendslistview);
 
-		setListener();
-
-		myfriendslistview.addHeaderView(head);
 		myfriendslistview.setAdapter(friendAdapter);
-		myfriendslistview.setOnItemLongClickListener(new JudgeListener());
 
+		setItemListener();
 	}
 
-	public void reload(String response) {
-		this.friendList.clear();
-		this.groupList.clear();
-		try {
-			Map<String, Object> map = new HashMap<String, Object>();
-			JSONArray jsonarray = new JSONArray(response);
-			for (int i = 0; i < jsonarray.length(); i++) {
+	private class FriendListAdapter extends BaseAdapter {
+		private Context context;
+		private List<Map<String, Object>> datas;
 
-				JSONObject item = jsonarray.getJSONObject(i);
-				String name = item.getString("username");
-				String email = item.getString("email");
-				String area = item.getString("area");
-				int is_group = item.getInt("is_group");
-
-				map = new HashMap<String, Object>();
-				map.put("username", name);
-				map.put("email", email);
-				map.put("area", area);
-				map.put("image", R.drawable.friend1);
-				map.put("is_group", is_group);
-
-				if (0 == is_group)// 朋友关系
-					this.friendList.add(map);
-				else
-					// 组属关系
-					this.groupList.add(map);
-			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		public FriendListAdapter(Context context, List<Map<String, Object>> data) {
+			this.datas = data;
+			this.context = context;
 		}
-		localUser.setFriend(friendList);
-		localUser.setGroup(groupList);
-		friendAdapter.notifyDataSetChanged();
+
+		@Override
+		public int getCount() {
+			return datas.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return datas.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@SuppressLint("InflateParams")
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			TextView nameView;
+			ImageView avatarView;
+			if (convertView == null) {
+				convertView = LayoutInflater.from(context).inflate(
+						R.layout.myfriends_listview_item, null);
+			}
+			avatarView = (ImageView) convertView
+					.findViewById(R.id.myfriendslistitem_friendimage);
+			nameView = (TextView) convertView
+					.findViewById(R.id.myfriendslistitem_friendname);
+
+			Map<String, Object> item = datas.get(position);
+
+			avatarView.setImageResource(R.drawable.friend_avatar_small_default);
+			nameView.setText((String) item.get(Friend.NAME));
+			setDivider(position, convertView, item); // 设置是否显示分界
+
+			return convertView;
+		}
+
+		private void setDivider(int position, View convertView,
+				Map<String, Object> item) {
+			TextView dividerView = (TextView) convertView
+					.findViewById(R.id.myfriendslistviewitem_divider);
+			if (0 == position) {
+				dividerView.setVisibility(View.VISIBLE);
+				if (((Integer) item.get(Friend.IS_GROUP)) == Friend.GROUP)
+					dividerView.setText("Groups");
+				else
+					dividerView.setText("Friends");
+			} else if (position > 0
+					&& ((Integer) item.get(Friend.IS_GROUP)) == Friend.GROUP
+					&& ((Integer) datas.get(position - 1).get(Friend.IS_GROUP)) != Friend.GROUP) {
+				dividerView.setVisibility(View.VISIBLE);
+				dividerView.setText("Groups");
+			} else {
+				dividerView.setVisibility(View.GONE);
+			}
+		}
+	}
+	
+	private void setItemListener() {
+		myfriendslistview
+				.setOnItemClickListener(new FriendsItemClickListener());
+		myfriendslistview
+				.setOnItemLongClickListener(new FriendsItemLongClickListener());
+	}
+
+	public void addFriend() {
+		View addFrienView = LayoutInflater.from(activity).inflate(
+				R.layout.add_friend_alert_dialog, null);
+		EditText addFriendEdit = (EditText) addFrienView
+				.findViewById(R.id.add_friend_name);
+		AlertDialog addFriendDialog = null;
+		AlertDialog.Builder builder = null;
+
+		builder = new AlertDialog.Builder(activity);
+		builder.setTitle("Friend");
+		builder.setMessage("Please input your firend'account.");
+		builder.setView(addFrienView);
+		builder.setPositiveButton("Yes", new AddFriendConfirmDialogListener(
+				addFriendEdit));
+		builder.setNegativeButton("No", null);
+		addFriendDialog = builder.create();
+		addFriendDialog.show();
+	}
+
+	private class AddFriendConfirmDialogListener implements
+			DialogInterface.OnClickListener {
+		EditText addFriendEdit;
+
+		public AddFriendConfirmDialogListener(EditText addFriendEdit) {
+			this.addFriendEdit = addFriendEdit;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			String addFriendName = addFriendEdit.getText().toString();
+			localUser.addFriend(addFriendName, "我想加你",
+					HttpProgress.createShowProgress(activity, "发送成功", "发送失败"));
+		}
+
 	}
 
 	private class DeleteFriendProgress extends HttpProcessBase {
-		
-		public void error(String content){
+
+		public void error(String content) {
 			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 		}
 
@@ -182,10 +185,9 @@ public class FriendListManage {
 
 		@Override
 		public void statusSuccess(String response) {
-			reload(response);
-			// friendmanage.friendAdapter.notifyDataSetChanged();
 			String content = "删除好友成功";
 			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+			reload(response);
 		}
 	}
 
@@ -202,72 +204,58 @@ public class FriendListManage {
 
 		@Override
 		public void statusSuccess(String response) {
-			Log.i("update_resposnse:", response);
 			reload(response);
-
 			String content = "更新好友成功";
 			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 		}
 	}
 
-	private class JudgeListener implements OnItemLongClickListener {
-		private int position;
+	private class FriendsItemClickListener implements OnItemClickListener {
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
+			Intent intent = new Intent(activity,
+					FriendsInformationActivity.class);
 
+			Bundle bundle = new Bundle();
+			bundle.putString(Friend.NAME,
+					friendList.get(position).get(Friend.NAME).toString());
+
+			intent.putExtra("friend_info", bundle);
+			activity.startActivity(intent);
+		}
+	}
+
+	private class FriendsItemLongClickListener implements
+			OnItemLongClickListener {
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view,
 				int position, long id) {
-			this.position = position;
-			if (0 == position)
-				return false;
 
-			new AlertDialog.Builder(activity)
-					.setTitle("Confirm!")
-					.setMessage("Are you sure to delete this friend?")
-					.setPositiveButton("Yes",
-							new DialogInterface.OnClickListener() {
+			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									localUser.deleteFriend(
-											friendList
-													.get(JudgeListener.this.position - 1),
-											new DeleteFriendProgress());
-								}
-
-							}).setNegativeButton("No", null).show();
+			builder.setTitle("Confirm!");
+			builder.setMessage("Are you sure to delete this friend?");
+			builder.setPositiveButton("Yes", new DeleteFriendConfirmListener(
+					position));
+			builder.setNegativeButton("No", null).show();
 
 			return true;
 		}
 	}
 
-	private void setListener() {
-		myfriendslistview.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				if (0 == position) {
-				} else {
-					Intent intent = new Intent(activity,
-							FriendsInformationActivity.class);
+	private class DeleteFriendConfirmListener implements
+			DialogInterface.OnClickListener {
+		private int position;
 
-					Bundle bundle = new Bundle();
-					bundle.putString("name",
-							friendList.get(position - 1).get("username")
-									.toString());
-					bundle.putString("area",
-							friendList.get(position - 1).get("area").toString());
-					bundle.putString("email",
-							friendList.get(position - 1).get("email")
-									.toString());
-					bundle.putString("image",
-							friendList.get(position - 1).get("image")
-									.toString());
+		public DeleteFriendConfirmListener(int position) {
+			this.position = position;
+		}
 
-					intent.putExtra("key", bundle);
-					activity.startActivity(intent);
-				}
-			}
-		});
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			localUser.deleteFriend(friendList.get(position),
+					new DeleteFriendProgress());
+		}
 
 	}
 
@@ -275,4 +263,13 @@ public class FriendListManage {
 		friendAdapter.notifyDataSetChanged();
 	}
 
+	public void reload() {
+		localUser.getFriendList(new UpdateFriendshipProgress());
+	}
+
+	public void reload(String response) {
+		localUser.clearFriendData();
+		localUser.addFriendDataToList(response);
+		updateDisplay();
+	}
 }

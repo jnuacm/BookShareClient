@@ -1,6 +1,7 @@
 package group.acm.bookshare.function;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -9,8 +10,8 @@ import android.os.Message;
 public abstract class HttpProgress implements NetProgress {
 	private Handler handler;
 
-	public HttpProgress(){
-		handler = new Handler(){
+	public HttpProgress() {
+		handler = new Handler() {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case NetAccess.NETMSG_BEFORE:
@@ -71,5 +72,9 @@ public abstract class HttpProgress implements NetProgress {
 		msg.setData(data);
 		handler.sendMessage(msg);
 	}
-
+	
+	public static ProgressShow createShowProgress(Context context, String success,
+			String fail) {
+		return new ProgressShow(context, success, fail);
+	}
 }

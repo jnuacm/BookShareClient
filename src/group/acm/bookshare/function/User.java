@@ -25,14 +25,14 @@ import android.util.Log;
 public class User {
 	private String username;
 	private String password;
+	private String area;
+	private String email;
+	private int is_group;
 	private String userid;
 
 	private List<Map<String, Object>> books;
 	private List<Map<String, Object>> friends;
-	private List<Map<String, Object>> groups;
 	private List<Map<String, Object>> informs;
-
-	private int is_group;
 
 	private Application application;
 
@@ -41,27 +41,35 @@ public class User {
 	public User(Application application) {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
-		groups = new ArrayList<Map<String, Object>>();
+		informs = new ArrayList<Map<String, Object>>();
+		image = new ImageProcess(application);
+		this.application = application;
+	}
+
+	public User(Map<String, Object> userinfo, Application application) {
+		setUsername((String) userinfo.get(Friend.NAME));
+		setArea((String) userinfo.get(Friend.AREA));
+		setEmail((String) userinfo.get(Friend.EMAIL));
+		setIs_group((Integer) userinfo.get(Friend.IS_GROUP));
+
+		books = new ArrayList<Map<String, Object>>();
+		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		image = new ImageProcess(application);
 		this.application = application;
 	}
 
 	public void setUser(String username, String password, String userid) {
-		this.username = username;
-		this.password = password;
-		this.userid = userid;
-	}
-
-	public String getUserName() {
-		return username;
+		this.setUsername(username);
+		this.setPassword(password);
+		this.setUserid(userid);
 	}
 
 	public void login(NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		nvps.add(new BasicNameValuePair("username", username));
-		nvps.add(new BasicNameValuePair("password", password));
-		nvps.add(new BasicNameValuePair("userid", userid));
+		nvps.add(new BasicNameValuePair("username", getUsername()));
+		nvps.add(new BasicNameValuePair("password", getPassword()));
+		nvps.add(new BasicNameValuePair("userid", getUserid()));
 
 		String url = application.getString(R.string.url_host);
 		url += application.getString(R.string.url_login);
@@ -70,24 +78,10 @@ public class User {
 		network.createPostThread(url, nvps, progress);
 	}
 
-	public void setBooks(List<Map<String, Object>> books) {
-		this.books = books;
-	}
-
-	public void setFriend(List<Map<String, Object>> friend) {
-		this.friends = friend;
-	}
-
-	public void setGroup(List<Map<String, Object>> group) {
-		this.groups = group;
-	}
-
-	public void setIs_Group(int is_group) {
-		this.is_group = is_group;
-	}
-
-	public int getIs_Group() {
-		return this.is_group;
+	public void logout() {
+		books.clear();
+		friends.clear();
+		informs.clear();
 	}
 
 	public List<Map<String, Object>> getBookListData() {
@@ -98,16 +92,16 @@ public class User {
 		return friends;
 	}
 
-	public List<Map<String, Object>> getGroupListData() {
-		return groups;
-	}
-
 	public List<Map<String, Object>> getInformListData() {
 		return informs;
 	}
 
 	public void clearBookData() {
 		books.clear();
+	}
+
+	public void clearFriendData() {
+		friends.clear();
 	}
 
 	public void clearInformData() {
@@ -142,34 +136,12 @@ public class User {
 	}
 
 	public void addFriendDataToList(String response) {
-		friends.clear();
-		groups.clear();
-		Map<String, Object> map = new HashMap<String, Object>();
-		JSONObject jsonobj;
 		try {
-			jsonobj = new JSONObject(response);
+			JSONObject jsonobj = new JSONObject(response);
 			JSONArray jsonarray = jsonobj.getJSONArray("friend");
 
 			for (int i = 0; i < jsonarray.length(); i++) {
-
-				JSONObject item = jsonarray.getJSONObject(i);
-				String name = item.getString("username");
-				String email = item.getString("email");
-				String area = item.getString("area");
-				int is_group = item.getInt("is_group");
-				map = new HashMap<String, Object>();
-				map.put("username", name);
-				map.put("email", email);
-				map.put("area", area);
-				map.put("image", R.drawable.friend1);
-				map.put("is_group", is_group);
-				// Log.i("is_group",name+" is "+is_group+"!!!");
-
-				if (0 == is_group)// 朋友关系
-					friends.add(map);
-				else
-					// 组属关系
-					groups.add(map);
+				friends.add(Friend.objToFriend(jsonarray.getJSONObject(i)));
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -214,14 +186,14 @@ public class User {
 
 		@Override
 		public void statusSuccess(String response) {
-			
+
 			try {
 				addToDB(Book.doubanStrToBundle(response), progress);
 				progress.setProcess(50);
 			} catch (JSONException e) {
 				progress.setError(e.toString());
 			}
-			
+
 		}
 	}
 
@@ -274,6 +246,18 @@ public class User {
 		return true;
 	}
 
+	public void addFriend(String aimName, String message, NetProgress progress) {
+		try {
+			JSONObject obj = new JSONObject();
+			obj.put("message", message);
+			String description = obj.toString();
+			createRequest(aimName, Inform.REQUEST_TYPE_ADDFRIEND, description,
+					progress);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void borrowBook(String aimName, Map<String, Object> book,
 			NetProgress progress) {
 		bookRequest(aimName, book, "借书消息", Inform.REQUEST_TYPE_BORROW, progress);
@@ -301,26 +285,29 @@ public class User {
 			obj.put(Book.HOLDER, (String) book.get(Book.HOLDER));
 			obj.put(Book.OWNER, (String) book.get(Book.OWNER));
 			String description = obj.toString();
+			createRequest(aimName, type, description, progress);
 
-			String url = application.getResources()
-					.getString(R.string.url_host);
-			url += application.getResources().getString(
-					R.string.url_inform_create);
-
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			nvps.add(new BasicNameValuePair(Inform.TYPE, Integer.toString(type)));
-			nvps.add(new BasicNameValuePair(Inform.DESCRIPTION, description));
-			nvps.add(new BasicNameValuePair(Inform.TO, aimName));
-
-			NetAccess net = NetAccess.getInstance();
-			net.createPostThread(url, nvps, progress);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
+	private void createRequest(String aimName, int type, String description,
+			NetProgress progress) {
+		String url = application.getResources().getString(R.string.url_host);
+		url += application.getResources().getString(R.string.url_inform_create);
+
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair(Inform.TYPE, Integer.toString(type)));
+		nvps.add(new BasicNameValuePair(Inform.DESCRIPTION, description));
+		nvps.add(new BasicNameValuePair(Inform.TO, aimName));
+
+		NetAccess net = NetAccess.getInstance();
+		net.createPostThread(url, nvps, progress);
+	}
+
 	public void getBookList(NetProgress progress) {
-		getBookList(username, progress);
+		getBookList(getUsername(), progress);
 	}
 
 	public void getBookList(String name, NetProgress progress) {
@@ -332,14 +319,10 @@ public class User {
 		net.createGetThread(url, progress);
 	}
 
-	public boolean informIgnoreJudge() {
-		return false;
-	}
-
 	public void getSendInformList(NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_send_inform);
-		url += username;
+		url += getUsername();
 
 		NetAccess net = NetAccess.getInstance();
 		net.createGetThread(url, progress);
@@ -349,7 +332,7 @@ public class User {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources()
 				.getString(R.string.url_receive_inform);
-		url += username;
+		url += getUsername();
 
 		NetAccess net = NetAccess.getInstance();
 		net.createGetThread(url, progress);
@@ -367,24 +350,15 @@ public class User {
 		net.createPutThread(url, nvps, progress);
 	}
 
-	public void updateRead(Integer id, boolean readState, NetProgress progress) {
+	public void deleteRequest(int id, NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(R.string.url_inform_update);
 		url += Integer.toString(id);
 		NetAccess net = NetAccess.getInstance();
-
-		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		int read;
-		if (readState)
-			read = 1;
-		else
-			read = 0;
-		nvps.add(new BasicNameValuePair("read", Integer.toString(read)));
-
-		net.createPutThread(url, nvps, progress);
+		net.createDeleteThread(url, progress);
 	}
 
-	public void updateFriendship(NetProgress progress) {
+	public void getFriendList(NetProgress progress) {
 		String url = application.getResources().getString(R.string.url_host);
 		url += application.getResources().getString(
 				R.string.url_friendship_inform);
@@ -452,7 +426,63 @@ public class User {
 		return null;
 	}
 
+	public Map<String, Object> getFriendByName(String name) {
+		for (Map<String, Object> friend : friends) {
+			if (name.equals(friend.get("username")))
+				return friend;
+		}
+		return null;
+	}
+
 	public void createAvatar(String path, Handler handler) {
-		image.createAvatar(username, path, handler);
+		image.createAvatar(getUsername(), path, handler);
+	}
+
+	public String getArea() {
+		return area;
+	}
+
+	private void setArea(String area) {
+		this.area = area;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	private void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	private void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	private void setEmail(String email) {
+		this.email = email;
+	}
+
+	public int getIs_group() {
+		return is_group;
+	}
+
+	private void setIs_group(int is_group) {
+		this.is_group = is_group;
+	}
+
+	public String getUserid() {
+		return userid;
+	}
+
+	private void setUserid(String userid) {
+		this.userid = userid;
 	}
 }

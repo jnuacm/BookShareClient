@@ -136,7 +136,7 @@ public class BookListManage {
 
 		private String getText(Map<String, Object> item) {
 			String text = "";
-			if (localUser.getUserName().equals(item.get(Book.OWNER))) {
+			if (localUser.getUsername().equals(item.get(Book.OWNER))) {
 				switch ((Integer) item.get(Book.STATUS)) {
 				case Book.STATUS_BUY | Book.STATUS_BORROW:
 					text += "ø…¬Ù/ø…ΩË";
@@ -164,13 +164,13 @@ public class BookListManage {
 					.findViewById(R.id.mybookslistviewitem_divider);
 			if (0 == position) {
 				dividerView.setVisibility(View.VISIBLE);
-				if (localUser.getUserName().equals(item.get(Book.OWNER)))
+				if (localUser.getUsername().equals(item.get(Book.OWNER)))
 					dividerView.setText("Personal Books");
 				else
 					dividerView.setText("Borrowed Books");
 			} else if (position > 0
-					&& !localUser.getUserName().equals(item.get(Book.OWNER))
-					&& localUser.getUserName().equals(
+					&& !localUser.getUsername().equals(item.get(Book.OWNER))
+					&& localUser.getUsername().equals(
 							datas.get(position - 1).get(Book.OWNER))) {
 				dividerView.setVisibility(View.VISIBLE);
 				dividerView.setText("Borrowed Books");
@@ -217,7 +217,7 @@ public class BookListManage {
 			Map<String, Object> book = books.get(position);
 			String text;
 			OnClickListener listener;
-			if (localUser.getUserName().equals(book.get(Book.OWNER))) {
+			if (localUser.getUsername().equals(book.get(Book.OWNER))) {
 				if (((String) book.get(Book.OWNER)).equals(book
 						.get(Book.HOLDER))) {
 					text = "…æ È";

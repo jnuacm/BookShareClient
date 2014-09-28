@@ -31,18 +31,17 @@
         android:name="group.acm.bookshare.function.LocalApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:label="@string/app_name" >
         <activity
             android:name="group.acm.bookshare.WelcomeActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-            
         </activity>
         <activity
             android:name="group.acm.bookshare.LoginActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -51,30 +50,30 @@
         </activity>
         <activity
             android:name="group.acm.bookshare.RegisterActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
             android:name="group.acm.bookshare.MainActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
             android:name="group.acm.bookshare.FriendsInformationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
             android:name="group.acm.bookshare.BookInformationActivity"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name="group.acm.bookshare.GroupActivity"
-            android:label="@string/title_activity_group"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
             android:name="group.acm.bookshare.FriendBooksActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
             android:name="group.acm.bookshare.CaptureActivity"
@@ -85,23 +84,21 @@
             android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.BarCodeTestActivity"
-            android:label="@string/title_activity_bar_code_test"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
             android:name="group.acm.bookshare.GenerateQRCodeActivity"
             android:label="@string/title_activity_generate_qrcode"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
             android:name="group.acm.bookshare.PersonInfoActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
-        
+
         <!-- push应用定义消息receiver声明 -->
-        <receiver android:name="group.acm.bookshare.PushMessageReceiver">
+        <receiver android:name="group.acm.bookshare.PushMessageReceiver" >
             <intent-filter>
+
                 <!-- 接收push消息 -->
                 <action android:name="com.baidu.android.pushservice.action.MESSAGE" />
                 <!-- 接收bind,unbind,fetch,delete等反馈消息 -->
@@ -144,6 +141,7 @@
             </intent-filter>
         </service>
         <!-- push结束 -->
+
 
         <!-- 在百度开发者中心查询应用的API Key -->
         <meta-data

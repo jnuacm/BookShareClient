@@ -1,5 +1,7 @@
 package group.acm.bookshare.function;
 
+import group.acm.bookshare.util.Utils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,18 +81,18 @@ public class Inform {
 
 	public interface ButtonsAction {
 		public abstract void permitted();
+		
+		public abstract void permittedAndRefreshFriend();
 
 		public abstract void showCode();
 
 		public abstract void scanCode();
 
-		public abstract void readConfirm();
-
-		public abstract void confirm();
+		public abstract void delete();
+		
+		public abstract void deleteAndRefreshFriend();
 
 		public abstract void refused();
-
-		public abstract void cancel();
 	}
 
 	public Inform(Map<String, Object> inform, User localUser,
@@ -123,7 +125,7 @@ public class Inform {
 
 	private class IdentityJudge {
 		public int isSelf(Map<String, Object> inform, User localUser) {
-			if (localUser.getUserName().equals(inform.get(Inform.FROM)))
+			if (localUser.getUsername().equals(inform.get(Inform.FROM)))
 				return SELF;
 			else
 				return NOT_SELF;
@@ -138,7 +140,7 @@ public class Inform {
 				int id = obj.getInt("bookid");
 				for (Map<String, Object> book : localUser.getBookListData()) {
 					if ((Integer) book.get(Book.ID) == id) {
-						if (localUser.getUserName().equals(book.get(Book.HOLDER))) {
+						if (localUser.getUsername().equals(book.get(Book.HOLDER))) {
 							return SELF;
 						}
 					}
@@ -151,7 +153,7 @@ public class Inform {
 	}
 
 	public Map<String, Object> getText() {
-		Log.i("Inform.java 145:","Inform state:"+Integer.toString(state));
+		Log.i(Utils.getLineInfo(), "Inform state:"+Integer.toString(state));
 		String title = "", content = "", notself = "", message = "";
 
 		try {
@@ -184,9 +186,9 @@ public class Inform {
 				title = "加好友:";
 				message = "加好友,message:" + message;
 				if (isSelf == SELF) {
-					notself = obj.getString(Inform.TO);
+					notself = (String) inform.get(Inform.TO);
 				} else {
-					notself = obj.getString(Inform.FROM);
+					notself = (String) inform.get(Inform.FROM);
 				}
 				break;
 			}
@@ -239,9 +241,9 @@ public class Inform {
 		case 1:action.permitted();break;
 		case 2:action.showCode();break;
 		case 3:action.scanCode();break;
-		case 4:action.readConfirm();break;
+		case 4:action.delete();;break;
 		case 5:break;
-		case 6:action.readConfirm();break;
+		case 6:action.delete();;break;
 		case 7:break;
 		case 8:break;
 		case 9:break;
@@ -249,17 +251,17 @@ public class Inform {
 		case 11:action.permitted();break;
 		case 12:action.scanCode();break;
 		case 13:action.showCode();break;
-		case 14:action.readConfirm();break;
+		case 14:action.delete();break;
 		case 15:break;
 		case 16:break;
-		case 17:action.readConfirm();break;
+		case 17:action.delete();break;
 		case 18:break;
 		case 19:break;
 		case 20:break;
-		case 21:action.permitted();break;
-		case 22:action.confirm();break;
+		case 21:action.permittedAndRefreshFriend();break;
+		case 22:action.deleteAndRefreshFriend();break;
 		case 23:break;
-		case 24:action.readConfirm();break;
+		case 24:action.delete();break;
 		case 25:break;
 		case 26:break;
 		case 27:break;
@@ -270,27 +272,27 @@ public class Inform {
 
 	public void clickCancel() {
 		switch(state){
-		case 0:action.cancel();break;
+		case 0:action.delete();break;
 		case 1:action.refused();break;
-		case 2:action.cancel();break;
-		case 3:action.cancel();break;
+		case 2:action.delete();break;
+		case 3:action.delete();break;
 		case 4:break;
 		case 5:break;
 		case 6:break;
 		case 7:break;
 		case 8:break;
 		case 9:break;
-		case 10:action.cancel();break;
+		case 10:action.delete();break;
 		case 11:action.refused();break;
-		case 12:action.cancel();break;
-		case 13:action.cancel();break;
+		case 12:action.delete();break;
+		case 13:action.delete();break;
 		case 14:break;
 		case 15:break;
 		case 16:break;
 		case 17:break;
 		case 18:break;
 		case 19:break;
-		case 20:action.cancel();break;
+		case 20:action.delete();break;
 		case 21:action.refused();break;
 		case 22:break;
 		case 23:break;
@@ -337,10 +339,10 @@ public class Inform {
 		if (state > 29)
 			return false;
 		switch(state){
-		/////confirm过滤///////
+		//////////暂时无法delete，因此confirm直接不显示////////////
 		case 6:
 		case 17:
-		/////////////
+		//////////////////////
 		case 5:
 		case 7:
 		case 8:
@@ -354,8 +356,7 @@ public class Inform {
 		case 26:
 		case 27:
 		case 28:
-		case 29:
-		case 30:return false;
+		case 29:return false;
 		}
 		return true;
 	}

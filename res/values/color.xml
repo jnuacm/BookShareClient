@@ -42,5 +42,10 @@
     <color name="viewfinder_mask">#60000000</color>
     <color name="background_green">#ff32BDBD</color>
     <color name="buttonfont_white">#ffffffff</color>
+    <color name="dividerfont_gray">#ff404040</color>
+    <color name="background_white">#ffffffff</color>
+    <color name="background_gray">#dddddddd</color>
+    <color name="listview_item_gray">#fff0f0f0</color>
+    <color name="listview_item_title_black">#ff111111</color>
 
 </resources>

@@ -55,8 +55,6 @@ public class InformListManage {
 		informlistview = (ListView) LayoutInflater.from(activity).inflate(
 				R.layout.activity_submain_inform, null);
 
-		informlistview.addHeaderView(getHeadView());
-
 		setListener();
 
 		informlistview.setAdapter(informAdapter);
@@ -86,22 +84,6 @@ public class InformListManage {
 		@Override
 		public void statusSuccess(String response) {
 			localUser.deleteInformById(id);
-			localUser.getBookList(new HttpProcessBase() {
-				@Override
-				public void statusError(String response) {
-					String content = "失败:" + response;
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				}
-
-				@Override
-				public void statusSuccess(String response) {
-					localUser.clearBookData();
-					localUser.addBookDataToList(response);
-					updateInformData();
-					String content = "成功";
-					Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-				}
-			});
 		}
 	}
 
@@ -127,44 +109,6 @@ public class InformListManage {
 		});
 	}
 
-	private View getHeadView() {
-		View head = LayoutInflater.from(activity).inflate(
-				R.layout.inform_listview_top, null);
-		Button refresh = (Button) head.findViewById(R.id.button_refresh);
-		refresh.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				reload();
-			}
-		});
-
-		Button button_scan = (Button) head.findViewById(R.id.button_scan);
-		button_scan.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// 打开扫描界面扫描条形码或二维码
-				Intent openCameraIntent = new Intent(activity,
-						CaptureActivity.class);
-				activity.startActivityForResult(openCameraIntent,
-						Utils.REQUEST_SCANBOOK_UPDATESTATUS);
-
-			}
-		});
-
-		Button button3 = (Button) head.findViewById(R.id.button3);
-		button3.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(activity,
-						GenerateQRCodeActivity.class);
-				intent.putExtra("key", "key");
-				activity.startActivity(intent);
-			}
-		});
-
-		return head;
-	}
-
 	private class SendInformProgress extends HttpProcessBase {
 
 		@Override
@@ -181,13 +125,13 @@ public class InformListManage {
 	private class ReceiveInformProgress extends HttpProcessBase {
 		@Override
 		public void statusError(String response) {
-			localUser.addInformDataToList(response);
-			informAdapter.notifyDataSetChanged();
-			Utils.setHasUpdate(activity, false);
 		}
 
 		@Override
 		public void statusSuccess(String response) {
+			localUser.addInformDataToList(response);
+			updateDisplay();
+			Utils.setHasUpdate(activity, false);
 		}
 	}
 
@@ -215,13 +159,7 @@ public class InformListManage {
 			return position;
 		}
 
-		public class RequestProgress extends HttpProcessBase {
-			private int position;
-
-			public RequestProgress(int position) {
-				this.position = position;
-			}
-
+		public class PermittedProgress extends HttpProcessBase {
 			public void error(String content) {
 				Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
 			}
@@ -234,23 +172,6 @@ public class InformListManage {
 			public void statusSuccess(String response) {
 				String tmp = "完成";
 				Toast.makeText(activity, tmp, Toast.LENGTH_LONG).show();
-				localUser.getBookList(new HttpProcessBase() {
-					public void error(String content) {
-						Toast.makeText(activity, content, Toast.LENGTH_LONG)
-								.show();
-					}
-
-					@Override
-					public void statusError(String response) {
-					}
-
-					@Override
-					public void statusSuccess(String response) {
-						localUser.clearBookData();
-						localUser.addBookDataToList(response);
-						reload();
-					}
-				});
 			}
 		}
 
@@ -267,7 +188,7 @@ public class InformListManage {
 			if (convertView == null) {
 				views = new ViewHolder();
 				convertView = LayoutInflater.from(context).inflate(
-						R.layout.inform_listview_item, null);
+						R.layout.myinform_listview_item, null);
 				views.title = (TextView) convertView
 						.findViewById(R.id.informlistviewitem_title);
 				views.content = (TextView) convertView
@@ -283,12 +204,9 @@ public class InformListManage {
 
 			Map<String, Object> item = informs.get(position);
 
-			int id = (Integer) item.get(Inform.ID);
-
 			Inform inform = null;
 			try {
-				inform = new Inform(item, localUser, new InformAction(item,
-						position));
+				inform = new Inform(item, localUser, new InformAction(item));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -320,6 +238,8 @@ public class InformListManage {
 
 			@Override
 			public void onClick(View v) {
+				if (Utils.isQuickClick())
+					return;
 				inform.clickConfirm();
 			}
 		}
@@ -333,24 +253,34 @@ public class InformListManage {
 
 			@Override
 			public void onClick(View v) {
+				if (Utils.isQuickClick())
+					return;
 				inform.clickCancel();
 			}
 		}
 
 		private class InformAction implements Inform.ButtonsAction {
 			private Map<String, Object> item;
-			private int position;
 
-			public InformAction(Map<String, Object> item, int position) {
+			public InformAction(Map<String, Object> item) {
 				this.item = item;
-				this.position = position;
 			}
 
 			@Override
 			public void permitted() {
 				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_PERMITTED, new RequestProgress(
-								position));
+						Inform.REQUEST_STATUS_PERMITTED,
+						new PermittedProgress());
+				reload();
+			}
+
+			@Override
+			public void permittedAndRefreshFriend() {
+				localUser.updateRequest((Integer) item.get(Inform.ID),
+						Inform.REQUEST_STATUS_PERMITTED,
+						new PermittedProgress());
+				reload();
+				activity.friendListReload();
 			}
 
 			@Override
@@ -372,30 +302,25 @@ public class InformListManage {
 			}
 
 			@Override
-			public void readConfirm() {
-				localUser.updateRead((Integer) item.get(Inform.ID), true,
-						new RequestProgress(position));
-			}
-
-			@Override
 			public void refused() {
 				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_REFUSED, new RequestProgress(
-								position));
+						Inform.REQUEST_STATUS_REFUSED, new PermittedProgress());
+				reload();
 			}
 
 			@Override
-			public void cancel() {
-				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_CANCEL, new RequestProgress(
-								position));
+			public void delete() {
+				localUser.deleteRequest((Integer) item.get(Inform.ID),
+						new PermittedProgress());
+				reload();
 			}
 
 			@Override
-			public void confirm() {
-				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_CONFIRM, new RequestProgress(
-								position));
+			public void deleteAndRefreshFriend() {
+				localUser.deleteRequest((Integer) item.get(Inform.ID),
+						new PermittedProgress());
+				reload();
+				activity.friendListReload();
 			}
 		}
 	}
@@ -408,5 +333,4 @@ public class InformListManage {
 	public void updateDisplay() {
 		informAdapter.notifyDataSetChanged();
 	}
-
 }

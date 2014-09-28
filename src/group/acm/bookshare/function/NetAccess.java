@@ -3,14 +3,10 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.util.Utils;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -19,8 +15,9 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.SSLContext;
@@ -55,9 +52,7 @@ import org.apache.http.util.EntityUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -78,9 +73,13 @@ public class NetAccess {
 
 	private HttpClient httpClient;
 
+	private ExecutorService pool;
+
 	private static NetAccess internetaccess = new NetAccess();
 
 	private NetAccess() {
+		pool = Executors.newSingleThreadExecutor();
+
 		KeyStore trustStore;
 		try {
 			trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -216,7 +215,7 @@ public class NetAccess {
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
 				Log.i("NetAccess:response", response);
-				
+
 				progress.setAfter(status, response);
 
 			} catch (Exception e) {
@@ -385,29 +384,25 @@ public class NetAccess {
 	}
 
 	public void createDoubanThread(String url, NetProgress progress) {
-		new DoubanThread(url, progress).start();
+		pool.execute(new DoubanThread(url, progress));
 	}
 
 	public void createPostThread(String url, List<NameValuePair> nvps,
 			NetProgress progress) {
-		PostThread thread = new PostThread(url, nvps, progress);
-		thread.start();
+		pool.execute(new PostThread(url, nvps, progress));
 	}
 
 	public void createGetThread(String url, NetProgress progress) {
-		GetThread thread = new GetThread(url, progress);
-		thread.start();
+		pool.execute(new GetThread(url, progress));
 	}
 
 	public void createPutThread(String url, List<NameValuePair> nvps,
 			NetProgress progress) {
-		PutThread thread = new PutThread(url, nvps, progress);
-		thread.start();
+		pool.execute(new PutThread(url, nvps, progress));
 	}
 
 	public void createDeleteThread(String url, NetProgress progress) {
-		DeleteThread thread = new DeleteThread(url, progress);
-		thread.start();
+		pool.execute(new DeleteThread(url, progress));
 	}
 
 	// /////////////////Õ¯¬Á∑√Œ œﬂ≥Ã///////////////////////////

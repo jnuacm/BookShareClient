@@ -10,6 +10,7 @@
         android:layout_width="fill_parent"
         android:layout_height="200dp"
         android:contentDescription="@string/login_logo_image"
+        android:layout_marginTop="50dp"
         android:src="@drawable/logo" />
 	<LinearLayout 
 	    android:id="@+id/USERNAME_linear_layout"

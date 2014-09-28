@@ -2,33 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#235654"
-    >
-<RelativeLayout
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:minHeight="40dp"
-    >
-    <ImageView 
-        android:id="@+id/delImage" 
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/del" 
-        android:textSize="18sp"
-        android:layout_alignParentRight="true" 
-        android:layout_marginRight="10dp"/>
-    
-    <TextView 
-        android:id="@+id/user_name_item_text"
-        android:layout_height="40dp"
-        android:layout_width="fill_parent"
-        android:layout_toLeftOf="@id/delImage"
-        android:textColor="#ffffffff" 
-        android:layout_alignParentLeft="true">
-    </TextView>
-    
-   </RelativeLayout>
-    
+    android:background="#235654" >
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="40dp" >
+
+        <ImageView
+            android:id="@+id/delImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/del"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/user_name_item_text"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@id/delImage"
+            android:textColor="#ffffffff" >
+        </TextView>
+    </RelativeLayout>
+
 </LinearLayout>
-    

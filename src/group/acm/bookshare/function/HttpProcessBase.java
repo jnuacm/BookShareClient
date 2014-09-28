@@ -26,5 +26,4 @@ public abstract class HttpProcessBase extends HttpProgress implements
 	@Override
 	public void error(String content) {
 	}
-
 }

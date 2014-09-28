@@ -3,7 +3,6 @@ package group.acm.bookshare;
 import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.LoginUserNameAdapter;
-import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.util.Utils;
 
@@ -139,6 +138,8 @@ public class LoginActivity extends Activity implements Callback {
 		@Override
 		public void statusSuccess(String response) {
 			localUser.clearBookData();
+			localUser.clearFriendData();
+			localUser.clearInformData();
 			localUser.addBookDataToList(response);
 			localUser.addFriendDataToList(response);
 			Intent intent = new Intent(LoginActivity.this, MainActivity.class);

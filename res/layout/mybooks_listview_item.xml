@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="@color/listview_item_gray" >
 
     <TextView
         android:id="@+id/mybookslistviewitem_divider"
@@ -9,9 +10,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:background="#22333333"
+        android:background="@color/background_white"
         android:gravity="center_horizontal"
         android:text="Large Text"
+        android:textColor="@color/dividerfont_gray"
         android:textSize="30sp"
         android:textStyle="bold"
         android:visibility="gone" />
@@ -30,7 +32,8 @@
         android:layout_height="60dp"
         android:layout_below="@id/mybookslistviewitem_divider"
         android:layout_toRightOf="@id/mybookslistitem_bookimage"
-        android:text="bookname" />
+        android:text="bookname"
+        android:textColor="@color/listview_item_title_black" />
 
     <TextView
         android:id="@+id/mybookslistitem_bookstate"
@@ -38,6 +41,7 @@
         android:layout_height="60dp"
         android:layout_alignParentRight="true"
         android:layout_below="@id/mybookslistviewitem_divider"
-        android:text="state" />
+        android:text="state"
+        android:textColor="@color/listview_item_title_black" />
 
 </RelativeLayout>
