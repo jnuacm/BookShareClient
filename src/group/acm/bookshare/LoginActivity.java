@@ -123,6 +123,7 @@ public class LoginActivity extends Activity implements Callback {
 		}
 
 		public void error(String content) {
+			findViewById(R.id.loginProgressBar).setVisibility(View.INVISIBLE);
 			Toast.makeText(LoginActivity.this, content, Toast.LENGTH_LONG)
 					.show();
 		}

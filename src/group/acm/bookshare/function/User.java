@@ -3,11 +3,16 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.R;
 import group.acm.bookshare.util.Utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,9 +20,10 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 @SuppressLint("HandlerLeak")
 public class User {
@@ -33,6 +39,8 @@ public class User {
 	private List<Map<String, Object>> informs;
 
 	private Application application;
+	
+	private Bitmap avatar = null;
 
 	public User(Application application) {
 		books = new ArrayList<Map<String, Object>>();
@@ -428,7 +436,41 @@ public class User {
 	}
 
 	public void createAvatar(String path, NetProgress progress) {
-		/////////////////
+		FileBody fileBody = null;
+		try {
+			File file = new File(path);
+			fileBody = new FileBody(file);
+		} catch (Exception e) {
+			Toast.makeText(application, e.toString(), Toast.LENGTH_LONG).show();
+		}
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+		builder.addPart("file", fileBody);
+		HttpEntity parts = builder.build();
+
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_avatar);
+		url += getUsername();
+
+		NetAccess network = NetAccess.getInstance();
+		network.createPostFileThread(url, parts, progress);
+	}
+
+	public void getAvatar(NetProgress progress) {
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_avatar);
+		url += getUsername();
+
+		NetAccess network = NetAccess.getInstance();
+		network.createGetFileThread(url, progress, this);
+	}
+	
+	public void setAvatarBitmap(Bitmap bitmap) {
+		avatar = bitmap;
+	}
+	
+	public Bitmap getAvatarBitmap() {
+		return avatar;
 	}
 
 	public String getArea() {

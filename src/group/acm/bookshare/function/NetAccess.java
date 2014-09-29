@@ -4,6 +4,7 @@ import group.acm.bookshare.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.Socket;
@@ -49,6 +50,7 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 //此类负责访问网络，利用Singleton模式保证HttpClient只会产生一个实例对象
@@ -74,10 +76,6 @@ public class NetAccess {
 
 	private NetAccess() {
 		pool = Executors.newSingleThreadExecutor();
-		initHttpClient();
-	}
-
-	private void initHttpClient() {
 		KeyStore trustStore;
 		try {
 			trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -169,6 +167,96 @@ public class NetAccess {
 	}
 
 	// /////////////////网络访问方法///////////////////////////
+
+	public void createPostFileThread(String url, HttpEntity parts,
+			NetProgress progress) {
+		pool.execute(new FilePostThread(url, parts, progress));
+	}
+
+	public void createGetFileThread(String url, NetProgress progress, User user) {
+		pool.execute(new FileGetThread(url, progress, user));
+	}
+
+	private class FilePostThread extends NetThread {
+		protected HttpEntity parts;
+
+		public FilePostThread(String url, HttpEntity parts, NetProgress progress) {
+			super(url, null, progress);
+			this.parts = parts;
+		}
+
+		@Override
+		protected HttpUriRequest getRequest() throws Exception {
+			return null;
+		}
+
+		public void run() {
+			progress.setBefore();
+			int status = STATUS_DEFAULT;
+			try {
+				HttpPost post = new HttpPost(url);
+				post.setEntity(parts);
+				HttpResponse httpResponse;
+				Log.i(Utils.getLineInfo(), "before httpclient exe");
+				httpResponse = httpClient.execute(post);
+				status = httpResponse.getStatusLine().getStatusCode();
+				HttpEntity entity = httpResponse.getEntity();
+				Log.i("NetAccess:url", url);
+				Log.i("NetAccess:status", Integer.toString(status));
+				progress.setAfter(status, "hehe");
+			} catch (Exception e) {
+				progress.setError(e.toString());
+			}
+		}
+
+	}
+
+	private class FileGetThread extends NetThread {
+		private User user;
+
+		public FileGetThread(String url, NetProgress progress, User user) {
+			super(url, null, progress);
+			this.user = user;
+		}
+
+		@Override
+		protected HttpUriRequest getRequest() throws Exception {
+			return null;
+		}
+
+		public void run() {
+			progress.setBefore();
+			int status = STATUS_DEFAULT;
+			try {
+				HttpGet get = new HttpGet(url);
+				HttpResponse httpResponse;
+				httpResponse = httpClient.execute(get);
+				status = httpResponse.getStatusLine().getStatusCode();
+				HttpEntity entity = httpResponse.getEntity();
+				Log.i("NetAccess:url", url);
+				Log.i("NetAccess:status", Integer.toString(status));
+				downloadFile(status, entity);
+				progress.setAfter(status, "hehe");
+			} catch (Exception e) {
+				progress.setError(e.toString());
+			}
+		}
+
+		private void downloadFile(int status, HttpEntity entity) {
+			if (status != NetAccess.STATUS_SUCCESS)
+				return;
+
+			InputStream is;
+			try {
+				is = entity.getContent();
+				user.setAvatarBitmap(BitmapFactory.decodeStream(is));
+				is.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	// 豆瓣访问
 	public void createDoubanThread(String url, NetProgress progress) {
 		pool.execute(new DoubanThread(url, progress));

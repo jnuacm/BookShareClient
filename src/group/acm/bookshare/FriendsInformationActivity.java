@@ -11,12 +11,14 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class FriendsInformationActivity extends Activity {
 	private User friend;
@@ -76,5 +78,33 @@ public class FriendsInformationActivity extends Activity {
 			}
 
 		});
+
+		friend.getAvatar(new DownloadFileProgress());
+	}
+
+	private class DownloadFileProgress extends HttpProcessBase {
+		
+		public void error(String content){
+			Toast.makeText(FriendsInformationActivity.this, "´íÎó:"+content,
+					Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			Toast.makeText(FriendsInformationActivity.this, "Ê§°Ü",
+					Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			Bitmap bitmap = friend.getAvatarBitmap();
+			Toast.makeText(FriendsInformationActivity.this, "³É¹¦",
+					Toast.LENGTH_LONG).show();
+			if (bitmap == null)
+				Toast.makeText(FriendsInformationActivity.this, "Îª¿Õ",
+						Toast.LENGTH_LONG).show();
+			FriendImg.setImageBitmap(bitmap);
+		}
+
 	}
 }
