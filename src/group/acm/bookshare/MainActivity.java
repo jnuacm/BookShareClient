@@ -13,8 +13,10 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
@@ -26,6 +28,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,12 +48,11 @@ public class MainActivity extends Activity {
 	private int currIndex = 0;// 当前页卡编号
 	private int bmpW;// 动画图片宽度
 
-	private List<TextView> textViews;
-
-	private List<View> viewList;
+	private List<TextView> textViews; // 顶部Textview
+	private List<View> viewList; // 各个页面
 	private ViewPager viewPager;// viewpager
-
 	private Button mainButton; // 底部按钮
+	private BroadcastReceiver receiver;
 
 	private User localUser;
 
@@ -95,6 +97,7 @@ public class MainActivity extends Activity {
 		mainButton.setOnClickListener(new BottomButtonClickListener());
 
 		// 注册接收到推送时的更新receiver
+		receiver = new MessageUpdateReceiver();
 		registerUpdateReceiver();
 		informmanage.reload();
 	}
@@ -102,7 +105,7 @@ public class MainActivity extends Activity {
 	private void registerUpdateReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction("group.acm.bookshare.action.UPDATEMESSAGE");
-		registerReceiver(new MessageUpdateReceiver(), filter);
+		registerReceiver(receiver, filter);
 	}
 
 	private class MessageUpdateReceiver extends BroadcastReceiver {
@@ -141,8 +144,23 @@ public class MainActivity extends Activity {
 			break;
 		case R.id.action_check_borrow:
 			break;
+		case R.id.action_exit:
+			unregisterReceiver(receiver);
+			finish();
+			break;
 		}
 		return false;
+	}
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.addCategory(Intent.CATEGORY_HOME);
+			this.startActivity(intent);
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 
 	public void checkUpdate() {
@@ -294,16 +312,16 @@ public class MainActivity extends Activity {
 		}
 
 	}
-	
-	public void bookListReload(){
+
+	public void bookListReload() {
 		bookmanage.reload();
 	}
-	
-	public void friendListReload(){
-		//friendmanage.reload();
+
+	public void friendListReload() {
+		// friendmanage.reload();
 	}
-	
-	public void InformListReload(){
+
+	public void InformListReload() {
 		informmanage.reload();
 	}
 

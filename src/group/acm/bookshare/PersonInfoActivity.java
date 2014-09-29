@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.util.Utils;
@@ -17,7 +18,7 @@ import android.widget.Toast;
 
 public class PersonInfoActivity extends Activity {
 	public static final int REQUEST_FILE_SELECT = 1;
-	
+
 	private User localUser;
 
 	@Override
@@ -53,7 +54,7 @@ public class PersonInfoActivity extends Activity {
 	}
 
 	private void setInformation() {
-		
+
 	}
 
 	@Override
@@ -70,11 +71,8 @@ public class PersonInfoActivity extends Activity {
 				// Get the Uri of the selected file
 				Uri uri = data.getData();
 				String path = Utils.getPath(this, uri);
-				localUser.createAvatar(path, new Handler(){
-					public void handleMessage(Message msg){
-						
-					}
-				});
+				localUser.createAvatar(path,
+						HttpProcessBase.createShowProgress(this, "³É¹¦", "Ê§°Ü"));
 			}
 			break;
 		}

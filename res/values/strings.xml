@@ -26,28 +26,23 @@
     <string name="action_check_own">查看自己的书</string>
     <string name="action_check_borrow">查看借来的书</string>
     <string name="action_sort">排序</string>
+    <string name="action_exit">Exit</string>
     <string name="add_book">添加</string>
     <!-- MainActivity-inform listview -->
     <string name="refresh">刷新</string>
     <!-- url resources -->
     <string name="url_host">http://192.168.1.100/</string>
-    <string name="url_login">bookshareyii/index.php/api/login</string>
-    <string name="url_register">bookshareyii/index.php/api/register</string>
-    <string name="url_add_book">bookshareyii/index.php/api/book/</string>
-    <string name="url_get_book">bookshareyii/index.php/api/book/</string>
-    <string name="url_delete_book">bookshareyii/index.php/api/book/</string>
-    <string name="url_delete_friend">bookshareyii/index.php/api/friend/</string>
-    <string name="url_add_friend">bookshareyii/index.php/api/friend</string>
-    <string name="url_friendship_inform">bookshareyii/index.php/api/friend</string>
-    <string name="url_send_inform">bookshareyii/index.php/api/request/from/</string>
-    <string name="url_receive_inform">bookshareyii/index.php/api/request/to/</string>
-    <string name="url_inform_update">bookshareyii/index.php/api/request/</string>
-    <string name="url_inform_create">bookshareyii/index.php/api/request</string>
-    <string name="url_avatar_create">bookshareyii/index.php/api/avatar/</string>
-    <string name="path_api">bookshareyii/index.php/api</string>
-    <string name="action_book">/all</string>
-    <string name="action_ownbook">/own/</string>
-    <string name="action_borrowedbook">/borrowed/</string>
+    <string name="url_login">bookshareyii/index.php/api/login/</string>
+    <string name="url_register">bookshareyii/index.php/api/register/</string>
+    <string name="url_book">bookshareyii/index.php/api/book/</string>
+    <string name="url_book_all">all/</string>
+    <string name="url_book_ownbook">/own/</string>
+    <string name="url_book_borrowed">/borrowed/</string>
+    <string name="url_friend">bookshareyii/index.php/api/friend/</string>
+    <string name="url_inform">bookshareyii/index.php/api/request/</string>
+    <string name="url_inform_from">from/</string>
+    <string name="url_inform_to">to/</string>
+    <string name="url_avatar">bookshareyii/index.php/api/avatar/</string>
 
     <!-- douban url -->
     <string name="douban_url">http://api.douban.com/book/subject/isbn/</string>

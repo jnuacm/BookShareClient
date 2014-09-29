@@ -81,6 +81,11 @@ public class BookListManage {
 
 		setItemListener();
 		mybookslistview.setAdapter(bookAdapter);
+
+		mybookslistview.setDivider(activity.getResources().getDrawable(
+				R.color.listview_item_divider_line));
+		mybookslistview.setDividerHeight(activity.getResources()
+				.getDimensionPixelSize(R.dimen.listview_item_divider_line));
 	}
 
 	private class BookListAdapter extends BaseAdapter {

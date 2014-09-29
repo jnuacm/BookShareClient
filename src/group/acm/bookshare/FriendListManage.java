@@ -58,6 +58,11 @@ public class FriendListManage {
 		myfriendslistview.setAdapter(friendAdapter);
 
 		setItemListener();
+		
+		myfriendslistview.setDivider(activity.getResources().getDrawable(
+				R.color.listview_item_divider_line));
+		myfriendslistview.setDividerHeight(activity.getResources()
+				.getDimensionPixelSize(R.dimen.listview_item_divider_line));
 	}
 
 	private class FriendListAdapter extends BaseAdapter {

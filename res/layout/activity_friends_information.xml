@@ -111,9 +111,8 @@
     <Button
         android:id="@+id/friend_checkbook_button"
         style="@style/MainButton"
-        android:layout_width="150dp"
+        android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_alignLeft="@+id/IF_img"
         android:layout_below="@+id/IF_email_top"
         android:layout_marginTop="36dp"
         android:text="查看书表"

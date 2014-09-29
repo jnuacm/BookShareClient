@@ -4,7 +4,6 @@ import group.acm.bookshare.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.Socket;
@@ -50,11 +49,7 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Handler;
 import android.util.Log;
-import android.widget.ImageView;
 
 //此类负责访问网络，利用Singleton模式保证HttpClient只会产生一个实例对象
 public class NetAccess {
@@ -79,7 +74,10 @@ public class NetAccess {
 
 	private NetAccess() {
 		pool = Executors.newSingleThreadExecutor();
+		initHttpClient();
+	}
 
+	private void initHttpClient() {
 		KeyStore trustStore;
 		try {
 			trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -111,20 +109,14 @@ public class NetAccess {
 			ClientConnectionManager conManager = new ThreadSafeClientConnManager(
 					params, schReg);
 
-			this.httpClient = new DefaultHttpClient(conManager, params);
+			httpClient = new DefaultHttpClient(conManager, params);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/*
-		 * httpClient = new DefaultHttpClient();
-		 * httpClient.getParams().setParameter(
-		 * CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);
-		 */
 	}
 
-	class SSLSocketFactoryEx extends SSLSocketFactory {
+	private class SSLSocketFactoryEx extends SSLSocketFactory {
 
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 
@@ -145,7 +137,6 @@ public class NetAccess {
 						java.security.cert.X509Certificate[] chain,
 						String authType)
 						throws java.security.cert.CertificateException {
-
 				}
 
 				@Override
@@ -153,7 +144,6 @@ public class NetAccess {
 						java.security.cert.X509Certificate[] chain,
 						String authType)
 						throws java.security.cert.CertificateException {
-
 				}
 			};
 
@@ -178,7 +168,32 @@ public class NetAccess {
 		return internetaccess;
 	}
 
-	// 单独线程从豆瓣获取图书信息(直接用httpClient会出现500错误)
+	// /////////////////网络访问方法///////////////////////////
+	// 豆瓣访问
+	public void createDoubanThread(String url, NetProgress progress) {
+		pool.execute(new DoubanThread(url, progress));
+	}
+
+	// 通用四种访问
+	public void createPostThread(String url, List<NameValuePair> nvps,
+			NetProgress progress) {
+		pool.execute(new PostThread(url, nvps, progress));
+	}
+
+	public void createGetThread(String url, NetProgress progress) {
+		pool.execute(new GetThread(url, progress));
+	}
+
+	public void createPutThread(String url, List<NameValuePair> nvps,
+			NetProgress progress) {
+		pool.execute(new PutThread(url, nvps, progress));
+	}
+
+	public void createDeleteThread(String url, NetProgress progress) {
+		pool.execute(new DeleteThread(url, progress));
+	}
+
+	// 单独线程类从豆瓣获取图书信息(直接用httpClient会出现500错误)
 	public class DoubanThread extends Thread {
 		String url;
 		NetProgress progress;
@@ -224,188 +239,8 @@ public class NetAccess {
 		}
 	}
 
-	public void createUrlPost(String aimUrl, UrlConnectProcess process,
-			Handler handler) {
-		try {
-			new UrlPostThread(aimUrl, process, handler).start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void createUrlGet(String aimUrl, UrlConnectProcess process,
-			Handler handler) {
-		try {
-			new UrlGetThread(aimUrl, process, handler).start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void createUrlPut(String aimUrl, UrlConnectProcess process,
-			Handler handler) {
-		try {
-			new UrlPutThread(aimUrl, process, handler).start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void createUrlDelete(String aimUrl, UrlConnectProcess process,
-			Handler handler) {
-		try {
-			new UrlDeleteThread(aimUrl, process, handler).start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public abstract class UrlConnectionThread extends Thread {
-		protected HttpURLConnection con;
-		protected UrlConnectProcess process;
-		protected Handler handler;
-
-		public UrlConnectionThread(String aimUrl, UrlConnectProcess process,
-				Handler handler) throws Exception {
-			URL url = new URL(aimUrl);
-			con = (HttpURLConnection) url.openConnection();
-			this.process = process;
-			this.handler = handler;
-		}
-
-		public void run() {
-			try {
-				con.setDoInput(true);
-				con.setUseCaches(false);
-				setProperty();
-				process.writeOutputStream(con);
-				InputStream is = con.getInputStream();
-				process.getInputStream(is);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		public abstract void setProperty() throws Exception;
-	}
-
-	public interface UrlConnectProcess {
-		public abstract void writeOutputStream(HttpURLConnection con)
-				throws Exception;
-
-		public abstract void getInputStream(InputStream is) throws Exception;
-	}
-
-	public class UrlPostThread extends UrlConnectionThread {
-		public UrlPostThread(String aimUrl, UrlConnectProcess process,
-				Handler handler) throws Exception {
-			super(aimUrl, process, handler);
-		}
-
-		public void setProperty() throws Exception {
-			con.setDoOutput(true);
-			con.setRequestMethod("POST");
-		}
-
-	}
-
-	public class UrlGetThread extends UrlConnectionThread {
-		public UrlGetThread(String aimUrl, UrlConnectProcess process,
-				Handler handler) throws Exception {
-			super(aimUrl, process, handler);
-		}
-
-		public void setProperty() throws Exception {
-			con.setDoOutput(true);
-			con.setRequestMethod("GET");
-		}
-
-	}
-
-	public class UrlPutThread extends UrlConnectionThread {
-		public UrlPutThread(String aimUrl, UrlConnectProcess process,
-				Handler handler) throws Exception {
-			super(aimUrl, process, handler);
-		}
-
-		public void setProperty() throws Exception {
-			con.setDoOutput(true);
-			con.setRequestMethod("PUT");
-		}
-
-	}
-
-	public class UrlDeleteThread extends UrlConnectionThread {
-		public UrlDeleteThread(String aimUrl, UrlConnectProcess process,
-				Handler handler) throws Exception {
-			super(aimUrl, process, handler);
-		}
-
-		public void setProperty() throws Exception {
-			con.setDoOutput(true);
-			con.setRequestMethod("DELETE");
-		}
-
-	}
-
-	public class BitmapThread extends Thread {
-		String url;
-		ImageView view;
-
-		public BitmapThread(String url, ImageView view) {
-			this.url = url;
-			this.view = view;
-		}
-
-		public void run() {
-			try {
-				HttpURLConnection conn = (HttpURLConnection) new URL(this.url)
-						.openConnection();
-				synchronized (conn) {
-					conn.setConnectTimeout(3000);
-					conn.setRequestMethod("GET");
-					conn.connect();
-					InputStream is = conn.getInputStream();
-					Bitmap bitmap = BitmapFactory.decodeStream(is);
-					view.setImageBitmap(bitmap);
-					is.close();
-					conn.disconnect();
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public void createBitmapThread(String url, Handler handler) {
-
-	}
-
-	public void createDoubanThread(String url, NetProgress progress) {
-		pool.execute(new DoubanThread(url, progress));
-	}
-
-	public void createPostThread(String url, List<NameValuePair> nvps,
-			NetProgress progress) {
-		pool.execute(new PostThread(url, nvps, progress));
-	}
-
-	public void createGetThread(String url, NetProgress progress) {
-		pool.execute(new GetThread(url, progress));
-	}
-
-	public void createPutThread(String url, List<NameValuePair> nvps,
-			NetProgress progress) {
-		pool.execute(new PutThread(url, nvps, progress));
-	}
-
-	public void createDeleteThread(String url, NetProgress progress) {
-		pool.execute(new DeleteThread(url, progress));
-	}
-
-	// /////////////////网络访问线程///////////////////////////
+	// //////////////通用网络线程类/////////////////
+	// 抽象线程类
 	public abstract class NetThread extends Thread {
 		protected String url;
 		protected List<NameValuePair> nvps;
@@ -448,7 +283,7 @@ public class NetAccess {
 		}
 	}
 
-	// /////////////////////四种访问方法分别对应四种线程////////////////////////////////
+	// /////////////////////四种访问方法分别对应四种线程实现///////////////////////////////
 	public class PostThread extends NetThread {
 		private PostThread(String url, List<NameValuePair> nvps,
 				NetProgress progress) {
@@ -484,7 +319,6 @@ public class NetAccess {
 
 		@Override
 		protected HttpUriRequest getRequest() throws Exception {
-			// TODO Auto-generated method stub
 			HttpPut put = new HttpPut(url);
 			put.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 			return put;
@@ -498,7 +332,6 @@ public class NetAccess {
 
 		@Override
 		protected HttpUriRequest getRequest() {
-			// TODO Auto-generated method stub
 			HttpDelete delete = new HttpDelete(url);
 			return delete;
 		}

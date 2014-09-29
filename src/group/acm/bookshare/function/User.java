@@ -4,7 +4,6 @@ import group.acm.bookshare.R;
 import group.acm.bookshare.util.Utils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +17,6 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 @SuppressLint("HandlerLeak")
@@ -36,13 +34,10 @@ public class User {
 
 	private Application application;
 
-	private ImageProcess image;
-
 	public User(Application application) {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
-		image = new ImageProcess(application);
 		this.application = application;
 	}
 
@@ -55,7 +50,6 @@ public class User {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
-		image = new ImageProcess(application);
 		this.application = application;
 	}
 
@@ -213,7 +207,7 @@ public class User {
 
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_add_book);
+		url += application.getString(R.string.url_book);
 		network.createPostThread(url, nvps, new AddToDBProgress(progress));
 	}
 
@@ -239,8 +233,8 @@ public class User {
 		if (!((String) book.get(Book.OWNER)).equals(book.get(Book.HOLDER)))
 			return false;
 		NetAccess net = NetAccess.getInstance();
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_delete_book);
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_book);
 		url += Integer.toString(((Integer) book.get(Book.ID)));
 		net.createDeleteThread(url, progress);
 		return true;
@@ -294,8 +288,8 @@ public class User {
 
 	private void createRequest(String aimName, int type, String description,
 			NetProgress progress) {
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_inform_create);
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_inform);
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair(Inform.TYPE, Integer.toString(type)));
@@ -313,15 +307,16 @@ public class User {
 	public void getBookList(String name, NetProgress progress) {
 		NetAccess net = NetAccess.getInstance();
 		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_get_book);
+		url += application.getString(R.string.url_book);
 		url += name;
-		url += application.getResources().getString(R.string.action_book);
+		url += application.getString(R.string.url_book_all);
 		net.createGetThread(url, progress);
 	}
 
 	public void getSendInformList(NetProgress progress) {
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_send_inform);
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_inform);
+		url += application.getString(R.string.url_inform_from);
 		url += getUsername();
 
 		NetAccess net = NetAccess.getInstance();
@@ -329,9 +324,9 @@ public class User {
 	}
 
 	public void getReceiveInformList(NetProgress progress) {
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources()
-				.getString(R.string.url_receive_inform);
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_inform);
+		url += application.getString(R.string.url_inform_to);
 		url += getUsername();
 
 		NetAccess net = NetAccess.getInstance();
@@ -339,8 +334,8 @@ public class User {
 	}
 
 	public void updateRequest(int id, int status, NetProgress progress) {
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_inform_update);
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_inform);
 		url += Integer.toString(id);
 		NetAccess net = NetAccess.getInstance();
 
@@ -351,30 +346,28 @@ public class User {
 	}
 
 	public void deleteRequest(int id, NetProgress progress) {
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_inform_update);
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_inform);
 		url += Integer.toString(id);
 		NetAccess net = NetAccess.getInstance();
 		net.createDeleteThread(url, progress);
 	}
 
 	public void getFriendList(NetProgress progress) {
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(
-				R.string.url_friendship_inform);
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_friend);
 
 		NetAccess net = NetAccess.getInstance();
 		net.createGetThread(url, progress);
 	}
 
-	public boolean deleteFriend(Map<String, Object> friend, NetProgress progress) {
+	public void deleteFriend(Map<String, Object> friend, NetProgress progress) {
+		String url = application.getString(R.string.url_host);
+		url += application.getString(R.string.url_friend);
+		url += (String) friend.get(Friend.NAME);
+
 		NetAccess net = NetAccess.getInstance();
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getResources().getString(R.string.url_delete_friend);
-		url += (String) friend.get("username");
-		Log.i("delete user name is ", url);
 		net.createDeleteThread(url, progress);
-		return true;
 	}
 
 	public String getInformString(Map<String, Object> item) {
@@ -434,8 +427,8 @@ public class User {
 		return null;
 	}
 
-	public void createAvatar(String path, Handler handler) {
-		image.createAvatar(getUsername(), path, handler);
+	public void createAvatar(String path, NetProgress progress) {
+		/////////////////
 	}
 
 	public String getArea() {

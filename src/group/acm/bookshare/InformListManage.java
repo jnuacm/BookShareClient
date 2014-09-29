@@ -58,6 +58,11 @@ public class InformListManage {
 		setListener();
 
 		informlistview.setAdapter(informAdapter);
+		
+		informlistview.setDivider(activity.getResources().getDrawable(
+				R.color.listview_item_divider_line));
+		informlistview.setDividerHeight(activity.getResources()
+				.getDimensionPixelSize(R.dimen.listview_item_divider_line));
 	}
 
 	public NetProgress getConfirmProgress(int id) {

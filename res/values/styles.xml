@@ -38,6 +38,9 @@
         <item name="android:textColor">@color/buttonfont_white</item>
     </style>
 
+    <style name="listviewItemLayout">
+    </style>
+
     <style name="ButtonBarButton" />
 
 </resources>
