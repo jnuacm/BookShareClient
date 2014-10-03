@@ -54,15 +54,11 @@ public class InformListManage {
 
 		informlistview = (ListView) LayoutInflater.from(activity).inflate(
 				R.layout.activity_submain_inform, null);
+		informlistview.setVerticalFadingEdgeEnabled(false);
 
-		setListener();
+		informlistview.setOnItemClickListener(new InformClickListener());
 
 		informlistview.setAdapter(informAdapter);
-		
-		informlistview.setDivider(activity.getResources().getDrawable(
-				R.color.listview_item_divider_line));
-		informlistview.setDividerHeight(activity.getResources()
-				.getDimensionPixelSize(R.dimen.listview_item_divider_line));
 	}
 
 	public NetProgress getConfirmProgress(int id) {
@@ -88,7 +84,7 @@ public class InformListManage {
 
 		@Override
 		public void statusSuccess(String response) {
-			localUser.deleteInformById(id);
+			reload();
 		}
 	}
 
@@ -96,22 +92,20 @@ public class InformListManage {
 		informAdapter.notifyDataSetChanged();
 	}
 
-	private void setListener() {
-		informlistview.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				if (position != 0) {
-					new AlertDialog.Builder(activity)
-							.setTitle("Message")
-							.setMessage(
-									localUser.getInformString(localUser
-											.getInformListData().get(
-													position - 1)))
-							.setPositiveButton("确认", null).show();
-				}
-			}
-		});
+	private class InformClickListener implements OnItemClickListener {
+		@SuppressWarnings("unchecked")
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
+			Map<String, Object> item = (Map<String, Object>) parent
+					.getItemAtPosition(position);
+			if (item == null)
+				return;
+			new AlertDialog.Builder(activity).setTitle("Message")
+					.setMessage(localUser.informMapToStr(item))
+					.setPositiveButton("确认", null).show();
+		}
+
 	}
 
 	private class SendInformProgress extends HttpProcessBase {

@@ -1,19 +1,23 @@
 package group.acm.bookshare.function;
 
-import group.acm.bookshare.R;
+import group.acm.bookshare.function.NetAccess.EntityProcess;
 import group.acm.bookshare.util.Utils;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,6 +25,7 @@ import org.json.JSONObject;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -32,33 +37,44 @@ public class User {
 	private String area;
 	private String email;
 	private int is_group;
+	private int avatarVersion;
 	private String userid;
 
-	private List<Map<String, Object>> books;
-	private List<Map<String, Object>> friends;
-	private List<Map<String, Object>> informs;
+	private List<Map<String, Object>> books; // 保存user的书本列表数据
+	private List<Map<String, Object>> friends; // 保存uesr的好友列表数据
+	private List<Map<String, Object>> informs; // 保存user的消息列表数据
 
 	private Application application;
-	
-	private Bitmap avatar = null;
+	private ImageManage imgManage; // 图像管理对象
+	private UrlStringFactory urlFactory; // url构造类
+	private NetAccess net; // 网络访问对象
 
+	// 程序的本地主用户的构造函数
 	public User(Application application) {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		this.application = application;
+		avatarVersion = 0;
+		imgManage = new ImageManage(application);
+		urlFactory = new UrlStringFactory(application);
+		net = NetAccess.getInstance();
 	}
 
+	// 其它好友用户的构造函数
 	public User(Map<String, Object> userinfo, Application application) {
 		setUsername((String) userinfo.get(Friend.NAME));
 		setArea((String) userinfo.get(Friend.AREA));
 		setEmail((String) userinfo.get(Friend.EMAIL));
 		setIs_group((Integer) userinfo.get(Friend.IS_GROUP));
+		setAvatarVersion((Integer) userinfo.get(Friend.AVATAR_VERSION));
 
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		this.application = application;
+		urlFactory = new UrlStringFactory(application);
+		net = NetAccess.getInstance();
 	}
 
 	public void setUser(String username, String password, String userid) {
@@ -67,23 +83,68 @@ public class User {
 		this.setUserid(userid);
 	}
 
+	public void updateInfo(Map<String, Object> item) {
+		setUsername((String) item.get(Friend.NAME));
+		setEmail((String) item.get(Friend.EMAIL));
+		setArea((String) item.get(Friend.AREA));
+		setIs_group((Integer) item.get(Friend.IS_GROUP));
+	}
+
 	public void login(NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("username", getUsername()));
 		nvps.add(new BasicNameValuePair("password", getPassword()));
 		nvps.add(new BasicNameValuePair("userid", getUserid()));
 
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_login);
+		String url = urlFactory.getLoginUrl();
 
-		NetAccess network = NetAccess.getInstance();
-		network.createPostThread(url, nvps, progress);
+		for (NameValuePair i : nvps) {
+			Log.i("nvps:", i.getName() + ":" + i.getValue());
+		}
+
+		try {
+			net.createPostThread(url,
+					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
+		} catch (UnsupportedEncodingException e) {
+			progress.setError(e.toString());
+		}
+	}
+
+	public void register(String username, String password, String email,
+			String area, NetProgress progress) {
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("username", username));
+		nvps.add(new BasicNameValuePair("password", password));
+		nvps.add(new BasicNameValuePair("email", email));
+		nvps.add(new BasicNameValuePair("area", area));
+
+		String url = urlFactory.getRegisterUrl();
+
+		for (NameValuePair i : nvps) {
+			Log.i("nvps:", i.getName() + ":" + i.getValue());
+		}
+
+		try {
+			net.createPostThread(url,
+					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
+		} catch (UnsupportedEncodingException e) {
+			progress.setError(e.toString());
+		}
+	}
+
+	public void getPersonInfo(NetProgress progress) {
+		String url = urlFactory.getAimUserUrl(getUsername());
+		net.createGetThread(url, progress);
 	}
 
 	public void logout() {
 		books.clear();
 		friends.clear();
 		informs.clear();
+	}
+
+	public int getPersonBookNum() {
+		return books.size();
 	}
 
 	public List<Map<String, Object>> getBookListData() {
@@ -111,6 +172,7 @@ public class User {
 		informs.clear();
 	}
 
+	// 将获取的网络的书本列表信息response转化成List
 	public void addBookDataToList(String response) {
 		JSONObject jsonobj;
 		try {
@@ -125,6 +187,7 @@ public class User {
 		}
 	}
 
+	// 将获取的网络的书本列表信息array转化成List
 	public void addBookDataToList(JSONArray jsonarray) {
 		for (int i = 0; i < jsonarray.length(); i++) {
 			JSONObject item;
@@ -137,6 +200,7 @@ public class User {
 		}
 	}
 
+	// 将获取的网络的好友/群组列表信息response转化成List
 	public void addFriendDataToList(String response) {
 		try {
 			JSONObject jsonobj = new JSONObject(response);
@@ -150,6 +214,7 @@ public class User {
 		}
 	}
 
+	// 将获取的网络的消息列表信息response转化成List
 	public boolean addInformDataToList(String response) {
 		JSONArray jsonarray;
 		try {
@@ -199,6 +264,7 @@ public class User {
 		}
 	}
 
+	// 将书本加入到数据库
 	private void addToDB(Bundle data, NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
@@ -213,10 +279,19 @@ public class User {
 		nvps.add(new BasicNameValuePair(Book.STATUS, Integer
 				.toString(Book.STATUS_BORROW)));
 
-		NetAccess network = NetAccess.getInstance();
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_book);
-		network.createPostThread(url, nvps, new AddToDBProgress(progress));
+		for (NameValuePair i : nvps) {
+			Log.i("nvps:", i.getName() + ":" + i.getValue());
+		}
+
+		String url = urlFactory.getCreateBookUrl();
+
+		try {
+			net.createPostThread(url,
+					new UrlEncodedFormEntity(nvps, HTTP.UTF_8),
+					new AddToDBProgress(progress));
+		} catch (UnsupportedEncodingException e) {
+			progress.setError(e.toString());
+		}
 	}
 
 	private class AddToDBProgress extends HttpProcessBase {
@@ -240,10 +315,7 @@ public class User {
 	public boolean deleteBook(Map<String, Object> book, NetProgress progress) {
 		if (!((String) book.get(Book.OWNER)).equals(book.get(Book.HOLDER)))
 			return false;
-		NetAccess net = NetAccess.getInstance();
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_book);
-		url += Integer.toString(((Integer) book.get(Book.ID)));
+		String url = urlFactory.getAimBookUrl((Integer) book.get(Book.ID));
 		net.createDeleteThread(url, progress);
 		return true;
 	}
@@ -275,6 +347,7 @@ public class User {
 		bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, progress);
 	}
 
+	// 构造书本的description并且创建请求
 	private void bookRequest(String aimName, Map<String, Object> book,
 			String message, int type, NetProgress progress) {
 		try {
@@ -294,91 +367,87 @@ public class User {
 		}
 	}
 
+	// 创建请求
 	private void createRequest(String aimName, int type, String description,
 			NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_inform);
+		String url = urlFactory.getInformCreateUrl();
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair(Inform.TYPE, Integer.toString(type)));
 		nvps.add(new BasicNameValuePair(Inform.DESCRIPTION, description));
 		nvps.add(new BasicNameValuePair(Inform.TO, aimName));
 
-		NetAccess net = NetAccess.getInstance();
-		net.createPostThread(url, nvps, progress);
+		for (NameValuePair i : nvps) {
+			Log.i("nvps:", i.getName() + ":" + i.getValue());
+		}
+
+		try {
+			net.createPostThread(url,
+					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
+		} catch (UnsupportedEncodingException e) {
+			progress.setError(e.toString());
+		}
 	}
 
+	// 获取书本列表
 	public void getBookList(NetProgress progress) {
 		getBookList(getUsername(), progress);
 	}
 
 	public void getBookList(String name, NetProgress progress) {
-		NetAccess net = NetAccess.getInstance();
-		String url = application.getResources().getString(R.string.url_host);
-		url += application.getString(R.string.url_book);
-		url += name;
-		url += application.getString(R.string.url_book_all);
+		String url = urlFactory.getBookListUrl(name);
 		net.createGetThread(url, progress);
 	}
 
+	// 获取from为自身的列表
 	public void getSendInformList(NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_inform);
-		url += application.getString(R.string.url_inform_from);
-		url += getUsername();
-
-		NetAccess net = NetAccess.getInstance();
+		String url = urlFactory.getInformListFromUrl(getUsername());
 		net.createGetThread(url, progress);
 	}
 
+	// 获取to为自身的列表
 	public void getReceiveInformList(NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_inform);
-		url += application.getString(R.string.url_inform_to);
-		url += getUsername();
-
-		NetAccess net = NetAccess.getInstance();
+		String url = urlFactory.getInformListToUrl(getUsername());
 		net.createGetThread(url, progress);
 	}
 
+	// 更新消息的status
 	public void updateRequest(int id, int status, NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_inform);
-		url += Integer.toString(id);
-		NetAccess net = NetAccess.getInstance();
+		String url = urlFactory.getAimInformUrl(id);
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair(Inform.STATUS, Integer.toString(status)));
 
-		net.createPutThread(url, nvps, progress);
+		for (NameValuePair i : nvps) {
+			Log.i("nvps:", i.getName() + ":" + i.getValue());
+		}
+
+		try {
+			net.createPutThread(url,
+					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
+		} catch (UnsupportedEncodingException e) {
+			progress.setError(e.toString());
+		}
 	}
 
 	public void deleteRequest(int id, NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_inform);
-		url += Integer.toString(id);
-		NetAccess net = NetAccess.getInstance();
+		String url = urlFactory.getAimInformUrl(id);
 		net.createDeleteThread(url, progress);
 	}
 
+	// 获取好友列表
 	public void getFriendList(NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_friend);
-
-		NetAccess net = NetAccess.getInstance();
+		String url = urlFactory.getFriendListUrl();
 		net.createGetThread(url, progress);
 	}
 
 	public void deleteFriend(Map<String, Object> friend, NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_friend);
-		url += (String) friend.get(Friend.NAME);
-
-		NetAccess net = NetAccess.getInstance();
+		String url = urlFactory.getAimFriendUrl((String) friend
+				.get(Friend.NAME));
 		net.createDeleteThread(url, progress);
 	}
 
-	public String getInformString(Map<String, Object> item) {
+	public String informMapToStr(Map<String, Object> item) {
 		String ret = (String) item.get(Inform.TIME);
 		ret += ("\nfrom:" + item.get(Inform.FROM));
 		ret += ("\nto:" + item.get(Inform.TO));
@@ -408,17 +477,7 @@ public class User {
 		return ret;
 	}
 
-	public boolean deleteInformById(int id) {
-		for (int i = 0; i < informs.size(); i++) {
-			Map<String, Object> item = informs.get(i);
-			if ((Integer) item.get(Inform.ID) == id) {
-				informs.remove(i);
-				break;
-			}
-		}
-		return true;
-	}
-
+	// 通过id从书本的list中获取map对象
 	public Map<String, Object> getBookById(int id) {
 		for (Map<String, Object> book : books) {
 			if ((Integer) book.get(Book.ID) == id)
@@ -427,18 +486,65 @@ public class User {
 		return null;
 	}
 
+	// 通过name从好友的list中获取map对象
 	public Map<String, Object> getFriendByName(String name) {
 		for (Map<String, Object> friend : friends) {
-			if (name.equals(friend.get("username")))
+			if (name.equals(friend.get(Friend.NAME)))
 				return friend;
 		}
 		return null;
 	}
 
+	// 加载所有的头像(包括本人和好友)
+	public void loadAvatars() {
+		loadAvatar(getUsername(), avatarVersion);
+		for (Map<String, Object> friend : friends) {
+			String name = (String) friend.get(Friend.NAME);
+			int version = (Integer) friend.get(Friend.AVATAR_VERSION);
+			loadAvatar(name, version);
+		}
+	}
+
+	// 加载指定目标name的头像
+	public void loadAvatar(String name, int curVersion) {
+		if (curVersion == ImageManage.AVATAR_VERSION_NONE)
+			return;
+		Log.i(Utils.getLineInfo(), "before load from cache : " + name
+				+ " version: " + Integer.toString(curVersion));
+		if (!imgManage.loadAvatarFromCache(name, curVersion)) {
+			String url = urlFactory.getAimAvatarUrl(name);
+			net.createFileGetThread(url, new ProgressNone(),
+					new FileProcessImpl(name, curVersion));
+		}
+	}
+
 	public void createAvatar(String path, NetProgress progress) {
+		Bitmap avatar = Utils.fileToAvatarBitmap(path);
+		if (avatar == null) {
+			progress.setError("大小/格式不对");
+			return;
+		}
+		setAvatar(avatar);
+
+		File file = imgManage.getAvatarFile(getUsername());
+		if (!file.exists()) {
+			progress.setError("头像保存出错");
+			return;
+		}
+		if (!Utils.isAvatarFileSize(file)) {
+			progress.setError("头像保存出错:文件过大");
+			return;
+		}
+		HttpEntity parts = getFilePart(file);
+
+		String url = urlFactory.getAimAvatarUrl(getUsername());
+		net.createPostThread(url, parts, progress);
+	}
+
+	// 获取上传文件时的文件HttpEntity
+	private HttpEntity getFilePart(File file) {
 		FileBody fileBody = null;
 		try {
-			File file = new File(path);
 			fileBody = new FileBody(file);
 		} catch (Exception e) {
 			Toast.makeText(application, e.toString(), Toast.LENGTH_LONG).show();
@@ -446,31 +552,63 @@ public class User {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 		builder.addPart("file", fileBody);
-		HttpEntity parts = builder.build();
-
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_avatar);
-		url += getUsername();
-
-		NetAccess network = NetAccess.getInstance();
-		network.createPostFileThread(url, parts, progress);
+		return builder.build();
 	}
 
-	public void getAvatar(NetProgress progress) {
-		String url = application.getString(R.string.url_host);
-		url += application.getString(R.string.url_avatar);
-		url += getUsername();
+	// 下载文件时对HttpEntity的特殊处理方式
+	private class FileProcessImpl implements EntityProcess {
+		private String aimName;
+		private int curVersion;
 
-		NetAccess network = NetAccess.getInstance();
-		network.createGetFileThread(url, progress, this);
+		public FileProcessImpl(String aimName, int curVersion) {
+			this.aimName = aimName;
+			this.curVersion = curVersion;
+		}
+
+		@Override
+		public String getResponse(int status, HttpEntity responseEntity) {
+			if (status != NetAccess.STATUS_SUCCESS)
+				return responseEntity.toString();
+
+			InputStream is;
+			try {
+				is = responseEntity.getContent();
+				saveAvatar(aimName, BitmapFactory.decodeStream(is), curVersion);
+				is.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return "ok";
+		}
 	}
-	
-	public void setAvatarBitmap(Bitmap bitmap) {
-		avatar = bitmap;
+
+	public void setAvatar(Bitmap avatar) {
+		setAvatarVersion(avatarVersion + 1);
+		saveAvatar(getUsername(), avatar, getAvatarVersion());
 	}
-	
+
+	public void saveAvatar(String username, Bitmap avatar, int curVersion) {
+		imgManage.saveAvatar(username, avatar, curVersion);
+	}
+
+	public Bitmap getAvatarBitmap(String aimName) {
+		return imgManage.getAvatarBitmap(aimName);
+	}
+
 	public Bitmap getAvatarBitmap() {
-		return avatar;
+		return imgManage.getAvatarBitmap(getUsername());
+	}
+
+	public Map<String, Bitmap> getAvatars() {
+		return imgManage.getAvatars();
+	}
+
+	private void setAvatarVersion(int version) {
+		avatarVersion = version;
+	}
+
+	public int getAvatarVersion() {
+		return avatarVersion;
 	}
 
 	public String getArea() {
@@ -486,6 +624,8 @@ public class User {
 	}
 
 	private void setUsername(String username) {
+		if (username == null)
+			Log.i(Utils.getLineInfo(), "somewhere to set null");
 		this.username = username;
 	}
 

@@ -3,9 +3,9 @@ package group.acm.bookshare;
 import group.acm.bookshare.function.Book;
 import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
-import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.NetProgress;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.util.Utils;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,19 +78,16 @@ public class BookListManage {
 		View view = LayoutInflater.from(activity).inflate(
 				R.layout.activity_submain_book, null);
 		mybookslistview = (ListView) view.findViewById(R.id.mybookslistview);
-
-		setItemListener();
+		mybookslistview.setVerticalFadingEdgeEnabled(false);
 		mybookslistview.setAdapter(bookAdapter);
-
-		mybookslistview.setDivider(activity.getResources().getDrawable(
-				R.color.listview_item_divider_line));
-		mybookslistview.setDividerHeight(activity.getResources()
-				.getDimensionPixelSize(R.dimen.listview_item_divider_line));
+		setItemListener();
 	}
 
 	private class BookListAdapter extends BaseAdapter {
 		private Context context;
 		private List<Map<String, Object>> datas;
+		private int personalSize;
+		private int borrowedSize;
 
 		public BookListAdapter(Context context, List<Map<String, Object>> data) {
 			this.datas = data;
@@ -99,29 +96,97 @@ public class BookListManage {
 
 		@Override
 		public int getCount() {
-			return datas.size();
+			personalSize = 0;
+			borrowedSize = 0;
+			for (Map<String, Object> data : datas) {
+				if (localUser.getUsername().equals(data.get(Book.OWNER)))
+					personalSize++;
+				else
+					borrowedSize++;
+			}
+			if (personalSize == 0 && borrowedSize == 0)
+				return 0;
+			else if (personalSize > 0 && borrowedSize > 0)
+				return personalSize + borrowedSize + 2;
+			else
+				return personalSize + borrowedSize + 1;
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return datas.get(position);
+			if (personalSize > 0 && borrowedSize > 0) {
+				if (position <= personalSize) {
+					if (position == 0)
+						return null;
+					else
+						return datas.get(position - 1);
+				} else {
+					if (position - personalSize - 1 == 0)
+						return null;
+					else
+						return datas.get(position - 2);
+				}
+			} else if (personalSize > 0 || borrowedSize > 0) {
+				if (position == 0) {
+					return null;
+				} else {
+					return datas.get(position - 1);
+				}
+			} else {
+				return null;
+			}
 		}
 
 		@Override
 		public long getItemId(int position) {
-			return position;
+			return 0;
 		}
 
 		@SuppressLint("InflateParams")
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
+		public View getView(int viewPosition, View convertView, ViewGroup parent) {
+			if (personalSize > 0 && borrowedSize > 0) {
+				if (viewPosition <= personalSize) {
+					if (viewPosition == 0)
+						convertView = getDivider("Personal");
+					else
+						convertView = getDataView(viewPosition - 1);
+				} else {
+					if (viewPosition - personalSize - 1 == 0)
+						convertView = getDivider("Borrowed");
+					else
+						convertView = getDataView(viewPosition - 2);
+				}
+			} else if (personalSize > 0 || borrowedSize > 0) {
+				if (viewPosition == 0) {
+					if (personalSize > 0)
+						convertView = getDivider("Personal");
+					else
+						convertView = getDivider("Borrowed");
+				} else {
+					convertView = getDataView(viewPosition - 1);
+				}
+			} else {
+				return null;
+			}
+			return convertView;
+		}
+
+		private View getDivider(String title) {
+			View convertView = LayoutInflater.from(context).inflate(
+					R.layout.mybooks_listview_item_divider, null);
+			TextView dividerView = (TextView) convertView
+					.findViewById(R.id.mybookslistviewitem_divider);
+			dividerView.setText(title);
+			return convertView;
+		}
+
+		private View getDataView(int dataPosition) {
 			TextView titleView;
 			TextView statusView;
 			ImageView coverView;
-			if (convertView == null) {
-				convertView = LayoutInflater.from(context).inflate(
-						R.layout.mybooks_listview_item, null);
-			}
+			View convertView = LayoutInflater.from(context).inflate(
+					R.layout.mybooks_listview_item, null);
 			coverView = (ImageView) convertView
 					.findViewById(R.id.mybookslistitem_bookimage);
 			titleView = (TextView) convertView
@@ -129,12 +194,11 @@ public class BookListManage {
 			statusView = (TextView) convertView
 					.findViewById(R.id.mybookslistitem_bookstate);
 
-			Map<String, Object> item = datas.get(position);
+			Map<String, Object> item = datas.get(dataPosition);
 
 			coverView.setImageResource(R.drawable.default_book_big);
 			titleView.setText((String) item.get(Book.NAME));
 			statusView.setText(getText(item)); // 状态显示
-			setDivider(position, convertView, item); // 设置是否显示分界
 
 			return convertView;
 		}
@@ -162,64 +226,47 @@ public class BookListManage {
 
 			return text;
 		}
-
-		private void setDivider(int position, View convertView,
-				Map<String, Object> item) {
-			TextView dividerView = (TextView) convertView
-					.findViewById(R.id.mybookslistviewitem_divider);
-			if (0 == position) {
-				dividerView.setVisibility(View.VISIBLE);
-				if (localUser.getUsername().equals(item.get(Book.OWNER)))
-					dividerView.setText("Personal Books");
-				else
-					dividerView.setText("Borrowed Books");
-			} else if (position > 0
-					&& !localUser.getUsername().equals(item.get(Book.OWNER))
-					&& localUser.getUsername().equals(
-							datas.get(position - 1).get(Book.OWNER))) {
-				dividerView.setVisibility(View.VISIBLE);
-				dividerView.setText("Borrowed Books");
-			} else {
-				dividerView.setVisibility(View.GONE);
-			}
-		}
 	}
 
 	private void setItemListener() {
-		mybookslistview.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				List<Map<String, Object>> bookList = localUser
-						.getBookListData();
-				Intent intent = new Intent(activity,
-						BookInformationActivity.class);
-				Bundle bundle = new Bundle();
-				bundle.putString("bookName", (String) bookList.get(position)
-						.get(Book.NAME));
-				bundle.putString("bookIsbn", (String) bookList.get(position)
-						.get(Book.ISBN));
-				bundle.putString("bookDescription",
-						(String) bookList.get(position).get(Book.DESCRIPTION));
-				bundle.putInt("bookImage", R.drawable.default_book_big);
-				intent.putExtra("key", bundle);
-				activity.startActivity(intent);
-			}
-		});
-
+		mybookslistview.setOnItemClickListener(new BookInfoListener());
 		mybookslistview.setOnItemLongClickListener(new JudgeListener());
 	}
 
+	private class BookInfoListener implements OnItemClickListener {
+		@SuppressWarnings("unchecked")
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
+			Log.i(Utils.getLineInfo(), "item click: position:" + position
+					+ "  id:" + id);
+			Map<String, Object> item = (Map<String, Object>) parent
+					.getItemAtPosition(position);
+			if (item == null)
+				return;
+			Intent intent = new Intent(activity, BookInformationActivity.class);
+
+			Bundle bundle = new Bundle();
+			bundle.putString("bookName", (String) item.get(Book.NAME));
+			bundle.putString("bookIsbn", (String) item.get(Book.ISBN));
+			bundle.putString("bookDescription",
+					(String) item.get(Book.DESCRIPTION));
+			bundle.putInt("bookImage", R.drawable.default_book_big);
+			intent.putExtra("key", bundle);
+			activity.startActivity(intent);
+		}
+	}
+
 	private class JudgeListener implements OnItemLongClickListener {
+		@SuppressWarnings("unchecked")
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view,
 				int position, long id) {
-			if (0 == position)
+			Map<String, Object> book = (Map<String, Object>) parent
+					.getItemAtPosition(position);
+			if (book == null)
 				return false;
-
 			Builder builder = new AlertDialog.Builder(activity)
 					.setTitle("Confirm");
-			List<Map<String, Object>> books = localUser.getBookListData();
-			Map<String, Object> book = books.get(position);
 			String text;
 			OnClickListener listener;
 			if (localUser.getUsername().equals(book.get(Book.OWNER))) {

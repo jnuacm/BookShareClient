@@ -1,19 +1,114 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@color/background_gray"
+    android:orientation="vertical"
     tools:context=".PersonInfoActivity" >
 
     <ImageView
         android:id="@+id/personal_avatar_view"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/friend_avatar_small_default" />
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_information_vertical_margin"
+        android:src="@drawable/default_friend_avatar_small" />
 
-</RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_information_vertical_margin" >
+
+        <TextView
+            android:id="@+id/personal_textview_name"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="用户名:"
+            android:textAppearance="@style/InformationTextStyle" />
+
+        <TextView
+            android:id="@+id/personal_textview_name_show"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="emtpy"
+            android:textAppearance="@style/InformationTextStyle" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_information_vertical_margin" >
+
+        <TextView
+            android:id="@+id/personal_textview_area"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="地区:"
+            android:textAppearance="@style/InformationTextStyle" />
+
+        <TextView
+            android:id="@+id/personal_textview_area_show"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="emtpy"
+            android:textAppearance="@style/InformationTextStyle" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_information_vertical_margin" >
+
+        <TextView
+            android:id="@+id/personal_textview_booknum"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="藏书量:"
+            android:textAppearance="@style/InformationTextStyle" />
+
+        <TextView
+            android:id="@+id/personal_textview_booknum_show"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="emtpy"
+            android:textAppearance="@style/InformationTextStyle" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_information_vertical_margin" >
+
+        <TextView
+            android:id="@+id/personal_textview_email"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="Email:"
+            android:textAppearance="@style/InformationTextStyle" />
+
+        <TextView
+            android:id="@+id/personal_textview_email_show"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="emtpy"
+            android:textAppearance="@style/InformationTextStyle" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/button1"
+        style="@style/MainButton"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="@dimen/activity_information_vertical_margin"
+        android:text="Button"
+        android:textSize="20sp" />
+
+</LinearLayout>

@@ -39,6 +39,12 @@
     </style>
 
     <style name="listviewItemLayout">
+        <item name="android:background">@drawable/listview_item_background</item>
+    </style>
+    
+    <style name="InformationTextStyle">
+        <item name = "android:textColor">@color/textfont_black</item>
+        <item name = "android:textSize">@dimen/information_textfont_size</item>
     </style>
 
     <style name="ButtonBarButton" />

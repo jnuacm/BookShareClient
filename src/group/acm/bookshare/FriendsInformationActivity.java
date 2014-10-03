@@ -2,6 +2,7 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.Friend;
 import group.acm.bookshare.function.HttpProcessBase;
+import group.acm.bookshare.function.ImageManage;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.NetAccess;
 import group.acm.bookshare.function.User;
@@ -11,14 +12,13 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class FriendsInformationActivity extends Activity {
 	private User friend;
@@ -47,7 +47,7 @@ public class FriendsInformationActivity extends Activity {
 
 		FriendName.setText(friend.getUsername());
 		FriendArea.setText(friend.getArea());
-		FriendImg.setImageResource(R.drawable.friend_avatar_small_default);
+		setAvatar();
 		FriendEmail.setText(friend.getEmail());
 
 		Button button = (Button) findViewById(R.id.friend_checkbook_button);
@@ -65,6 +65,7 @@ public class FriendsInformationActivity extends Activity {
 
 					@Override
 					public void statusSuccess(String response) {
+						Log.i(Utils.getLineInfo(), "获取成功");
 						Bundle bookData = new Bundle();
 						bookData.putString(Friend.NAME, friend.getUsername());
 						bookData.putString(NetAccess.RESPONSE, response);
@@ -78,33 +79,20 @@ public class FriendsInformationActivity extends Activity {
 			}
 
 		});
-
-		friend.getAvatar(new DownloadFileProgress());
 	}
 
-	private class DownloadFileProgress extends HttpProcessBase {
-		
-		public void error(String content){
-			Toast.makeText(FriendsInformationActivity.this, "错误:"+content,
-					Toast.LENGTH_LONG).show();
+	private void setAvatar() {
+		if (friend.getAvatarVersion() == ImageManage.AVATAR_VERSION_NONE) {
+			if (Friend.GROUP == friend.getIs_group()) {
+				FriendImg
+						.setImageResource(R.drawable.default_group_avatar_small);
+			} else {
+				FriendImg
+						.setImageResource(R.drawable.default_friend_avatar_small);
+			}
+		} else {
+			FriendImg.setImageBitmap(localUser.getAvatarBitmap(friend
+					.getUsername()));
 		}
-
-		@Override
-		public void statusError(String response) {
-			Toast.makeText(FriendsInformationActivity.this, "失败",
-					Toast.LENGTH_LONG).show();
-		}
-
-		@Override
-		public void statusSuccess(String response) {
-			Bitmap bitmap = friend.getAvatarBitmap();
-			Toast.makeText(FriendsInformationActivity.this, "成功",
-					Toast.LENGTH_LONG).show();
-			if (bitmap == null)
-				Toast.makeText(FriendsInformationActivity.this, "为空",
-						Toast.LENGTH_LONG).show();
-			FriendImg.setImageBitmap(bitmap);
-		}
-
 	}
 }

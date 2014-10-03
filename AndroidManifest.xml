@@ -31,17 +31,16 @@
         android:name="group.acm.bookshare.function.LocalApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.NoTitleBar" >
         <activity
             android:name="group.acm.bookshare.WelcomeActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.LoginActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -50,30 +49,25 @@
         </activity>
         <activity
             android:name="group.acm.bookshare.RegisterActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.MainActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.FriendsInformationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.BookInformationActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.FriendBooksActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.CaptureActivity"
@@ -86,13 +80,11 @@
         <activity
             android:name="group.acm.bookshare.GenerateQRCodeActivity"
             android:label="@string/title_activity_generate_qrcode"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="group.acm.bookshare.PersonInfoActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:screenOrientation="portrait" >
         </activity>
 
         <!-- push应用定义消息receiver声明 -->

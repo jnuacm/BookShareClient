@@ -1,30 +1,26 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.HttpProcessBase;
-import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.LocalApp;
+import group.acm.bookshare.function.User;
 import group.acm.bookshare.util.Utils;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Message;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 public class RegisterActivity extends Activity {
+	private User localUser;
+
 	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
+		localUser = ((LocalApp) getApplication()).getUser();
 	}
 
 	@Override
@@ -50,7 +46,6 @@ public class RegisterActivity extends Activity {
 		email = edittext.getText().toString();
 
 		edittext = (EditText) findViewById(R.id.registerarea);
-
 		area = edittext.getText().toString();
 
 		if (!(username.length() > 0 && password.length() > 0 && email.length() > 0)) {
@@ -60,31 +55,8 @@ public class RegisterActivity extends Activity {
 		if (area.length() <= 0)
 			area = "ÎÞ";
 
-		// ·ÃÎÊÍøÂç
-		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		nvps.add(new BasicNameValuePair("username", username));
-		nvps.add(new BasicNameValuePair("password", password));
-		nvps.add(new BasicNameValuePair("email", email));
-		nvps.add(new BasicNameValuePair("area", area));
-
-		String url = RegisterActivity.this.getString(R.string.url_host);
-		url += RegisterActivity.this.getString(R.string.url_register);
-		NetAccess network = NetAccess.getInstance();
-
-		network.createPostThread(url, nvps, new HttpProcessBase() {
-
-			@Override
-			public void statusError(String response) {
-				Toast.makeText(RegisterActivity.this, "×¢²áÊ§°Ü", Toast.LENGTH_LONG)
-						.show();
-			}
-
-			@Override
-			public void statusSuccess(String response) {
-				Toast.makeText(RegisterActivity.this, "×¢²á³É¹¦", Toast.LENGTH_LONG)
-						.show();
-			}
-		});
+		localUser.register(username, password, email, area,
+				HttpProcessBase.createShowProgress(this, "×¢²á³É¹¦", "×¢²áÊ§°Ü"));
 	}
 
 	public void cancel(View v) {

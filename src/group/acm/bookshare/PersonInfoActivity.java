@@ -6,14 +6,15 @@ import group.acm.bookshare.function.User;
 import group.acm.bookshare.util.Utils;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class PersonInfoActivity extends Activity {
@@ -21,19 +22,30 @@ public class PersonInfoActivity extends Activity {
 
 	private User localUser;
 
+	private ImageView avatarView;
+	private TextView nameView;
+	private TextView areaView;
+	private TextView emailView;
+	private TextView bookNumView;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_person_info);
-		LocalApp app = (LocalApp) getApplication();
-		localUser = app.getUser();
+		localUser = ((LocalApp) getApplication()).getUser();
+
+		avatarView = (ImageView) findViewById(R.id.personal_avatar_view);
+		nameView = (TextView) findViewById(R.id.personal_textview_name_show);
+		areaView = (TextView) findViewById(R.id.personal_textview_area_show);
+		emailView = (TextView) findViewById(R.id.personal_textview_email_show);
+		bookNumView = (TextView) findViewById(R.id.personal_textview_booknum_show);
+
 		setAction();
 		setInformation();
 	}
 
 	private void setAction() {
-		ImageView avatar = (ImageView) findViewById(R.id.personal_avatar_view);
-		avatar.setOnClickListener(new OnClickListener() {
+		avatarView.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -54,7 +66,13 @@ public class PersonInfoActivity extends Activity {
 	}
 
 	private void setInformation() {
-
+		Bitmap bitmap = localUser.getAvatarBitmap();
+		if (bitmap != null)
+			avatarView.setImageBitmap(bitmap);
+		nameView.setText(localUser.getUsername());
+		areaView.setText(localUser.getArea());
+		emailView.setText(localUser.getEmail());
+		bookNumView.setText(Integer.toString(localUser.getPersonBookNum()));
 	}
 
 	@Override
@@ -71,11 +89,31 @@ public class PersonInfoActivity extends Activity {
 				// Get the Uri of the selected file
 				Uri uri = data.getData();
 				String path = Utils.getPath(this, uri);
-				localUser.createAvatar(path,
-						HttpProcessBase.createShowProgress(this, "成功", "失败"));
+				Log.i(Utils.getLineInfo(), "username" + localUser.getUsername());
+				localUser.createAvatar(path, new AvatarUpdateProcess());
 			}
 			break;
 		}
 		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	private class AvatarUpdateProcess extends HttpProcessBase {
+		public void error(String content) {
+			Toast.makeText(PersonInfoActivity.this, content, Toast.LENGTH_LONG)
+					.show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			Toast.makeText(PersonInfoActivity.this, response, Toast.LENGTH_LONG)
+					.show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			Toast.makeText(PersonInfoActivity.this, "成功", Toast.LENGTH_LONG)
+					.show();
+			avatarView.setImageBitmap(localUser.getAvatarBitmap());
+		}
 	}
 }

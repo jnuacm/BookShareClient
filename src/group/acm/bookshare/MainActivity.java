@@ -1,5 +1,7 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.Friend;
+import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.TripleDESUtil;
@@ -9,14 +11,13 @@ import group.acm.bookshare.util.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
@@ -38,6 +39,7 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -135,8 +137,8 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_personal_info:
-			Intent intent = new Intent(this, PersonInfoActivity.class);
-			startActivity(intent);
+			localUser.getPersonInfo(new GetPersonInfoProcess());
+
 			break;
 		case R.id.action_sort:
 			break;
@@ -150,6 +152,33 @@ public class MainActivity extends Activity {
 			break;
 		}
 		return false;
+	}
+
+	private class GetPersonInfoProcess extends HttpProcessBase {
+		public void before() {
+			((ProgressBar) findViewById(R.id.main_progressbar))
+					.setVisibility(View.VISIBLE);
+		}
+
+		@Override
+		public void statusError(String response) {
+			showToast(response);
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			Intent intent = new Intent(MainActivity.this,
+					PersonInfoActivity.class);
+			try {
+				localUser.updateInfo(Friend.objToFriend(new JSONObject(response)));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			((ProgressBar) findViewById(R.id.main_progressbar))
+					.setVisibility(View.GONE);
+			startActivity(intent);
+		}
+
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -318,7 +347,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void friendListReload() {
-		// friendmanage.reload();
+		friendmanage.reload();
 	}
 
 	public void InformListReload() {
@@ -360,7 +389,6 @@ public class MainActivity extends Activity {
 					int id = Integer.parseInt(contentString);
 					localUser.updateRequest(id, Inform.REQUEST_STATUS_CONFIRM,
 							informmanage.getConfirmProgress(id));
-					informmanage.reload();
 					bookmanage.reload();
 					Log.i("contentString", contentString);
 

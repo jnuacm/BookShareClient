@@ -55,11 +55,6 @@ public class FriendBooksActivity extends Activity {
 		FriendBooksAdapter bookAdapter = new FriendBooksAdapter(this, books);
 		ListView bookslistview = (ListView) findViewById(R.id.friend_book_listview);
 		bookslistview.setAdapter(bookAdapter);
-
-		bookslistview.setDivider(getResources().getDrawable(
-				R.color.listview_item_divider_line));
-		bookslistview.setDividerHeight(getResources().getDimensionPixelSize(
-				R.dimen.listview_item_divider_line));
 	}
 
 	@Override

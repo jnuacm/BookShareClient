@@ -28,6 +28,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
@@ -167,118 +168,36 @@ public class NetAccess {
 	}
 
 	// /////////////////网络访问方法///////////////////////////
-
-	public void createPostFileThread(String url, HttpEntity parts,
-			NetProgress progress) {
-		pool.execute(new FilePostThread(url, parts, progress));
-	}
-
-	public void createGetFileThread(String url, NetProgress progress, User user) {
-		pool.execute(new FileGetThread(url, progress, user));
-	}
-
-	private class FilePostThread extends NetThread {
-		protected HttpEntity parts;
-
-		public FilePostThread(String url, HttpEntity parts, NetProgress progress) {
-			super(url, null, progress);
-			this.parts = parts;
-		}
-
-		@Override
-		protected HttpUriRequest getRequest() throws Exception {
-			return null;
-		}
-
-		public void run() {
-			progress.setBefore();
-			int status = STATUS_DEFAULT;
-			try {
-				HttpPost post = new HttpPost(url);
-				post.setEntity(parts);
-				HttpResponse httpResponse;
-				Log.i(Utils.getLineInfo(), "before httpclient exe");
-				httpResponse = httpClient.execute(post);
-				status = httpResponse.getStatusLine().getStatusCode();
-				HttpEntity entity = httpResponse.getEntity();
-				Log.i("NetAccess:url", url);
-				Log.i("NetAccess:status", Integer.toString(status));
-				progress.setAfter(status, "hehe");
-			} catch (Exception e) {
-				progress.setError(e.toString());
-			}
-		}
-
-	}
-
-	private class FileGetThread extends NetThread {
-		private User user;
-
-		public FileGetThread(String url, NetProgress progress, User user) {
-			super(url, null, progress);
-			this.user = user;
-		}
-
-		@Override
-		protected HttpUriRequest getRequest() throws Exception {
-			return null;
-		}
-
-		public void run() {
-			progress.setBefore();
-			int status = STATUS_DEFAULT;
-			try {
-				HttpGet get = new HttpGet(url);
-				HttpResponse httpResponse;
-				httpResponse = httpClient.execute(get);
-				status = httpResponse.getStatusLine().getStatusCode();
-				HttpEntity entity = httpResponse.getEntity();
-				Log.i("NetAccess:url", url);
-				Log.i("NetAccess:status", Integer.toString(status));
-				downloadFile(status, entity);
-				progress.setAfter(status, "hehe");
-			} catch (Exception e) {
-				progress.setError(e.toString());
-			}
-		}
-
-		private void downloadFile(int status, HttpEntity entity) {
-			if (status != NetAccess.STATUS_SUCCESS)
-				return;
-
-			InputStream is;
-			try {
-				is = entity.getContent();
-				user.setAvatarBitmap(BitmapFactory.decodeStream(is));
-				is.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	// 豆瓣访问
 	public void createDoubanThread(String url, NetProgress progress) {
 		pool.execute(new DoubanThread(url, progress));
 	}
 
 	// 通用四种访问
-	public void createPostThread(String url, List<NameValuePair> nvps,
+	public void createPostThread(String url, HttpEntity entity,
 			NetProgress progress) {
-		pool.execute(new PostThread(url, nvps, progress));
+		pool.execute(new PostThread(url, entity, progress,
+				new SimpleProcessImpl()));
 	}
 
 	public void createGetThread(String url, NetProgress progress) {
-		pool.execute(new GetThread(url, progress));
+		pool.execute(new GetThread(url, progress, new SimpleProcessImpl()));
 	}
 
-	public void createPutThread(String url, List<NameValuePair> nvps,
+	public void createPutThread(String url, HttpEntity entity,
 			NetProgress progress) {
-		pool.execute(new PutThread(url, nvps, progress));
+		pool.execute(new PutThread(url, entity, progress,
+				new SimpleProcessImpl()));
 	}
 
 	public void createDeleteThread(String url, NetProgress progress) {
-		pool.execute(new DeleteThread(url, progress));
+		pool.execute(new DeleteThread(url, progress, new SimpleProcessImpl()));
+	}
+
+	// 包含文件的网络访问
+	public void createFileGetThread(String url, NetProgress progress,
+			EntityProcess eprocess) {
+		pool.execute(new GetThread(url, progress, eprocess));
 	}
 
 	// 单独线程类从豆瓣获取图书信息(直接用httpClient会出现500错误)
@@ -330,27 +249,19 @@ public class NetAccess {
 	// //////////////通用网络线程类/////////////////
 	// 抽象线程类
 	public abstract class NetThread extends Thread {
-		protected String url;
-		protected List<NameValuePair> nvps;
-		protected NetProgress progress;
+		protected String url; // 目标url
+		protected NetProgress progress; // 进度接口
+		protected EntityProcess entityProcess; // 返回的HttpEntity的处理接口
 
-		private NetThread(String url, List<NameValuePair> nvps,
-				NetProgress progress) {
-			if (nvps != null) {
-				for (NameValuePair i : nvps) {
-					Log.i("nvps:", i.getName() + ":" + i.getValue());
-				}
-			}
+		private NetThread(String url, NetProgress progress,
+				EntityProcess entityProcess) {
 			this.url = url;
-			this.nvps = nvps;
 			this.progress = progress;
+			this.entityProcess = entityProcess;
 		}
-
-		protected abstract HttpUriRequest getRequest() throws Exception;
 
 		public void run() {
 			progress.setBefore();
-			String response = "";
 			int status = STATUS_DEFAULT;
 			try {
 				HttpUriRequest request = getRequest();
@@ -359,37 +270,64 @@ public class NetAccess {
 					httpResponse = httpClient.execute(request);
 				}
 				status = httpResponse.getStatusLine().getStatusCode();
-				HttpEntity entity = httpResponse.getEntity();
-				response = (entity != null ? EntityUtils.toString(entity) : "");
+				HttpEntity responseEntity = httpResponse.getEntity();
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
-				Log.i("NetAccess:response", Utils.decode(response));
-				progress.setAfter(status, response);
+				progress.setAfter(status,
+						entityProcess.getResponse(status, responseEntity));
 			} catch (Exception e) {
 				progress.setError(e.toString());
 			}
 		}
+
+		// 获取请求类型
+		protected abstract HttpUriRequest getRequest() throws Exception;
+	}
+
+	// HttpEntity的处理方法
+	public interface EntityProcess {
+		public String getResponse(int status, HttpEntity responseEntity);
+	}
+
+	private class SimpleProcessImpl implements EntityProcess {
+
+		@Override
+		public String getResponse(int status, HttpEntity responseEntity) {
+			try {
+				String response = (responseEntity != null ? EntityUtils
+						.toString(responseEntity) : "");
+				Log.i("NetAccess:response", Utils.decode(response));
+				return response;
+
+			} catch (Exception e) {
+				return e.toString();
+			}
+		}
+
 	}
 
 	// /////////////////////四种访问方法分别对应四种线程实现///////////////////////////////
 	public class PostThread extends NetThread {
-		private PostThread(String url, List<NameValuePair> nvps,
-				NetProgress progress) {
-			super(url, nvps, progress);
+		private HttpEntity entity;
+
+		private PostThread(String url, HttpEntity entity, NetProgress progress,
+				EntityProcess entityProcess) {
+			super(url, progress, entityProcess);
+			this.entity = entity;
 		}
 
 		@Override
 		protected HttpUriRequest getRequest() throws Exception {
 			HttpPost post = new HttpPost(url);
-			HttpEntity entity = new UrlEncodedFormEntity(nvps, HTTP.UTF_8);
 			post.setEntity(entity);
 			return post;
 		}
 	}
 
 	public class GetThread extends NetThread {
-		private GetThread(String url, NetProgress progress) {
-			super(url, null, progress);
+		private GetThread(String url, NetProgress progress,
+				EntityProcess entityProcess) {
+			super(url, progress, entityProcess);
 		}
 
 		@Override
@@ -400,22 +338,26 @@ public class NetAccess {
 	}
 
 	public class PutThread extends NetThread {
-		private PutThread(String url, List<NameValuePair> nvps,
-				NetProgress progress) {
-			super(url, nvps, progress);
+		private HttpEntity entity;
+
+		private PutThread(String url, HttpEntity entity, NetProgress progress,
+				EntityProcess entityProcess) {
+			super(url, progress, entityProcess);
+			this.entity = entity;
 		}
 
 		@Override
 		protected HttpUriRequest getRequest() throws Exception {
 			HttpPut put = new HttpPut(url);
-			put.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+			put.setEntity(entity);
 			return put;
 		}
 	}
 
 	public class DeleteThread extends NetThread {
-		private DeleteThread(String url, NetProgress progress) {
-			super(url, null, progress);
+		private DeleteThread(String url, NetProgress progress,
+				EntityProcess entityProcess) {
+			super(url, progress, entityProcess);
 		}
 
 		@Override
@@ -423,7 +365,5 @@ public class NetAccess {
 			HttpDelete delete = new HttpDelete(url);
 			return delete;
 		}
-
 	}
-
 }

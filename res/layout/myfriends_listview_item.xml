@@ -1,36 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/listviewItemLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/listview_item_gray" >
-
-    <TextView
-        android:id="@+id/myfriendslistviewitem_divider"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:background="@color/background_white"
-        android:gravity="center_horizontal"
-        android:text="Large Text"
-        android:textColor="@color/dividerfont_gray"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
+    android:layout_height="match_parent" >
 
     <ImageView
         android:id="@+id/myfriendslistitem_friendimage"
         android:layout_width="40dp"
         android:layout_height="80dp"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/myfriendslistviewitem_divider"
-        android:layout_marginLeft="5dp" />
+        android:layout_marginLeft="5dp"
+        android:src="@drawable/default_friend_avatar_small" />
 
     <TextView
         android:id="@+id/myfriendslistitem_friendname"
         android:layout_width="wrap_content"
         android:layout_height="80dp"
-        android:layout_below="@id/myfriendslistviewitem_divider"
         android:layout_centerVertical="true"
         android:layout_marginLeft="25dp"
         android:layout_toRightOf="@id/myfriendslistitem_friendimage"

@@ -1,7 +1,5 @@
 package group.acm.bookshare.function;
 
-import group.acm.bookshare.R;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +14,10 @@ public class Friend {
 	public static final String AREA = "area";
 	public static final String EMAIL = "email";
 	public static final String IS_GROUP = "is_group";
+	public static final String AVATAR_VERSION = "avatar_version";
 	public static final int GROUP = 1;
 	
+	// 返回的array转换为list
 	public static List<Map<String, Object>> jsonArrayToFriends(
 			JSONArray jsonarray) {
 		try {
@@ -33,6 +33,7 @@ public class Friend {
 		return null;
 	}
 
+	// 将JSONObject转换为Map<String,Object>
 	public static Map<String, Object> objToFriend(JSONObject item) {
 		Map<String, Object> map;
 		try {
@@ -40,13 +41,14 @@ public class Friend {
 			String email = item.getString(EMAIL);
 			String area = item.getString(AREA);
 			int is_group = item.getInt(IS_GROUP);
+			int avatarVersion = 1;//item.getInt(AVATAR_VERSION);
 
 			map = new HashMap<String, Object>();
 			map.put(NAME, name);
 			map.put(EMAIL, email);
 			map.put(AREA, area);
-			map.put("image", R.drawable.friend_avatar_small_default);
 			map.put(IS_GROUP, is_group);
+			map.put(AVATAR_VERSION, avatarVersion);
 			return map;
 		} catch (JSONException e) {
 			e.printStackTrace();

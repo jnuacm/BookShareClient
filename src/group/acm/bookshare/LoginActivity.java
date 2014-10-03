@@ -143,6 +143,7 @@ public class LoginActivity extends Activity implements Callback {
 			localUser.clearInformData();
 			localUser.addBookDataToList(response);
 			localUser.addFriendDataToList(response);
+			localUser.loadAvatars();
 			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 			startActivity(intent);
 			finish();

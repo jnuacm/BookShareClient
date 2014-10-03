@@ -10,7 +10,8 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_marginLeft="25dp"
-        android:layout_marginTop="25dp" />
+        android:layout_marginTop="25dp"
+        android:src="@drawable/default_friend_avatar_small" />
 
     <TextView
         android:id="@+id/IF_username_top"
@@ -21,7 +22,7 @@
         android:layout_marginTop="25dp"
         android:gravity="center_horizontal"
         android:text="用户名"
-        android:textColor="#000000"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
 
     <TextView
@@ -33,7 +34,7 @@
         android:layout_toRightOf="@id/IF_username_top"
         android:gravity="center_horizontal"
         android:text="未知"
-        android:textColor="#000000"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
 
     <TextView
@@ -45,7 +46,7 @@
         android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
         android:text="地区"
-        android:textColor="#000000"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
 
     <TextView
@@ -57,7 +58,7 @@
         android:layout_toRightOf="@id/IF_area_top"
         android:gravity="center_horizontal"
         android:text="未知"
-        android:textColor="#000000"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
 
     <TextView
@@ -69,7 +70,7 @@
         android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
         android:text="藏书量"
-        android:textColor="#000000"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
 
     <TextView
@@ -81,7 +82,7 @@
         android:layout_toRightOf="@id/IF_collection_top"
         android:gravity="center_horizontal"
         android:text="未知"
-        android:textColor="#111111"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
     
     <TextView
@@ -93,7 +94,7 @@
         android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
         android:text="Email"
-        android:textColor="#000000"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
 
     <TextView
@@ -105,7 +106,7 @@
         android:layout_toRightOf="@id/IF_email_top"
         android:gravity="center_horizontal"
         android:text="未知"
-        android:textColor="#111111"
+        android:textAppearance="@style/InformationTextStyle"
         android:textSize="20sp" />
 
     <Button

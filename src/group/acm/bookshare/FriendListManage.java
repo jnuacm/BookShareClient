@@ -14,6 +14,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,40 +49,76 @@ public class FriendListManage {
 	public void initFriendList() {
 		friendList = localUser.getFriendListData();
 
-		friendAdapter = new FriendListAdapter(activity, friendList);
+		friendAdapter = new FriendListAdapter(activity, friendList,
+				localUser.getAvatars());
 
 		View view = LayoutInflater.from(activity).inflate(
 				R.layout.activity_submain_friend, null);
 		myfriendslistview = (ListView) view
 				.findViewById(R.id.myfirendslistview);
+		myfriendslistview.setVerticalFadingEdgeEnabled(false);
 
 		myfriendslistview.setAdapter(friendAdapter);
 
 		setItemListener();
-		
-		myfriendslistview.setDivider(activity.getResources().getDrawable(
-				R.color.listview_item_divider_line));
-		myfriendslistview.setDividerHeight(activity.getResources()
-				.getDimensionPixelSize(R.dimen.listview_item_divider_line));
 	}
 
 	private class FriendListAdapter extends BaseAdapter {
 		private Context context;
 		private List<Map<String, Object>> datas;
+		private Map<String, Bitmap> avatarMap;
 
-		public FriendListAdapter(Context context, List<Map<String, Object>> data) {
+		private int friendsSize;
+		private int groupSize;
+
+		public FriendListAdapter(Context context,
+				List<Map<String, Object>> data, Map<String, Bitmap> avatarMap) {
 			this.datas = data;
 			this.context = context;
+			this.avatarMap = avatarMap;
 		}
 
 		@Override
 		public int getCount() {
-			return datas.size();
+			friendsSize = 0;
+			groupSize = 0;
+			for (Map<String, Object> data : datas) {
+				if ((Integer) data.get(Friend.IS_GROUP) != Friend.GROUP)
+					friendsSize++;
+				else
+					groupSize++;
+			}
+			if (friendsSize == 0 && groupSize == 0)
+				return 0;
+			else if (friendsSize > 0 && groupSize > 0)
+				return friendsSize + groupSize + 2;
+			else
+				return friendsSize + groupSize + 1;
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return datas.get(position);
+			if (friendsSize > 0 && groupSize > 0) {
+				if (position <= friendsSize) {
+					if (position == 0)
+						return null;
+					else
+						return datas.get(position - 1);
+				} else {
+					if (position - friendsSize - 1 == 0)
+						return null;
+					else
+						return datas.get(position - 2);
+				}
+			} else if (friendsSize > 0 || groupSize > 0) {
+				if (position == 0) {
+					return null;
+				} else {
+					return datas.get(position - 1);
+				}
+			} else {
+				return null;
+			}
 		}
 
 		@Override
@@ -91,53 +128,121 @@ public class FriendListManage {
 
 		@SuppressLint("InflateParams")
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
+		public View getView(int viewPosition, View convertView, ViewGroup parent) {
+			if (friendsSize > 0 && groupSize > 0) {
+				if (viewPosition <= friendsSize) {
+					if (viewPosition == 0)
+						convertView = getDivider("Friend");
+					else
+						convertView = getDataView(viewPosition - 1);
+				} else {
+					if (viewPosition - friendsSize - 1 == 0)
+						convertView = getDivider("Group");
+					else
+						convertView = getDataView(viewPosition - 2);
+				}
+			} else if (friendsSize > 0 || groupSize > 0) {
+				if (viewPosition == 0) {
+					if (friendsSize > 0)
+						convertView = getDivider("Friend");
+					else
+						convertView = getDivider("Group");
+				} else {
+					convertView = getDataView(viewPosition - 1);
+				}
+			} else {
+				return null;
+			}
+
+			return convertView;
+		}
+
+		private View getDivider(String title) {
+			View convertView = LayoutInflater.from(context).inflate(
+					R.layout.myfriends_listview_item_divider, null);
+			TextView dividerView = (TextView) convertView
+					.findViewById(R.id.myfriendslistviewitem_divider);
+			dividerView.setText(title);
+			return convertView;
+		}
+
+		private View getDataView(int dataPosition) {
 			TextView nameView;
 			ImageView avatarView;
-			if (convertView == null) {
-				convertView = LayoutInflater.from(context).inflate(
-						R.layout.myfriends_listview_item, null);
-			}
+			View convertView;
+			convertView = LayoutInflater.from(context).inflate(
+					R.layout.myfriends_listview_item, null);
+
 			avatarView = (ImageView) convertView
 					.findViewById(R.id.myfriendslistitem_friendimage);
 			nameView = (TextView) convertView
 					.findViewById(R.id.myfriendslistitem_friendname);
 
-			Map<String, Object> item = datas.get(position);
+			Map<String, Object> item = datas.get(dataPosition);
 
-			avatarView.setImageResource(R.drawable.friend_avatar_small_default);
+			if (avatarMap.containsKey(item.get(Friend.NAME)))
+				avatarView.setImageBitmap(avatarMap.get(item.get(Friend.NAME)));
+			else if (Friend.GROUP != (Integer) item.get(Friend.IS_GROUP))
+				avatarView
+						.setImageResource(R.drawable.default_friend_avatar_small);
+			else
+				avatarView
+						.setImageResource(R.drawable.default_group_avatar_small);
 			nameView.setText((String) item.get(Friend.NAME));
-			setDivider(position, convertView, item); // 设置是否显示分界
 
 			return convertView;
 		}
-
-		private void setDivider(int position, View convertView,
-				Map<String, Object> item) {
-			TextView dividerView = (TextView) convertView
-					.findViewById(R.id.myfriendslistviewitem_divider);
-			if (0 == position) {
-				dividerView.setVisibility(View.VISIBLE);
-				if (((Integer) item.get(Friend.IS_GROUP)) == Friend.GROUP)
-					dividerView.setText("Groups");
-				else
-					dividerView.setText("Friends");
-			} else if (position > 0
-					&& ((Integer) item.get(Friend.IS_GROUP)) == Friend.GROUP
-					&& ((Integer) datas.get(position - 1).get(Friend.IS_GROUP)) != Friend.GROUP) {
-				dividerView.setVisibility(View.VISIBLE);
-				dividerView.setText("Groups");
-			} else {
-				dividerView.setVisibility(View.GONE);
-			}
-		}
 	}
-	
+
 	private void setItemListener() {
 		myfriendslistview
 				.setOnItemClickListener(new FriendsItemClickListener());
 		myfriendslistview
 				.setOnItemLongClickListener(new FriendsItemLongClickListener());
+	}
+
+	private class FriendsItemClickListener implements OnItemClickListener {
+		@SuppressWarnings("unchecked")
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
+			Map<String, Object> item = (Map<String, Object>) parent
+					.getItemAtPosition(position);
+			if (item == null)
+				return;
+			Intent intent = new Intent(activity,
+					FriendsInformationActivity.class);
+
+			Bundle bundle = new Bundle();
+			bundle.putString(Friend.NAME, item.get(Friend.NAME).toString());
+
+			intent.putExtra("friend_info", bundle);
+			activity.startActivity(intent);
+		}
+	}
+
+	private class FriendsItemLongClickListener implements
+			OnItemLongClickListener {
+		@SuppressWarnings("unchecked")
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view,
+				int position, long id) {
+
+			Map<String, Object> item = (Map<String, Object>) parent
+					.getItemAtPosition(position);
+			if (item == null)
+				return false;
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+
+			builder.setTitle("Confirm!");
+			builder.setMessage("Are you sure to delete "
+					+ item.get(Friend.NAME) + " ?");
+			builder.setPositiveButton("Yes", new DeleteFriendConfirmListener(
+					position));
+			builder.setNegativeButton("No", null).show();
+
+			return true;
+		}
 	}
 
 	public void addFriend() {
@@ -212,39 +317,6 @@ public class FriendListManage {
 			reload(response);
 			String content = "更新好友成功";
 			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-		}
-	}
-
-	private class FriendsItemClickListener implements OnItemClickListener {
-		public void onItemClick(AdapterView<?> parent, View view, int position,
-				long id) {
-			Intent intent = new Intent(activity,
-					FriendsInformationActivity.class);
-
-			Bundle bundle = new Bundle();
-			bundle.putString(Friend.NAME,
-					friendList.get(position).get(Friend.NAME).toString());
-
-			intent.putExtra("friend_info", bundle);
-			activity.startActivity(intent);
-		}
-	}
-
-	private class FriendsItemLongClickListener implements
-			OnItemLongClickListener {
-		@Override
-		public boolean onItemLongClick(AdapterView<?> parent, View view,
-				int position, long id) {
-
-			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-
-			builder.setTitle("Confirm!");
-			builder.setMessage("Are you sure to delete this friend?");
-			builder.setPositiveButton("Yes", new DeleteFriendConfirmListener(
-					position));
-			builder.setNegativeButton("No", null).show();
-
-			return true;
 		}
 	}
 

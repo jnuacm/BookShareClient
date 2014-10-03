@@ -1,5 +1,6 @@
 package group.acm.bookshare.util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -12,10 +13,13 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class Utils {
 	// /////////push utils//////////////
@@ -41,6 +45,12 @@ public class Utils {
 	private static long lastTime;
 
 	private static Pattern reUnicode = Pattern.compile("\\\\u([0-9a-zA-Z]{4})");
+
+	public static final String JPG = "jpg";// JPG格式
+	public static final String JPEG = "jpeg";// JPEG格式
+	public static final String GIF = "gif";// GIF格式
+	public static final String PNG = "png";// PNG格式
+	public static final String BMP = "bmp";// BMP格式
 
 	public static String decode(String s) {
 		Matcher m = reUnicode.matcher(s);
@@ -110,8 +120,61 @@ public class Utils {
 		return null;
 	}
 
-	public static void getBitmap(String url, Handler handler) {
+	public static Bitmap fileToAvatarBitmap(String path) {
+		if (!isAvatarImg(path))
+			return null;
+		Options options = new Options();
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeFile(path, options);
+		options.inSampleSize = getAvatarScaleSize(options);
+		options.inJustDecodeBounds = false;
+		Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+		if (bitmap == null)
+			Log.i(Utils.getLineInfo(), "bitmap is null");
+		return bitmap;
+	}
 
+	public static boolean isAvatarImg(String path) {
+		File file = new File(path);
+		if (!file.isFile())
+			return false;
+		file.getName();
+		String fileName = file.getName();
+		String postFix = fileName.substring(fileName.lastIndexOf(".") + 1,
+				fileName.length());
+		postFix = postFix.toLowerCase();
+		Log.i(Utils.getLineInfo(), "aim: " + postFix);
+		if (postFix.equals(JPG) || postFix.equals(JPEG) || postFix.equals(PNG)
+				|| postFix.equals(BMP) || postFix.equals(GIF))
+			return true;
+		else
+			return false;
+	}
+
+	public static int getAvatarScaleSize(Options options) {
+		int reqHeight = 200;
+		int reqWidth = 200;
+
+		int height = options.outHeight;
+		int width = options.outWidth;
+		int inSampleSize = 1;
+
+		if (height > reqHeight || width > reqWidth) {
+			final int heightRatio = Math.round((float) height
+					/ (float) reqHeight);
+			final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+			inSampleSize = heightRatio < widthRatio ? widthRatio : heightRatio;
+		}
+
+		return inSampleSize;
+	}
+
+	public static boolean isAvatarFileSize(File file) {
+		if (file.length() <= 128 * 1024)
+			return true;
+		else
+			return false;
 	}
 
 	// /////////////////push method////////////////////////
