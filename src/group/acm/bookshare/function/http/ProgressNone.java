@@ -1,4 +1,5 @@
-package group.acm.bookshare.function;
+package group.acm.bookshare.function.http;
+
 
 public class ProgressNone extends HttpProcessBase {
 

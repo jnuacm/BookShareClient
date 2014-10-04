@@ -2,9 +2,9 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
 import group.acm.bookshare.function.Friend;
-import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
-import group.acm.bookshare.function.NetAccess;
+import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.util.Utils;
 
 import java.util.ArrayList;

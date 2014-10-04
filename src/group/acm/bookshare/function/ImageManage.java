@@ -31,15 +31,37 @@ public class ImageManage {
 
 	private Context appContext;
 	private Map<String, Bitmap> avatarMap; // 进程中对头像bitmap保存<username,avatar>
+	private Map<String, Bitmap> bookImgMap; // 进程中对头像bitmap保存<isbn,book>
 
 	public ImageManage(Context appContext) {
 		this.appContext = appContext;
 		avatarMap = new HashMap<String, Bitmap>();
+		bookImgMap = new HashMap<String, Bitmap>();
+	}
+
+	public void saveBookImg(String isbn, Bitmap bookImg) {
+		bookImgMap.put(isbn, bookImg);
+		setBookImgToCache(isbn, bookImg);
 	}
 
 	public void saveAvatar(String username, Bitmap avatar, int curVersion) {
 		avatarMap.put(username, avatar);
 		setAvatarToCache(username, avatar, curVersion);
+	}
+
+	private void setBookImgToCache(String isbn, Bitmap bookImg) {
+		deleteBook(isbn);
+		File booksDir = getBooksDir();
+		String filename = isbn + ".jpg";
+		File bookFile = new File(booksDir, filename);
+		try {
+			FileOutputStream fo = new FileOutputStream(bookFile);
+			bookImg.compress(Bitmap.CompressFormat.JPEG, 100, fo);
+			fo.flush();
+			fo.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void setAvatarToCache(String username, Bitmap avatar, int curVersion) {
@@ -64,6 +86,10 @@ public class ImageManage {
 		else
 			return null;
 	}
+	
+	public Map<String, Bitmap> getBookImgs(){
+		return bookImgMap;
+	}
 
 	public Map<String, Bitmap> getAvatars() {
 		return avatarMap;
@@ -74,9 +100,19 @@ public class ImageManage {
 				Context.MODE_PRIVATE);
 	}
 
-	public File getBooksFile() {
+	public File getBooksDir() {
 		return appContext.getDir(CACHE_RELATIVE_PATH_BOOKS,
 				Context.MODE_PRIVATE);
+	}
+
+	public boolean loadBookImgFromCache(String isbn) {
+		File booksDir = getBooksDir();
+		File cacheBook = new File(booksDir, isbn + ".jpg");
+		if (!cacheBook.isFile())
+			return false;
+		Bitmap bitmap = BitmapFactory.decodeFile(cacheBook.getAbsolutePath());
+		avatarMap.put(isbn, bitmap);
+		return true;
 	}
 
 	public boolean loadAvatarFromCache(String name, int curVersion) {
@@ -94,6 +130,13 @@ public class ImageManage {
 			}
 		}
 		return false;
+	}
+
+	public void deleteBook(String isbn) {
+		File booksDir = getBooksDir();
+		File bookFile = new File(booksDir, isbn + ".jpg");
+		if (bookFile.isFile())
+			bookFile.delete();
 	}
 
 	public void deleteAvatars(String name) {

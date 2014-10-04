@@ -1,4 +1,4 @@
-package group.acm.bookshare.function;
+package group.acm.bookshare.function.http;
 
 import group.acm.bookshare.R;
 import android.content.Context;
@@ -97,6 +97,13 @@ public class UrlStringFactory {
 		String url = appContext.getString(R.string.url_host);
 		url += appContext.getString(R.string.url_avatar);
 		url += aimName;
+		return url;
+	}
+
+	public String getAimBookImgUrl(String isbn) {
+		String url = appContext.getString(R.string.url_host);
+		url += appContext.getString(R.string.url_bookimg);
+		url += isbn;
 		return url;
 	}
 }

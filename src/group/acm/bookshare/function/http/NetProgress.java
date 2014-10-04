@@ -1,4 +1,4 @@
-package group.acm.bookshare.function;
+package group.acm.bookshare.function.http;
 
 public interface NetProgress {
 	public static final int STATUS_SUCCESS = 200;

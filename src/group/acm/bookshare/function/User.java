@@ -1,6 +1,11 @@
 package group.acm.bookshare.function;
 
-import group.acm.bookshare.function.NetAccess.EntityProcess;
+import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetProgress;
+import group.acm.bookshare.function.http.ProgressNone;
+import group.acm.bookshare.function.http.UrlStringFactory;
+import group.acm.bookshare.function.http.NetAccess.EntityProcess;
 import group.acm.bookshare.util.Utils;
 
 import java.io.File;
@@ -49,7 +54,9 @@ public class User {
 	private UrlStringFactory urlFactory; // url构造类
 	private NetAccess net; // 网络访问对象
 
-	// 程序的本地主用户的构造函数
+	/**
+	 * 程序的本地主用户的构造函数
+	 */
 	public User(Application application) {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
@@ -61,7 +68,9 @@ public class User {
 		net = NetAccess.getInstance();
 	}
 
-	// 其它好友用户的构造函数
+	/**
+	 * 其它好友用户的构造函数
+	 */
 	public User(Map<String, Object> userinfo, Application application) {
 		setUsername((String) userinfo.get(Friend.NAME));
 		setArea((String) userinfo.get(Friend.AREA));
@@ -172,7 +181,9 @@ public class User {
 		informs.clear();
 	}
 
-	// 将获取的网络的书本列表信息response转化成List
+	/**
+	 * 将获取的网络的书本列表信息response转化成List
+	 */
 	public void addBookDataToList(String response) {
 		JSONObject jsonobj;
 		try {
@@ -187,7 +198,9 @@ public class User {
 		}
 	}
 
-	// 将获取的网络的书本列表信息array转化成List
+	/**
+	 * 将获取的网络的书本列表信息array转化成List
+	 */
 	public void addBookDataToList(JSONArray jsonarray) {
 		for (int i = 0; i < jsonarray.length(); i++) {
 			JSONObject item;
@@ -200,7 +213,9 @@ public class User {
 		}
 	}
 
-	// 将获取的网络的好友/群组列表信息response转化成List
+	/**
+	 * 将获取的网络的好友/群组列表信息response转化成List
+	 */
 	public void addFriendDataToList(String response) {
 		try {
 			JSONObject jsonobj = new JSONObject(response);
@@ -214,7 +229,9 @@ public class User {
 		}
 	}
 
-	// 将获取的网络的消息列表信息response转化成List
+	/**
+	 * 将获取的网络的消息列表信息response转化成List
+	 */
 	public boolean addInformDataToList(String response) {
 		JSONArray jsonarray;
 		try {
@@ -264,7 +281,9 @@ public class User {
 		}
 	}
 
-	// 将书本加入到数据库
+	/**
+	 * 将书本加入到数据库
+	 */
 	private void addToDB(Bundle data, NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
@@ -347,7 +366,9 @@ public class User {
 		bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, progress);
 	}
 
-	// 构造书本的description并且创建请求
+	/**
+	 * 构造书本的description并且创建请求
+	 */
 	private void bookRequest(String aimName, Map<String, Object> book,
 			String message, int type, NetProgress progress) {
 		try {
@@ -367,7 +388,9 @@ public class User {
 		}
 	}
 
-	// 创建请求
+	/**
+	 * 创建请求
+	 */
 	private void createRequest(String aimName, int type, String description,
 			NetProgress progress) {
 		String url = urlFactory.getInformCreateUrl();
@@ -389,7 +412,9 @@ public class User {
 		}
 	}
 
-	// 获取书本列表
+	/**
+	 * 获取书本列表
+	 */
 	public void getBookList(NetProgress progress) {
 		getBookList(getUsername(), progress);
 	}
@@ -399,19 +424,25 @@ public class User {
 		net.createGetThread(url, progress);
 	}
 
-	// 获取from为自身的列表
+	/**
+	 * 获取from为自身的列表
+	 */
 	public void getSendInformList(NetProgress progress) {
 		String url = urlFactory.getInformListFromUrl(getUsername());
 		net.createGetThread(url, progress);
 	}
 
-	// 获取to为自身的列表
+	/**
+	 * 获取to为自身的列表
+	 */
 	public void getReceiveInformList(NetProgress progress) {
 		String url = urlFactory.getInformListToUrl(getUsername());
 		net.createGetThread(url, progress);
 	}
 
-	// 更新消息的status
+	/**
+	 * 更新消息的status
+	 */
 	public void updateRequest(int id, int status, NetProgress progress) {
 		String url = urlFactory.getAimInformUrl(id);
 
@@ -435,7 +466,9 @@ public class User {
 		net.createDeleteThread(url, progress);
 	}
 
-	// 获取好友列表
+	/**
+	 * 获取好友列表
+	 */
 	public void getFriendList(NetProgress progress) {
 		String url = urlFactory.getFriendListUrl();
 		net.createGetThread(url, progress);
@@ -477,7 +510,9 @@ public class User {
 		return ret;
 	}
 
-	// 通过id从书本的list中获取map对象
+	/**
+	 * 通过id从书本的list中获取map对象
+	 */
 	public Map<String, Object> getBookById(int id) {
 		for (Map<String, Object> book : books) {
 			if ((Integer) book.get(Book.ID) == id)
@@ -486,7 +521,9 @@ public class User {
 		return null;
 	}
 
-	// 通过name从好友的list中获取map对象
+	/**
+	 * 通过name从好友的list中获取map对象
+	 */
 	public Map<String, Object> getFriendByName(String name) {
 		for (Map<String, Object> friend : friends) {
 			if (name.equals(friend.get(Friend.NAME)))
@@ -495,7 +532,23 @@ public class User {
 		return null;
 	}
 
-	// 加载所有的头像(包括本人和好友)
+	public void loadBookImgs() {
+		for (Map<String, Object> book : books) {
+			loadBookImg((String) book.get(Book.ISBN));
+		}
+	}
+
+	public void loadBookImg(String isbn) {
+		if (!imgManage.loadBookImgFromCache(isbn)) {
+			String url = urlFactory.getAimBookImgUrl(isbn);
+			net.createFileGetThread(url, new ProgressNone(),
+					new BookImgProcessImpl(isbn));
+		}
+	}
+
+	/**
+	 * 加载所有的头像(包括本人和好友)
+	 */
 	public void loadAvatars() {
 		loadAvatar(getUsername(), avatarVersion);
 		for (Map<String, Object> friend : friends) {
@@ -505,7 +558,9 @@ public class User {
 		}
 	}
 
-	// 加载指定目标name的头像
+	/**
+	 * 加载指定目标name的头像
+	 */
 	public void loadAvatar(String name, int curVersion) {
 		if (curVersion == ImageManage.AVATAR_VERSION_NONE)
 			return;
@@ -514,7 +569,7 @@ public class User {
 		if (!imgManage.loadAvatarFromCache(name, curVersion)) {
 			String url = urlFactory.getAimAvatarUrl(name);
 			net.createFileGetThread(url, new ProgressNone(),
-					new FileProcessImpl(name, curVersion));
+					new AvatarProcessImpl(name, curVersion));
 		}
 	}
 
@@ -541,7 +596,9 @@ public class User {
 		net.createPostThread(url, parts, progress);
 	}
 
-	// 获取上传文件时的文件HttpEntity
+	/**
+	 * 获取上传文件时的文件HttpEntity
+	 */
 	private HttpEntity getFilePart(File file) {
 		FileBody fileBody = null;
 		try {
@@ -555,12 +612,41 @@ public class User {
 		return builder.build();
 	}
 
-	// 下载文件时对HttpEntity的特殊处理方式
-	private class FileProcessImpl implements EntityProcess {
+	/**
+	 * 下载文件时对HttpEntity的特殊处理方式
+	 */
+	private class BookImgProcessImpl implements EntityProcess {
+		private String isbn;
+
+		public BookImgProcessImpl(String isbn) {
+			this.isbn = isbn;
+		}
+
+		@Override
+		public String getResponse(int status, HttpEntity responseEntity) {
+			if (status != NetAccess.STATUS_SUCCESS)
+				return responseEntity.toString();
+
+			InputStream is;
+			try {
+				is = responseEntity.getContent();
+				saveBookImg(isbn, BitmapFactory.decodeStream(is));
+				is.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return "ok";
+		}
+	}
+
+	/**
+	 * 下载文件时对HttpEntity的特殊处理方式
+	 */
+	private class AvatarProcessImpl implements EntityProcess {
 		private String aimName;
 		private int curVersion;
 
-		public FileProcessImpl(String aimName, int curVersion) {
+		public AvatarProcessImpl(String aimName, int curVersion) {
 			this.aimName = aimName;
 			this.curVersion = curVersion;
 		}
@@ -587,6 +673,10 @@ public class User {
 		saveAvatar(getUsername(), avatar, getAvatarVersion());
 	}
 
+	public void saveBookImg(String isbn, Bitmap bookImg) {
+		imgManage.saveBookImg(isbn, bookImg);
+	}
+
 	public void saveAvatar(String username, Bitmap avatar, int curVersion) {
 		imgManage.saveAvatar(username, avatar, curVersion);
 	}
@@ -597,6 +687,10 @@ public class User {
 
 	public Bitmap getAvatarBitmap() {
 		return imgManage.getAvatarBitmap(getUsername());
+	}
+
+	public Map<String, Bitmap> getBookImgs() {
+		return imgManage.getBookImgs();
 	}
 
 	public Map<String, Bitmap> getAvatars() {

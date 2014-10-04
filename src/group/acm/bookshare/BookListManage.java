@@ -1,10 +1,10 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
-import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
-import group.acm.bookshare.function.NetProgress;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
 
 import java.util.List;
@@ -17,6 +17,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,7 +32,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//BookListManage负责对书本列表的界面、动作交互进行管理
+/**
+ * BookListManage负责对书本列表的界面、动作交互进行管理
+ */
 public class BookListManage {
 	ListView mybookslistview;
 	BookListAdapter bookAdapter;
@@ -73,7 +76,8 @@ public class BookListManage {
 
 	@SuppressLint("InflateParams")
 	public void initBookList() {
-		bookAdapter = new BookListAdapter(activity, localUser.getBookListData());
+		bookAdapter = new BookListAdapter(activity,
+				localUser.getBookListData(), localUser.getBookImgs());
 
 		View view = LayoutInflater.from(activity).inflate(
 				R.layout.activity_submain_book, null);
@@ -86,12 +90,15 @@ public class BookListManage {
 	private class BookListAdapter extends BaseAdapter {
 		private Context context;
 		private List<Map<String, Object>> datas;
+		private Map<String, Bitmap> bookImgMap;
 		private int personalSize;
 		private int borrowedSize;
 
-		public BookListAdapter(Context context, List<Map<String, Object>> data) {
+		public BookListAdapter(Context context, List<Map<String, Object>> data,
+				Map<String, Bitmap> bookImgMap) {
 			this.datas = data;
 			this.context = context;
+			this.bookImgMap = bookImgMap;
 		}
 
 		@Override
@@ -196,7 +203,10 @@ public class BookListManage {
 
 			Map<String, Object> item = datas.get(dataPosition);
 
-			coverView.setImageResource(R.drawable.default_book_big);
+			if (bookImgMap.containsKey(item.get(Book.ISBN)))
+				coverView.setImageBitmap(bookImgMap.get(item.get(Book.ISBN)));
+			else
+				coverView.setImageResource(R.drawable.default_book_big);
 			titleView.setText((String) item.get(Book.NAME));
 			statusView.setText(getText(item)); // 状态显示
 

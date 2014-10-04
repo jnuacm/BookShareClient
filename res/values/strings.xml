@@ -44,6 +44,7 @@
     <string name="url_inform_from">from/</string>
     <string name="url_inform_to">to/</string>
     <string name="url_avatar">bookshareyii/index.php/api/avatar/</string>
+    <string name="url_bookimg"></string>
 
     <!-- douban url -->
     <string name="douban_url">http://api.douban.com/book/subject/isbn/</string>

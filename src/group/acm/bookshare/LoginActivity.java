@@ -1,11 +1,12 @@
 package group.acm.bookshare;
 
-import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.LoginUserNameAdapter;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.util.Utils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +48,7 @@ public class LoginActivity extends Activity implements Callback {
 	private LoginUserNameAdapter userNameAdapter = null;
 	private ArrayList<String> datas = new ArrayList<String>();
 	private HashMap<String, String> userToPwd = new HashMap<String, String>();
-	private LinearLayout USERNAME_linear_layout;
+	private RelativeLayout USERNAME_linear_layout;
 	private int pwidth;
 	private EditText username;
 	private ImageView down_pull_image;;
@@ -61,7 +63,6 @@ public class LoginActivity extends Activity implements Callback {
 		LocalApp localapp = (LocalApp) getApplication();
 		localUser = localapp.getUser();
 		initWithApiKey(); // 绑定推送service
-		// fillInInfo();
 	}
 
 	private void initWithApiKey() {
@@ -80,12 +81,9 @@ public class LoginActivity extends Activity implements Callback {
 		password = ((TextView) findViewById(R.id.PASSWORD)).getText()
 				.toString();
 
-		// recordInfo(username, password);
-
 		userToPwd.put(username, password);
 		updata_accounts();
 		initDatas();
-
 		String userid = Utils.getPushInfo(getApplicationContext());
 
 		Log.i(Utils.getLineInfo(), "userid:" + userid);
@@ -143,6 +141,7 @@ public class LoginActivity extends Activity implements Callback {
 			localUser.clearInformData();
 			localUser.addBookDataToList(response);
 			localUser.addFriendDataToList(response);
+			localUser.loadBookImgs();
 			localUser.loadAvatars();
 			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 			startActivity(intent);
@@ -180,7 +179,7 @@ public class LoginActivity extends Activity implements Callback {
 		handler = new Handler(LoginActivity.this);
 
 		// 初始化界面组件
-		USERNAME_linear_layout = (LinearLayout) findViewById(R.id.USERNAME_linear_layout);
+		USERNAME_linear_layout = (RelativeLayout) findViewById(R.id.USERNAME_linear_layout);
 		username = (EditText) findViewById(R.id.USERNAME);
 		down_pull_image = (ImageView) findViewById(R.id.btn_select);
 
@@ -318,7 +317,6 @@ public class LoginActivity extends Activity implements Callback {
 			res = EncodingUtils.getString(buffer, "UTF-8");
 			fin.close();
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		Log.i("accounts.txt", res);
 		return res;

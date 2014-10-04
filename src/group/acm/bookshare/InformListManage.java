@@ -1,11 +1,11 @@
 package group.acm.bookshare;
 
-import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
-import group.acm.bookshare.function.NetAccess;
-import group.acm.bookshare.function.NetProgress;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
 
 import java.util.List;

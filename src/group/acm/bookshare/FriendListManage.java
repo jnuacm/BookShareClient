@@ -1,10 +1,10 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Friend;
-import group.acm.bookshare.function.HttpProcessBase;
-import group.acm.bookshare.function.HttpProgress;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.HttpProgress;
 
 import java.util.List;
 import java.util.Map;

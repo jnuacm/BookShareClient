@@ -1,8 +1,8 @@
 package group.acm.bookshare;
 
-import group.acm.bookshare.function.HttpProcessBase;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
+import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.util.Utils;
 import android.app.Activity;
 import android.content.Intent;

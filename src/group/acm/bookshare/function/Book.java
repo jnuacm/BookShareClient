@@ -1,6 +1,9 @@
 package group.acm.bookshare.function;
 
 import group.acm.bookshare.R;
+import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetProgress;
 
 import java.util.ArrayList;
 import java.util.HashMap;
