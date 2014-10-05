@@ -2,8 +2,10 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
 import group.acm.bookshare.function.LocalApp;
+import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
 
@@ -23,6 +25,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -84,10 +88,11 @@ public class BookListManage {
 		mybookslistview = (ListView) view.findViewById(R.id.mybookslistview);
 		mybookslistview.setVerticalFadingEdgeEnabled(false);
 		mybookslistview.setAdapter(bookAdapter);
+		mybookslistview.setOnScrollListener(bookAdapter);
 		setItemListener();
 	}
 
-	private class BookListAdapter extends BaseAdapter {
+	private class BookListAdapter extends PageListAdapter {
 		private Context context;
 		private List<Map<String, Object>> datas;
 		private Map<String, Bitmap> bookImgMap;
@@ -99,6 +104,7 @@ public class BookListManage {
 			this.datas = data;
 			this.context = context;
 			this.bookImgMap = bookImgMap;
+			initViewItemSize();
 		}
 
 		@Override
@@ -111,12 +117,22 @@ public class BookListManage {
 				else
 					borrowedSize++;
 			}
+
+			int allViewSize;
 			if (personalSize == 0 && borrowedSize == 0)
-				return 0;
+				allViewSize = 0;
 			else if (personalSize > 0 && borrowedSize > 0)
-				return personalSize + borrowedSize + 2;
+				allViewSize = personalSize + borrowedSize + 2;
 			else
-				return personalSize + borrowedSize + 1;
+				allViewSize = personalSize + borrowedSize + 1;
+			if (curViewSize > allViewSize)
+				curViewSize = allViewSize;
+			return curViewSize;
+		}
+		
+		@Override
+		public int loadData() {
+			return localUser.loadBookImgs();
 		}
 
 		@Override
@@ -253,16 +269,9 @@ public class BookListManage {
 					.getItemAtPosition(position);
 			if (item == null)
 				return;
-			Intent intent = new Intent(activity, BookInformationActivity.class);
-
-			Bundle bundle = new Bundle();
-			bundle.putString("bookName", (String) item.get(Book.NAME));
-			bundle.putString("bookIsbn", (String) item.get(Book.ISBN));
-			bundle.putString("bookDescription",
-					(String) item.get(Book.DESCRIPTION));
-			bundle.putInt("bookImage", R.drawable.default_book_big);
-			intent.putExtra("key", bundle);
-			activity.startActivity(intent);
+			Book book = new Book(activity.getApplication());
+			book.getBookByIsbn((String) item.get(Book.ISBN),
+					new BookInfoProcess(item));
 		}
 	}
 
@@ -340,6 +349,42 @@ public class BookListManage {
 		}
 	}
 
+	private class BookInfoProcess extends HttpProcessBase {
+		private Map<String, Object> book;
+
+		public BookInfoProcess(Map<String, Object> book) {
+			this.book = book;
+		}
+
+		public void before() {
+			activity.showProgressBar();
+		}
+
+		public void error(String content) {
+			activity.hideProgressBar();
+		}
+
+		@Override
+		public void statusError(String response) {
+			activity.hideProgressBar();
+			activity.showToast(response);
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			activity.hideProgressBar();
+
+			Intent intent = new Intent();
+			Bundle data = new Bundle();
+			data.putInt(Book.ID, (Integer) book.get(Book.ID));
+			data.putString(NetAccess.RESPONSE, response);
+			intent.putExtras(data);
+			intent.setClass(activity, BookInformationActivity.class);
+			activity.startActivity(intent);
+		}
+
+	}
+
 	private class ReturnBookProgress extends HttpProcessBase {
 		public void error(String content) {
 			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
@@ -365,6 +410,7 @@ public class BookListManage {
 	public void reload(String response) {
 		localUser.clearBookData();
 		localUser.addBookDataToList(response);
+		bookAdapter.initViewItemSize();
 		updateDisplay();
 	}
 

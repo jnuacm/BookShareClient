@@ -2,9 +2,9 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.Inform;
 import group.acm.bookshare.function.LocalApp;
+import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
-import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
 
@@ -16,16 +16,12 @@ import org.json.JSONException;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -59,6 +55,7 @@ public class InformListManage {
 		informlistview.setOnItemClickListener(new InformClickListener());
 
 		informlistview.setAdapter(informAdapter);
+		informlistview.setOnScrollListener(informAdapter);
 	}
 
 	public NetProgress getConfirmProgress(int id) {
@@ -129,23 +126,32 @@ public class InformListManage {
 		@Override
 		public void statusSuccess(String response) {
 			localUser.addInformDataToList(response);
+			informAdapter.initViewItemSize();
 			updateDisplay();
 			Utils.setHasUpdate(activity, false);
 		}
 	}
 
-	public class InformListAdapter extends BaseAdapter {
+	public class InformListAdapter extends PageListAdapter {
 		List<Map<String, Object>> informs;
 		Context context;
 
 		public InformListAdapter(Context context, List<Map<String, Object>> data) {
 			this.context = context;
 			informs = data;
+			initViewItemSize();
+		}
+		
+		@Override
+		public int loadData() {
+			return PageListAdapter.DEFAULT_PAGE_SIZE;
 		}
 
 		@Override
 		public int getCount() {
-			return informs.size();
+			if (curViewSize > informs.size())
+				curViewSize = informs.size();
+			return curViewSize;
 		}
 
 		@Override
@@ -165,6 +171,7 @@ public class InformListManage {
 
 			@Override
 			public void statusError(String response) {
+				Toast.makeText(activity, response, Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -320,6 +327,13 @@ public class InformListManage {
 						new PermittedProgress());
 				reload();
 				activity.friendListReload();
+			}
+
+			@Override
+			public void cancel() {
+				localUser.updateRequest((Integer) item.get(Inform.ID),
+						Inform.REQUEST_STATUS_CANCEL, new PermittedProgress());
+				reload();
 			}
 		}
 	}

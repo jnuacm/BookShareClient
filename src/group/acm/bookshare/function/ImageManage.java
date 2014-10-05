@@ -16,27 +16,28 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-/*
- * 头像文件
- * 保存格式：avatarusername_version.jpg
- * 保存路径:data/data/package/avatar/
+/**
+ * 图片管理类 头像文件 保存格式：avatarusername_version.jpg 保存路径:data/data/package/avatar/
  */
-
-// 图片管理类
 public class ImageManage {
+	private static ImageManage manageinstance = new ImageManage();
+
 	public static final int AVATAR_VERSION_NONE = 0;
 
 	private static final String CACHE_RELATIVE_PATH_AVATAR = "avatars";
 	private static final String CACHE_RELATIVE_PATH_BOOKS = "books";
 
-	private Context appContext;
-	private Map<String, Bitmap> avatarMap; // 进程中对头像bitmap保存<username,avatar>
-	private Map<String, Bitmap> bookImgMap; // 进程中对头像bitmap保存<isbn,book>
+	private static Context appContext;
+	private Map<String, Bitmap> avatarMap = new HashMap<String, Bitmap>(); // 进程中对头像bitmap保存<username,avatar>
+	private Map<String, Bitmap> bookImgMap = new HashMap<String, Bitmap>(); // 进程中对头像bitmap保存<isbn,book>
 
-	public ImageManage(Context appContext) {
-		this.appContext = appContext;
-		avatarMap = new HashMap<String, Bitmap>();
-		bookImgMap = new HashMap<String, Bitmap>();
+	private ImageManage() {
+
+	}
+
+	public static ImageManage getInstance(Context context) {
+		appContext = context;
+		return manageinstance;
 	}
 
 	public void saveBookImg(String isbn, Bitmap bookImg) {
@@ -86,8 +87,8 @@ public class ImageManage {
 		else
 			return null;
 	}
-	
-	public Map<String, Bitmap> getBookImgs(){
+
+	public Map<String, Bitmap> getBookImgs() {
 		return bookImgMap;
 	}
 
@@ -185,6 +186,30 @@ public class ImageManage {
 			Log.i(Utils.getLineInfo(), Boolean.toString(flag));
 			return flag;
 		}
+	}
 
+	/**
+	 * 清理过多的缓存的文件，超过OVER_SIZE则清除一半
+	 */
+	public void clearOverCacheFile() {
+		int OVER_SIZE = 10000;
+		File avatarsDir = getAvatarsDir();
+		File avatarFiles[] = avatarsDir.listFiles();
+		if (avatarFiles.length > OVER_SIZE) {
+			for (int i = 0; i < OVER_SIZE; i += 2)
+				avatarFiles[i].delete();
+		}
+
+		File booksDir = getBooksDir();
+		File bookFiles[] = booksDir.listFiles();
+		if (bookFiles.length > OVER_SIZE) {
+			for (int i = 0; i < OVER_SIZE; i += 2)
+				bookFiles[i].delete();
+		}
+	}
+
+	public void clearBitmap() {
+		avatarMap.clear();
+		bookImgMap.clear();
 	}
 }

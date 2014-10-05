@@ -1,58 +1,43 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
-import group.acm.bookshare.function.Friend;
 import group.acm.bookshare.function.LocalApp;
+import group.acm.bookshare.function.PageListAdapter;
+import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
-import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.util.Utils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class FriendBooksActivity extends Activity {
-	private String friendName;
+	private User localUser;
+	private User friend;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_friend_books);
 
-		// 获取名字、列表信息
-		List<Map<String, Object>> books = new ArrayList<Map<String, Object>>();
-		friendName = getIntent().getStringExtra(Friend.NAME);
-		String response = getIntent().getStringExtra(NetAccess.RESPONSE);
-
-		try {
-			JSONObject obj = new JSONObject(response);
-			books = Book.jsonArrayToBooks(new JSONArray(obj
-					.getString("own_book")));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		localUser = ((LocalApp) getApplication()).getUser();
+		friend = localUser.getFriend();
 
 		// 设置界面
-		FriendBooksAdapter bookAdapter = new FriendBooksAdapter(this, books);
+		FriendBooksAdapter bookAdapter = new FriendBooksAdapter(this,
+				friend.getBookListData());
 		ListView bookslistview = (ListView) findViewById(R.id.friend_book_listview);
 		bookslistview.setAdapter(bookAdapter);
 	}
@@ -64,7 +49,7 @@ public class FriendBooksActivity extends Activity {
 		return true;
 	}
 
-	private class FriendBooksAdapter extends BaseAdapter {
+	private class FriendBooksAdapter extends PageListAdapter {
 		List<Map<String, Object>> datas;
 		Context context;
 
@@ -72,11 +57,19 @@ public class FriendBooksActivity extends Activity {
 				List<Map<String, Object>> data) {
 			this.context = context;
 			datas = data;
+			initViewItemSize();
+		}
+
+		@Override
+		public int loadData() {
+			return 10;
 		}
 
 		@Override
 		public int getCount() {
-			return datas.size();
+			if (curViewSize > datas.size())
+				curViewSize = datas.size();
+			return curViewSize;
 		}
 
 		@Override
@@ -132,8 +125,8 @@ public class FriendBooksActivity extends Activity {
 			public void onClick(View v) {
 				if (Utils.isQuickClick())
 					return;
-				((LocalApp) getApplication()).getUser().borrowBook(friendName,
-						datas.get(position), new BorrowBookProgress());
+				localUser.borrowBook(friend.getUsername(), datas.get(position),
+						new BorrowBookProgress());
 			}
 
 		}

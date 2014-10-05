@@ -3,8 +3,13 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.R;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 import group.acm.bookshare.function.http.NetProgress;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,10 +21,6 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 
 @SuppressLint("HandlerLeak")
 public class Book {
@@ -33,13 +34,16 @@ public class Book {
 	public static final String PUBLISHER = "publisher";
 	public static final String DESCRIPTION = "description";
 	public static final String AUTHOR = "author";
-	public static final String COVERURL = "coverurl";
 	public static final String ISBN = "isbn";
 	public static final String OWNER = "owner";
 	public static final String HOLDER = "holder";
 	public static final String STATUS = "status";
-
-	public static String DEFAULT_BOOK_IMAGE_URL = "http://pica.nipic.com/2008-05-03/200853124434763_2.jpg";
+	public static final String IMG_URL_SMALL = "s_img";
+	public static final String IMG_URL_MIDDLE = "m_img";
+	public static final String IMG_URL_LARGE = "l_img";
+	
+	public static final String DEFAULT_IMG_URL = "http://www.ttoou.com/qqtouxiang/allimg/110619/1-110619113537.jpg";
+	
 
 	// protected List<Comment>comments;
 	protected List<String> approval;
@@ -60,16 +64,33 @@ public class Book {
 		String url = application.getString(R.string.douban_url);
 		url += isbn;
 		url += application.getString(R.string.douban_form);
-		network.createDoubanThread(url, new BookProgress(isbn, progress));
+		network.createUrlConntectionGetThread(url, new BookProgress(progress),
+				new BookInfoProcess());
+	}
+
+	private class BookInfoProcess implements StreamProcess {
+		@Override
+		public String getResponse(int status, InputStream responseStream) {
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					responseStream));
+			String ret = "";
+			String tmp;
+			try {
+				while ((tmp = br.readLine()) != null) {
+					ret += tmp;
+				}
+			} catch (IOException e) {
+				ret = e.toString();
+			}
+			return ret;
+		}
 	}
 
 	private class BookProgress extends HttpProcessBase {
 		private NetProgress progress;
-		private String isbn;
 
-		public BookProgress(String isbn, NetProgress progress) {
+		public BookProgress(NetProgress progress) {
 			this.progress = progress;
-			this.isbn = isbn;
 		}
 
 		public void error(String content) {
@@ -87,17 +108,21 @@ public class Book {
 		}
 	}
 
-	public static Bundle doubanStrToBundle(String response)
-			throws JSONException {
-		Bundle ret = new Bundle();
-		String name = "";
+	public static Map<String, Object> doubanStrToBook(String response) {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		String name = "empty";
 		String authors = "";
-		String description = "";
+		String description = "empty";
 		String publisher = "empty";
-		String isbn = "";
+		String url = DEFAULT_IMG_URL;
 
-		JSONObject bookObj = new JSONObject(response);
-		name = bookObj.getJSONObject("title").getString("$t");
+		JSONObject bookObj = new JSONObject();
+		try {
+			bookObj = new JSONObject(response);
+			name = bookObj.getJSONObject("title").getString("$t");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		try {
 			JSONArray array = bookObj.getJSONArray("author");
 			for (int i = 0; i < array.length(); i++) {
@@ -113,22 +138,41 @@ public class Book {
 		} catch (JSONException e) {
 			description = "empty";
 		}
-		JSONArray attrsArray = bookObj.getJSONArray("db:attribute");
+		try {
+			JSONArray attrsArray = bookObj.getJSONArray("db:attribute");
 
-		for (int i = 0; i < attrsArray.length(); i++) {
-			JSONObject obj = attrsArray.getJSONObject(i);
-			if ("publisher".equals(obj.getString("@name"))) {
-				publisher = obj.getString("$t");
-			} else if ("isbn13".equals(obj.getString("@name"))) {
-				isbn = obj.getString("$t");
+			for (int i = 0; i < attrsArray.length(); i++) {
+				JSONObject obj = attrsArray.getJSONObject(i);
+				if ("publisher".equals(obj.getString("@name"))) {
+					publisher = obj.getString("$t");
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		ret.putString(Book.AUTHOR, authors);
-		ret.putString(Book.DESCRIPTION, description);
-		ret.putString(Book.NAME, name);
-		ret.putString(Book.PUBLISHER, publisher);
-		ret.putString(Book.ISBN, isbn);
+		try {
+			JSONArray attrsArray = bookObj.getJSONArray("link");
+			for (int i = 0; i < attrsArray.length(); i++) {
+				JSONObject obj = attrsArray.getJSONObject(i);
+				if ("image".equals(obj.getString("@rel"))) {
+					url = obj.getString("@href");
+				}
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		String mUrl = url;
+		String lUrl = url;
+
+		ret.put(Book.AUTHOR, authors);
+		ret.put(Book.DESCRIPTION, description);
+		ret.put(Book.NAME, name);
+		ret.put(Book.PUBLISHER, publisher);
+		ret.put(Book.IMG_URL_SMALL, url);
+		ret.put(Book.IMG_URL_MIDDLE, mUrl);
+		ret.put(Book.IMG_URL_LARGE, lUrl);
 
 		return ret;
 	}
@@ -136,14 +180,14 @@ public class Book {
 	public static Map<String, Object> objToBook(JSONObject item) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		try {
-			map.put(Book.ID, item.getInt(Book.ID));
 			map.put(Book.ISBN, item.getString(Book.ISBN));
 			map.put(Book.NAME, item.getString(Book.NAME));
-			map.put(Book.COVERURL, R.drawable.default_book_big);
-			map.put(Book.DESCRIPTION, item.getString(Book.DESCRIPTION));
+			map.put(Book.IMG_URL_SMALL, DEFAULT_IMG_URL);
+			// map.put(Book.IMG_URL_SMALL, item.getString(Book.IMG_URL_SMALL));
 			map.put(Book.AUTHOR, item.getString(Book.AUTHOR));
 			map.put(Book.PUBLISHER, item.getString(Book.PUBLISHER));
 
+			map.put(Book.ID, item.getInt(Book.ID));
 			map.put(Book.OWNER, item.getString(Book.OWNER));
 			map.put(Book.HOLDER, item.getString(Book.HOLDER));
 			map.put(Book.STATUS, item.getInt(Book.STATUS));
@@ -166,5 +210,19 @@ public class Book {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static Map<String, Object> bookToDetail(Map<String, Object> book,
+			Map<String, Object> doubanBook) {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		ret.put(Book.ID, book.get(Book.ID));
+		ret.put(Book.ISBN, book.get(Book.ISBN));
+		ret.put(Book.NAME, book.get(Book.NAME));
+		ret.put(Book.IMG_URL_SMALL, book.get(Book.IMG_URL_SMALL));
+		ret.put(Book.IMG_URL_MIDDLE, doubanBook.get(Book.IMG_URL_MIDDLE));
+		ret.put(Book.IMG_URL_LARGE, doubanBook.get(Book.IMG_URL_LARGE));
+		ret.put(Book.DESCRIPTION, doubanBook.get(Book.DESCRIPTION));
+		ret.put(Book.AUTHOR, doubanBook.get(Book.AUTHOR));
+		return ret;
 	}
 }

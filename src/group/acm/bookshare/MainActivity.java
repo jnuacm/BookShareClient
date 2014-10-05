@@ -14,6 +14,8 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.baidu.android.pushservice.PushManager;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -39,7 +41,6 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -138,16 +139,11 @@ public class MainActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.action_personal_info:
 			localUser.getPersonInfo(new GetPersonInfoProcess());
-
-			break;
-		case R.id.action_sort:
-			break;
-		case R.id.action_check_own:
-			break;
-		case R.id.action_check_borrow:
 			break;
 		case R.id.action_exit:
+			localUser.logout();
 			unregisterReceiver(receiver);
+			PushManager.stopWork(this.getApplicationContext());
 			finish();
 			break;
 		}
@@ -156,12 +152,17 @@ public class MainActivity extends Activity {
 
 	private class GetPersonInfoProcess extends HttpProcessBase {
 		public void before() {
-			((ProgressBar) findViewById(R.id.main_progressbar))
-					.setVisibility(View.VISIBLE);
+			showProgressBar();
+		}
+
+		public void error(String content) {
+			hideProgressBar();
+			showToast(content);
 		}
 
 		@Override
 		public void statusError(String response) {
+			hideProgressBar();
 			showToast(response);
 		}
 
@@ -170,12 +171,12 @@ public class MainActivity extends Activity {
 			Intent intent = new Intent(MainActivity.this,
 					PersonInfoActivity.class);
 			try {
-				localUser.updateInfo(Friend.objToFriend(new JSONObject(response)));
+				localUser.updateInfo(Friend
+						.objToFriend(new JSONObject(response)));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			((ProgressBar) findViewById(R.id.main_progressbar))
-					.setVisibility(View.GONE);
+			hideProgressBar();
 			startActivity(intent);
 		}
 
@@ -201,7 +202,6 @@ public class MainActivity extends Activity {
 	}
 
 	private void InitImageView() {
-
 		underlined = (ImageView) findViewById(R.id.underlined);
 		bmpW = BitmapFactory.decodeResource(getResources(),
 				R.drawable.underlined).getWidth();// 获取图片宽度
@@ -356,6 +356,14 @@ public class MainActivity extends Activity {
 
 	public void showToast(String content) {
 		Toast.makeText(MainActivity.this, content, Toast.LENGTH_LONG).show();
+	}
+
+	public void showProgressBar() {
+		findViewById(R.id.main_progressbar).setVisibility(View.VISIBLE);
+	}
+
+	public void hideProgressBar() {
+		findViewById(R.id.main_progressbar).setVisibility(View.INVISIBLE);
 	}
 
 	// 调用扫描功能的返回结果需要在onActivitiyResult中获取

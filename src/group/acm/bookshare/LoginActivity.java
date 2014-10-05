@@ -141,8 +141,10 @@ public class LoginActivity extends Activity implements Callback {
 			localUser.clearInformData();
 			localUser.addBookDataToList(response);
 			localUser.addFriendDataToList(response);
-			localUser.loadBookImgs();
-			localUser.loadAvatars();
+			// 加载两次，预加载图片
+			//localUser.loadBookImgs();
+			//localUser.loadBookImgs();
+			localUser.loadAllAvatar();
 			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 			startActivity(intent);
 			finish();

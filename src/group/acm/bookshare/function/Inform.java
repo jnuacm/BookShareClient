@@ -50,23 +50,23 @@ public class Inform {
 
 	public static final String[] confirmButton =
 		{
-		"", "同意", "显码", "扫码", "确认", "", "确认", "", "", "",
-		"", "已还", "扫码", "显码", "确认", "", "", "确认", "", "",
+		"", "同意", "显码", "扫码", "确认", "", "确认", "", "", "确认",
+		"", "已还", "扫码", "显码", "确认", "", "", "确认", "", "确认",
 		"", "同意", "确认", "", "确认", "", "", "", "", ""};
 	public static final int[] confirmVisibility = 
 		{
-		4, 0, 0, 0, 0, 4, 0, 4, 4, 4,
-		4, 0, 0, 0, 0, 4, 4, 0, 4, 4,
+		4, 0, 0, 0, 0, 4, 0, 4, 4, 0,
+		4, 0, 0, 0, 0, 4, 4, 0, 4, 0,
 		4, 0, 0, 4, 0, 4, 4, 4, 4, 4};
 	public static final String[] cancelButton =
 		{
-		"取消", "拒绝", "取消", "取消", "", "", "", "", "", "",
-		"取消", "未还", "取消", "取消", "", "", "", "", "", "",
+		"取消", "拒绝", "取消", "", "", "", "", "", "", "",
+		"取消", "未还", "取消", "", "", "", "", "", "", "",
 		"取消", "拒绝", "", "", "", "", "", "", "", "" };
 	public static final int[] cancelVisibility =
 		{
-		0, 0, 0, 0, 4, 4, 4, 4, 4, 4,
-		0, 0, 0, 0, 4, 4, 4, 4, 4, 4,
+		0, 0, 0, 4, 4, 4, 4, 4, 4, 4,
+		0, 0, 0, 4, 4, 4, 4, 4, 4, 4,
 		0, 0, 4, 4, 4, 4, 4, 4, 4, 4};
 
 	private Map<String, Object> inform;
@@ -87,6 +87,8 @@ public class Inform {
 		public abstract void showCode();
 
 		public abstract void scanCode();
+		
+		public abstract void cancel();
 
 		public abstract void delete();
 		
@@ -246,7 +248,7 @@ public class Inform {
 		case 6:action.delete();;break;
 		case 7:break;
 		case 8:break;
-		case 9:break;
+		case 9:action.delete();break;
 		case 10:break;
 		case 11:action.permitted();break;
 		case 12:action.scanCode();break;
@@ -256,7 +258,7 @@ public class Inform {
 		case 16:break;
 		case 17:action.delete();break;
 		case 18:break;
-		case 19:break;
+		case 19:action.delete();break;
 		case 20:break;
 		case 21:action.permittedAndRefreshFriend();break;
 		case 22:action.deleteAndRefreshFriend();break;
@@ -274,8 +276,8 @@ public class Inform {
 		switch(state){
 		case 0:action.delete();break;
 		case 1:action.refused();break;
-		case 2:action.delete();break;
-		case 3:action.delete();break;
+		case 2:action.cancel();break;
+		case 3:break;
 		case 4:break;
 		case 5:break;
 		case 6:break;
@@ -284,8 +286,8 @@ public class Inform {
 		case 9:break;
 		case 10:action.delete();break;
 		case 11:action.refused();break;
-		case 12:action.delete();break;
-		case 13:action.delete();break;
+		case 12:action.cancel();break;
+		case 13:break;
 		case 14:break;
 		case 15:break;
 		case 16:break;
@@ -339,18 +341,12 @@ public class Inform {
 		if (state > 29)
 			return false;
 		switch(state){
-		//////////暂时无法delete，因此confirm直接不显示////////////
-		case 6:
-		case 17:
-		//////////////////////
 		case 5:
 		case 7:
 		case 8:
-		case 9:
 		case 15:
 		case 16:
 		case 18:
-		case 19:
 		case 23:
 		case 25:
 		case 26:

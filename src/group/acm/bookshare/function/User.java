@@ -2,10 +2,11 @@ package group.acm.bookshare.function;
 
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetAccess.EntityProcess;
+import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.function.http.ProgressNone;
 import group.acm.bookshare.function.http.UrlStringFactory;
-import group.acm.bookshare.function.http.NetAccess.EntityProcess;
 import group.acm.bookshare.util.Utils;
 
 import java.io.File;
@@ -31,23 +32,28 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
 @SuppressLint("HandlerLeak")
 public class User {
+	public static final int PERTIME_LOAD_NUMBER = 10;
+
 	private String username;
 	private String password;
 	private String area;
 	private String email;
 	private int is_group;
 	private int avatarVersion;
+	private int curLoadImgIndex;
+	private int curLoadAvatarIndex;
 	private String userid;
 
 	private List<Map<String, Object>> books; // 保存user的书本列表数据
 	private List<Map<String, Object>> friends; // 保存uesr的好友列表数据
 	private List<Map<String, Object>> informs; // 保存user的消息列表数据
+
+	private User curFriend;
 
 	private Application application;
 	private ImageManage imgManage; // 图像管理对象
@@ -63,7 +69,9 @@ public class User {
 		informs = new ArrayList<Map<String, Object>>();
 		this.application = application;
 		avatarVersion = 0;
-		imgManage = new ImageManage(application);
+		curLoadImgIndex = 0;
+		curLoadAvatarIndex = 0;
+		imgManage = ImageManage.getInstance(application);
 		urlFactory = new UrlStringFactory(application);
 		net = NetAccess.getInstance();
 	}
@@ -82,6 +90,7 @@ public class User {
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		this.application = application;
+		imgManage = ImageManage.getInstance(application);
 		urlFactory = new UrlStringFactory(application);
 		net = NetAccess.getInstance();
 	}
@@ -150,6 +159,8 @@ public class User {
 		books.clear();
 		friends.clear();
 		informs.clear();
+		imgManage.clearBitmap();
+		imgManage.clearOverCacheFile();
 	}
 
 	public int getPersonBookNum() {
@@ -253,14 +264,16 @@ public class User {
 
 	public void addBook(String isbn, NetProgress progress) {
 		Book book = new Book(this.application);
-		book.getBookByIsbn(isbn, new DoubanBookProgress(progress));
+		book.getBookByIsbn(isbn, new DoubanBookProgress(isbn, progress));
 	}
 
 	private class DoubanBookProgress extends HttpProcessBase {
-		public NetProgress progress;
+		private NetProgress progress;
+		private String isbn;
 
-		public DoubanBookProgress(NetProgress progress) {
+		public DoubanBookProgress(String isbn, NetProgress progress) {
 			this.progress = progress;
+			this.isbn = isbn;
 		}
 
 		@Override
@@ -270,31 +283,27 @@ public class User {
 
 		@Override
 		public void statusSuccess(String response) {
-
-			try {
-				addToDB(Book.doubanStrToBundle(response), progress);
-				progress.setProcess(50);
-			} catch (JSONException e) {
-				progress.setError(e.toString());
-			}
-
+			Map<String, Object> book = Book.doubanStrToBook(response);
+			book.put(Book.ISBN, isbn);
+			addToDB(book, progress);
+			progress.setProcess(50);
 		}
 	}
 
 	/**
 	 * 将书本加入到数据库
 	 */
-	private void addToDB(Bundle data, NetProgress progress) {
+	private void addToDB(Map<String, Object> data, NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
-		nvps.add(new BasicNameValuePair(Book.NAME, data.getString(Book.NAME)));
-		nvps.add(new BasicNameValuePair(Book.ISBN, data.getString(Book.ISBN)));
-		nvps.add(new BasicNameValuePair(Book.AUTHOR, data
-				.getString(Book.AUTHOR)));
-		nvps.add(new BasicNameValuePair(Book.DESCRIPTION, data
-				.getString(Book.DESCRIPTION)));
-		nvps.add(new BasicNameValuePair(Book.PUBLISHER, data
-				.getString(Book.PUBLISHER)));
+		nvps.add(new BasicNameValuePair(Book.NAME, (String) data.get(Book.NAME)));
+		nvps.add(new BasicNameValuePair(Book.ISBN, (String) data.get(Book.ISBN)));
+		nvps.add(new BasicNameValuePair(Book.AUTHOR, (String) data
+				.get(Book.AUTHOR)));
+		nvps.add(new BasicNameValuePair(Book.DESCRIPTION, (String) data
+				.get(Book.DESCRIPTION)));
+		nvps.add(new BasicNameValuePair(Book.PUBLISHER, (String) data
+				.get(Book.PUBLISHER)));
 		nvps.add(new BasicNameValuePair(Book.STATUS, Integer
 				.toString(Book.STATUS_BORROW)));
 
@@ -521,6 +530,11 @@ public class User {
 		return null;
 	}
 
+	public void getUrlBookImg(String url, NetProgress progress,
+			StreamProcess process) {
+		net.createUrlConntectionGetThread(url, progress, process);
+	}
+
 	/**
 	 * 通过name从好友的list中获取map对象
 	 */
@@ -532,30 +546,43 @@ public class User {
 		return null;
 	}
 
-	public void loadBookImgs() {
-		for (Map<String, Object> book : books) {
-			loadBookImg((String) book.get(Book.ISBN));
+	public int loadBookImgs() {
+		int i;
+		for (i = 0; i < User.PERTIME_LOAD_NUMBER
+				&& curLoadImgIndex < books.size(); i++, curLoadImgIndex++) {
+			Map<String, Object> book = books.get(curLoadImgIndex);
+			loadBookImg(book);
 		}
+		return i;
 	}
 
-	public void loadBookImg(String isbn) {
-		if (!imgManage.loadBookImgFromCache(isbn)) {
-			String url = urlFactory.getAimBookImgUrl(isbn);
-			net.createFileGetThread(url, new ProgressNone(),
-					new BookImgProcessImpl(isbn));
+	public void loadBookImg(Map<String, Object> book) {
+		if (!imgManage.loadBookImgFromCache((String) book.get(Book.ISBN))) {
+			String url = (String) book.get(Book.IMG_URL_SMALL);
+			net.createUrlConntectionGetThread(url, new ProgressNone(),
+					new BookImgProcessImpl((String) book.get(Book.ISBN)));
 		}
 	}
 
 	/**
 	 * 加载所有的头像(包括本人和好友)
 	 */
-	public void loadAvatars() {
+	public void loadAllAvatar() {
 		loadAvatar(getUsername(), avatarVersion);
-		for (Map<String, Object> friend : friends) {
+		loadAvatars();
+		loadAvatars();
+	}
+
+	public int loadAvatars() {
+		int i;
+		for (i = 0; i < User.PERTIME_LOAD_NUMBER
+				&& curLoadAvatarIndex < friends.size(); i++, curLoadAvatarIndex++) {
+			Map<String, Object> friend = friends.get(curLoadAvatarIndex);
 			String name = (String) friend.get(Friend.NAME);
 			int version = (Integer) friend.get(Friend.AVATAR_VERSION);
 			loadAvatar(name, version);
 		}
+		return i;
 	}
 
 	/**
@@ -615,7 +642,7 @@ public class User {
 	/**
 	 * 下载文件时对HttpEntity的特殊处理方式
 	 */
-	private class BookImgProcessImpl implements EntityProcess {
+	private class BookImgProcessImpl implements StreamProcess {
 		private String isbn;
 
 		public BookImgProcessImpl(String isbn) {
@@ -623,19 +650,16 @@ public class User {
 		}
 
 		@Override
-		public String getResponse(int status, HttpEntity responseEntity) {
+		public String getResponse(int status, InputStream responseStream) {
 			if (status != NetAccess.STATUS_SUCCESS)
-				return responseEntity.toString();
-
-			InputStream is;
+				return "图片加载失败";
+			String ret = "ok";
 			try {
-				is = responseEntity.getContent();
-				saveBookImg(isbn, BitmapFactory.decodeStream(is));
-				is.close();
+				saveBookImg(isbn, BitmapFactory.decodeStream(responseStream));
 			} catch (Exception e) {
-				e.printStackTrace();
+				ret = e.toString();
 			}
-			return "ok";
+			return ret;
 		}
 	}
 
@@ -703,6 +727,14 @@ public class User {
 
 	public int getAvatarVersion() {
 		return avatarVersion;
+	}
+
+	public void setFriend(User friend) {
+		curFriend = friend;
+	}
+
+	public User getFriend() {
+		return curFriend;
 	}
 
 	public String getArea() {

@@ -2,6 +2,7 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.Friend;
 import group.acm.bookshare.function.LocalApp;
+import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.HttpProgress;
@@ -22,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -59,11 +59,12 @@ public class FriendListManage {
 		myfriendslistview.setVerticalFadingEdgeEnabled(false);
 
 		myfriendslistview.setAdapter(friendAdapter);
+		myfriendslistview.setOnScrollListener(friendAdapter);
 
 		setItemListener();
 	}
 
-	private class FriendListAdapter extends BaseAdapter {
+	private class FriendListAdapter extends PageListAdapter {
 		private Context context;
 		private List<Map<String, Object>> datas;
 		private Map<String, Bitmap> avatarMap;
@@ -76,6 +77,7 @@ public class FriendListManage {
 			this.datas = data;
 			this.context = context;
 			this.avatarMap = avatarMap;
+			initViewItemSize();
 		}
 
 		@Override
@@ -88,12 +90,16 @@ public class FriendListManage {
 				else
 					groupSize++;
 			}
+			int allViewSize;
 			if (friendsSize == 0 && groupSize == 0)
-				return 0;
+				allViewSize = 0;
 			else if (friendsSize > 0 && groupSize > 0)
-				return friendsSize + groupSize + 2;
+				allViewSize = friendsSize + groupSize + 2;
 			else
-				return friendsSize + groupSize + 1;
+				allViewSize = friendsSize + groupSize + 1;
+			if (curViewSize > allViewSize)
+				curViewSize = allViewSize;
+			return curViewSize;
 		}
 
 		@Override
@@ -192,6 +198,11 @@ public class FriendListManage {
 
 			return convertView;
 		}
+
+		@Override
+		public int loadData() {
+			return localUser.loadAvatars();
+		}
 	}
 
 	private void setItemListener() {
@@ -212,10 +223,9 @@ public class FriendListManage {
 			Intent intent = new Intent(activity,
 					FriendsInformationActivity.class);
 
-			Bundle bundle = new Bundle();
-			bundle.putString(Friend.NAME, item.get(Friend.NAME).toString());
-
-			intent.putExtra("friend_info", bundle);
+			Bundle data = new Bundle();
+			data.putString(Friend.NAME, item.get(Friend.NAME).toString());
+			intent.putExtras(data);
 			activity.startActivity(intent);
 		}
 	}
@@ -347,6 +357,7 @@ public class FriendListManage {
 	public void reload(String response) {
 		localUser.clearFriendData();
 		localUser.addFriendDataToList(response);
+		friendAdapter.initViewItemSize();
 		updateDisplay();
 	}
 }

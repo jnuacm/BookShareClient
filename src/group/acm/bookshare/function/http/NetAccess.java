@@ -2,9 +2,8 @@ package group.acm.bookshare.function.http;
 
 import group.acm.bookshare.util.Utils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
@@ -16,7 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -87,11 +85,11 @@ public class NetAccess {
 			HttpProtocolParams.setUseExpectContinue(params, true);
 
 			// 设置连接管理器的超时
-			ConnManagerParams.setTimeout(params, 10000);
+			ConnManagerParams.setTimeout(params, 3000);
 			// 设置连接超时
-			HttpConnectionParams.setConnectionTimeout(params, 10000);
+			HttpConnectionParams.setConnectionTimeout(params, 3000);
 			// 设置socket超时
-			HttpConnectionParams.setSoTimeout(params, 10000);
+			HttpConnectionParams.setSoTimeout(params, 3000);
 
 			// 设置http https支持
 			SchemeRegistry schReg = new SchemeRegistry();
@@ -162,9 +160,12 @@ public class NetAccess {
 	}
 
 	// /////////////////网络访问方法///////////////////////////
-	// 豆瓣访问
-	public void createDoubanThread(String url, NetProgress progress) {
-		pool.execute(new DoubanThread(url, progress));
+	/**
+	 * UrlConnection线程获取方法
+	 */
+	public void createUrlConntectionGetThread(String url, NetProgress progress,
+			StreamProcess process) {
+		pool.execute(new UrlConnectionThread(url, progress, process));
 	}
 
 	// 通用四种访问
@@ -195,13 +196,16 @@ public class NetAccess {
 	}
 
 	// 单独线程类从豆瓣获取图书信息(直接用httpClient会出现500错误)
-	public class DoubanThread extends Thread {
+	public class UrlConnectionThread extends Thread {
 		String url;
 		NetProgress progress;
+		StreamProcess process;
 
-		public DoubanThread(String url, NetProgress progress) {
+		public UrlConnectionThread(String url, NetProgress progress,
+				StreamProcess process) {
 			this.url = url;
 			this.progress = progress;
+			this.process = process;
 		}
 
 		public void run() {
@@ -212,32 +216,29 @@ public class NetAccess {
 			try {
 				HttpURLConnection conn = (HttpURLConnection) new URL(this.url)
 						.openConnection();
-				synchronized (conn) {
-					conn.setConnectTimeout(5000);
-					conn.setRequestMethod("GET");
-					GZIPInputStream gis = (GZIPInputStream) conn.getContent();
-					BufferedReader br = new BufferedReader(
-							new InputStreamReader(gis));
-					Log.i("douban response", conn.getContentType());
-					String tmp;
-					while ((tmp = br.readLine()) != null) {
-						response += tmp;
-					}
-					gis.close();
-					status = conn.getResponseCode();
-					conn.disconnect();
-				}
-
+				conn.setConnectTimeout(5000);
+				conn.setRequestMethod("GET");
+				InputStream is = conn.getInputStream();
+				status = conn.getResponseCode();
+				response = process.getResponse(status, is);
+				is.close();
+				conn.disconnect();
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
 				Log.i("NetAccess:response", response);
-
 				progress.setAfter(status, response);
 
 			} catch (Exception e) {
 				progress.setError(e.toString());
 			}
 		}
+	}
+
+	/**
+	 * UrlConnection的Stream处理方法
+	 */
+	public interface StreamProcess {
+		public String getResponse(int status, InputStream responseStream);
 	}
 
 	// //////////////通用网络线程类/////////////////
@@ -267,8 +268,9 @@ public class NetAccess {
 				HttpEntity responseEntity = httpResponse.getEntity();
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
-				progress.setAfter(status,
-						entityProcess.getResponse(status, responseEntity));
+				String response = entityProcess.getResponse(status,
+						responseEntity);
+				progress.setAfter(status, response);
 			} catch (Exception e) {
 				progress.setError(e.toString());
 			}
@@ -278,7 +280,9 @@ public class NetAccess {
 		protected abstract HttpUriRequest getRequest() throws Exception;
 	}
 
-	// HttpEntity的处理方法
+	/**
+	 * HttpEntity的处理方法
+	 */
 	public interface EntityProcess {
 		public String getResponse(int status, HttpEntity responseEntity);
 	}
