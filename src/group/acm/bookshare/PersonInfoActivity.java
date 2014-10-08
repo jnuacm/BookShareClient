@@ -40,6 +40,7 @@ public class PersonInfoActivity extends Activity {
 		emailView = (TextView) findViewById(R.id.personal_textview_email_show);
 		bookNumView = (TextView) findViewById(R.id.personal_textview_booknum_show);
 
+		localUser.loadAvatar(new AvatarUpdateProcess());
 		setAction();
 		setInformation();
 	}
@@ -113,7 +114,9 @@ public class PersonInfoActivity extends Activity {
 		public void statusSuccess(String response) {
 			Toast.makeText(PersonInfoActivity.this, "³É¹¦", Toast.LENGTH_LONG)
 					.show();
-			avatarView.setImageBitmap(localUser.getAvatarBitmap());
+			Bitmap avatar = localUser.getAvatarBitmap();
+			if (avatar != null)
+				avatarView.setImageBitmap(avatar);
 		}
 	}
 }

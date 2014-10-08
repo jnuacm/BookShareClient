@@ -14,7 +14,7 @@ public class Friend {
 	public static final String AREA = "area";
 	public static final String EMAIL = "email";
 	public static final String IS_GROUP = "is_group";
-	public static final String AVATAR_VERSION = "avatar_version";
+	public static final String AVATAR_VERSION = "avatar";
 	public static final int GROUP = 1;
 	
 	// 返回的array转换为list
@@ -41,7 +41,7 @@ public class Friend {
 			String email = item.getString(EMAIL);
 			String area = item.getString(AREA);
 			int is_group = item.getInt(IS_GROUP);
-			int avatarVersion = 1;//item.getInt(AVATAR_VERSION);
+			int avatarVersion = item.getInt(AVATAR_VERSION);
 
 			map = new HashMap<String, Object>();
 			map.put(NAME, name);

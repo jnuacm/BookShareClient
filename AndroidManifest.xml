@@ -28,18 +28,18 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
 
     <application
-        android:name="group.acm.bookshare.function.LocalApp"
+        android:name=".function.LocalApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar" >
         <activity
-            android:name="group.acm.bookshare.WelcomeActivity"
+            android:name=".WelcomeActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.LoginActivity"
+            android:name=".LoginActivity"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,29 +48,29 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="group.acm.bookshare.RegisterActivity"
+            android:name=".RegisterActivity"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.MainActivity"
+            android:name=".MainActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.FriendsInformationActivity"
+            android:name=".FriendsInformationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.BookInformationActivity"
+            android:name=".BookInformationActivity"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.FriendBooksActivity"
+            android:name=".FriendBooksActivity"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.CaptureActivity"
+            android:name=".CaptureActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/title_activity_capture"
             android:screenOrientation="portrait"
@@ -78,17 +78,21 @@
             android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.GenerateQRCodeActivity"
+            android:name=".GenerateQRCodeActivity"
             android:label="@string/title_activity_generate_qrcode"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="group.acm.bookshare.PersonInfoActivity"
+            android:name=".PersonInfoActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".GroupMemberActivity"
             android:screenOrientation="portrait" >
         </activity>
 
         <!-- push应用定义消息receiver声明 -->
-        <receiver android:name="group.acm.bookshare.PushMessageReceiver" >
+        <receiver android:name=".PushMessageReceiver" >
             <intent-filter>
 
                 <!-- 接收push消息 -->

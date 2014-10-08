@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -34,7 +35,8 @@ public class FriendsInformationActivity extends Activity {
 	private TextView FriendName;
 	private TextView FriendArea;
 	private TextView FriendEmail;
-	private Button button;
+	private Button checkBooks;
+	private Button checkFriends;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -52,10 +54,23 @@ public class FriendsInformationActivity extends Activity {
 		FriendImg = (ImageView) findViewById(R.id.IF_img);
 		FriendEmail = (TextView) findViewById(R.id.IF_email);
 		FriendCollection = (TextView) findViewById(R.id.IF_collection);
-		button = (Button) findViewById(R.id.friend_checkbook_button);
+		checkBooks = (Button) findViewById(R.id.friend_checkbook_button);
+		checkFriends = (Button) findViewById(R.id.group_checkfriend_button);
 
 		setInformation();
-		button.setOnClickListener(new OnClickListener() {
+		setButtons();
+	}
+
+	private void setInformation() {
+		FriendName.setText(friend.getUsername());
+		FriendArea.setText(friend.getArea());
+		setAvatar();
+		FriendEmail.setText(friend.getEmail());
+		FriendCollection.setText(Integer.toString(friend.getPersonBookNum()));
+	}
+
+	private void setButtons() {
+		checkBooks.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				if (Utils.isQuickClick())
@@ -63,14 +78,40 @@ public class FriendsInformationActivity extends Activity {
 				friend.getBookList(new BooksLoadProgress());
 			}
 		});
+		if (friend.getIs_group() == Friend.GROUP) {
+			checkFriends.setVisibility(View.VISIBLE);
+			checkFriends.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					friend.getFriendList(new UpdateFriendsProgress());
+				}
+			});
+		} else
+			checkFriends.setVisibility(View.INVISIBLE);
 	}
-	
-	private void setInformation(){
-		FriendName.setText(friend.getUsername());
-		FriendArea.setText(friend.getArea());
-		setAvatar();
-		FriendEmail.setText(friend.getEmail());
-		FriendCollection.setText(Integer.toString(friend.getPersonBookNum()));
+
+	private class UpdateFriendsProgress extends HttpProcessBase {
+		public void error(String content) {
+			Toast.makeText(FriendsInformationActivity.this, content,
+					Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			Toast.makeText(FriendsInformationActivity.this, response,
+					Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			friend.clearFriendData();
+			friend.addFriendDataToList(response);
+			friend.deleteFriendData(localUser.getUsername());
+			Intent intent = new Intent();
+			intent.setClass(FriendsInformationActivity.this,
+					GroupMemberActivity.class);
+			startActivity(intent);
+		}
 	}
 
 	private class BooksLoadProgress extends HttpProcessBase {
@@ -109,6 +150,9 @@ public class FriendsInformationActivity extends Activity {
 
 	private void setAvatar() {
 		Bitmap avatar = friend.getAvatarBitmap();
+		if (avatar == null)
+			Log.i(Utils.getLineInfo(), "null avatar");
+		Log.i(Utils.getLineInfo(), "avatar version" + Integer.toString(friend.getAvatarVersion()));
 		if (friend.getAvatarVersion() == ImageManage.AVATAR_VERSION_NONE
 				|| avatar == null) {
 			if (Friend.GROUP == friend.getIs_group()) {

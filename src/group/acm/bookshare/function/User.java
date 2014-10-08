@@ -90,6 +90,8 @@ public class User {
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		this.application = application;
+		curLoadImgIndex = 0;
+		curLoadAvatarIndex = 0;
 		imgManage = ImageManage.getInstance(application);
 		urlFactory = new UrlStringFactory(application);
 		net = NetAccess.getInstance();
@@ -106,6 +108,7 @@ public class User {
 		setEmail((String) item.get(Friend.EMAIL));
 		setArea((String) item.get(Friend.AREA));
 		setIs_group((Integer) item.get(Friend.IS_GROUP));
+		setAvatarVersion((Integer) item.get(Friend.AVATAR_VERSION));
 	}
 
 	public void login(NetProgress progress) {
@@ -161,6 +164,8 @@ public class User {
 		informs.clear();
 		imgManage.clearBitmap();
 		imgManage.clearOverCacheFile();
+		curLoadImgIndex = 0;
+		curLoadAvatarIndex = 0;
 	}
 
 	public int getPersonBookNum() {
@@ -300,6 +305,12 @@ public class User {
 		nvps.add(new BasicNameValuePair(Book.ISBN, (String) data.get(Book.ISBN)));
 		nvps.add(new BasicNameValuePair(Book.AUTHOR, (String) data
 				.get(Book.AUTHOR)));
+		nvps.add(new BasicNameValuePair(Book.IMG_URL_SMALL, (String) data
+				.get(Book.IMG_URL_SMALL)));
+		nvps.add(new BasicNameValuePair(Book.IMG_URL_MEDIUM, (String) data
+				.get(Book.IMG_URL_MEDIUM)));
+		nvps.add(new BasicNameValuePair(Book.IMG_URL_LARGE, (String) data
+				.get(Book.IMG_URL_LARGE)));
 		nvps.add(new BasicNameValuePair(Book.DESCRIPTION, (String) data
 				.get(Book.DESCRIPTION)));
 		nvps.add(new BasicNameValuePair(Book.PUBLISHER, (String) data
@@ -489,6 +500,15 @@ public class User {
 		net.createDeleteThread(url, progress);
 	}
 
+	public void deleteFriendData(String aimName) {
+		for (Map<String, Object> friend : friends) {
+			if (aimName.equals(friend.get(Friend.NAME))) {
+				friends.remove(friend);
+				return;
+			}
+		}
+	}
+
 	public String informMapToStr(Map<String, Object> item) {
 		String ret = (String) item.get(Inform.TIME);
 		ret += ("\nfrom:" + item.get(Inform.FROM));
@@ -546,6 +566,15 @@ public class User {
 		return null;
 	}
 
+	public void loadInitImgs(NetProgress progress) {
+		int i;
+		for (i = 0; i < 2 * User.PERTIME_LOAD_NUMBER
+				&& curLoadImgIndex < books.size(); i++, curLoadImgIndex++) {
+			Map<String, Object> book = books.get(curLoadImgIndex);
+			loadBookImg(book, progress);
+		}
+	}
+
 	public int loadBookImgs() {
 		int i;
 		for (i = 0; i < User.PERTIME_LOAD_NUMBER
@@ -557,20 +586,39 @@ public class User {
 	}
 
 	public void loadBookImg(Map<String, Object> book) {
+		loadBookImg(book, new ProgressNone());
+	}
+
+	public void loadBookImg(Map<String, Object> book, NetProgress progress) {
 		if (!imgManage.loadBookImgFromCache((String) book.get(Book.ISBN))) {
 			String url = (String) book.get(Book.IMG_URL_SMALL);
-			net.createUrlConntectionGetThread(url, new ProgressNone(),
+			net.createUrlConntectionGetThread(url, progress,
 					new BookImgProcessImpl((String) book.get(Book.ISBN)));
 		}
 	}
+	
+	public void clearBookBitmap(){
+		curLoadImgIndex = 0;
+		imgManage.clearBookBitmap();
+	}
+	
+	public void clearAvatarBitmap(){
+		curLoadAvatarIndex = 0;
+		imgManage.clearAvatarBitmap();
+	}
 
 	/**
-	 * 加载所有的头像(包括本人和好友)
+	 * 加载初始头像
 	 */
-	public void loadAllAvatar() {
-		loadAvatar(getUsername(), avatarVersion);
-		loadAvatars();
-		loadAvatars();
+	public void loadInitAvatar(NetProgress progress) {
+		int i;
+		for (i = 0; i < 2 * User.PERTIME_LOAD_NUMBER
+				&& curLoadAvatarIndex < friends.size(); i++, curLoadAvatarIndex++) {
+			Map<String, Object> friend = friends.get(curLoadAvatarIndex);
+			String name = (String) friend.get(Friend.NAME);
+			int version = (Integer) friend.get(Friend.AVATAR_VERSION);
+			loadAvatar(name, version, progress);
+		}
 	}
 
 	public int loadAvatars() {
@@ -585,18 +633,26 @@ public class User {
 		return i;
 	}
 
+	public void loadAvatar(NetProgress progress) {
+		loadAvatar(getUsername(), getAvatarVersion(), progress);
+	}
+
+	public void loadAvatar(String name, int curVersion) {
+		loadAvatar(name, curVersion, new ProgressNone());
+	}
+
 	/**
 	 * 加载指定目标name的头像
 	 */
-	public void loadAvatar(String name, int curVersion) {
+	public void loadAvatar(String name, int curVersion, NetProgress progress) {
 		if (curVersion == ImageManage.AVATAR_VERSION_NONE)
 			return;
 		Log.i(Utils.getLineInfo(), "before load from cache : " + name
 				+ " version: " + Integer.toString(curVersion));
 		if (!imgManage.loadAvatarFromCache(name, curVersion)) {
 			String url = urlFactory.getAimAvatarUrl(name);
-			net.createFileGetThread(url, new ProgressNone(),
-					new AvatarProcessImpl(name, curVersion));
+			net.createFileGetThread(url, progress, new AvatarProcessImpl(name,
+					curVersion));
 		}
 	}
 

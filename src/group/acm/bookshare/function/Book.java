@@ -38,14 +38,12 @@ public class Book {
 	public static final String OWNER = "owner";
 	public static final String HOLDER = "holder";
 	public static final String STATUS = "status";
-	public static final String IMG_URL_SMALL = "s_img";
-	public static final String IMG_URL_MIDDLE = "m_img";
-	public static final String IMG_URL_LARGE = "l_img";
+	public static final String IMG_URL_SMALL = "small_img";
+	public static final String IMG_URL_MEDIUM = "medium_img";
+	public static final String IMG_URL_LARGE = "large_img";
 	
 	public static final String DEFAULT_IMG_URL = "http://www.ttoou.com/qqtouxiang/allimg/110619/1-110619113537.jpg";
 	
-
-	// protected List<Comment>comments;
 	protected List<String> approval;
 	protected List<String> lables;
 
@@ -163,15 +161,15 @@ public class Book {
 			e.printStackTrace();
 		}
 		
-		String mUrl = url;
-		String lUrl = url;
+		String mUrl = url.replaceFirst("spic", "mpic");
+		String lUrl = url.replaceFirst("spic", "lpic");
 
 		ret.put(Book.AUTHOR, authors);
 		ret.put(Book.DESCRIPTION, description);
 		ret.put(Book.NAME, name);
 		ret.put(Book.PUBLISHER, publisher);
 		ret.put(Book.IMG_URL_SMALL, url);
-		ret.put(Book.IMG_URL_MIDDLE, mUrl);
+		ret.put(Book.IMG_URL_MEDIUM, mUrl);
 		ret.put(Book.IMG_URL_LARGE, lUrl);
 
 		return ret;
@@ -182,8 +180,9 @@ public class Book {
 		try {
 			map.put(Book.ISBN, item.getString(Book.ISBN));
 			map.put(Book.NAME, item.getString(Book.NAME));
-			map.put(Book.IMG_URL_SMALL, DEFAULT_IMG_URL);
-			// map.put(Book.IMG_URL_SMALL, item.getString(Book.IMG_URL_SMALL));
+			map.put(Book.IMG_URL_SMALL, item.getString(Book.IMG_URL_SMALL));
+			map.put(Book.IMG_URL_MEDIUM, item.getString(Book.IMG_URL_MEDIUM));
+			map.put(Book.IMG_URL_LARGE, item.getString(Book.IMG_URL_LARGE));
 			map.put(Book.AUTHOR, item.getString(Book.AUTHOR));
 			map.put(Book.PUBLISHER, item.getString(Book.PUBLISHER));
 
@@ -219,7 +218,7 @@ public class Book {
 		ret.put(Book.ISBN, book.get(Book.ISBN));
 		ret.put(Book.NAME, book.get(Book.NAME));
 		ret.put(Book.IMG_URL_SMALL, book.get(Book.IMG_URL_SMALL));
-		ret.put(Book.IMG_URL_MIDDLE, doubanBook.get(Book.IMG_URL_MIDDLE));
+		ret.put(Book.IMG_URL_MEDIUM, doubanBook.get(Book.IMG_URL_MEDIUM));
 		ret.put(Book.IMG_URL_LARGE, doubanBook.get(Book.IMG_URL_LARGE));
 		ret.put(Book.DESCRIPTION, doubanBook.get(Book.DESCRIPTION));
 		ret.put(Book.AUTHOR, doubanBook.get(Book.AUTHOR));

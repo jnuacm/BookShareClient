@@ -41,7 +41,9 @@ public class ImageManage {
 	}
 
 	public void saveBookImg(String isbn, Bitmap bookImg) {
-		bookImgMap.put(isbn, bookImg);
+		synchronized (bookImgMap) {
+			bookImgMap.put(isbn, bookImg);
+		}
 		setBookImgToCache(isbn, bookImg);
 	}
 
@@ -101,7 +103,7 @@ public class ImageManage {
 				Context.MODE_PRIVATE);
 	}
 
-	public File getBooksDir() {
+	public synchronized File getBooksDir() {
 		return appContext.getDir(CACHE_RELATIVE_PATH_BOOKS,
 				Context.MODE_PRIVATE);
 	}
@@ -112,7 +114,8 @@ public class ImageManage {
 		if (!cacheBook.isFile())
 			return false;
 		Bitmap bitmap = BitmapFactory.decodeFile(cacheBook.getAbsolutePath());
-		avatarMap.put(isbn, bitmap);
+		bookImgMap.put(isbn, bitmap);
+		Log.i(Utils.getLineInfo(), "load form local: " + isbn);
 		return true;
 	}
 
@@ -121,13 +124,15 @@ public class ImageManage {
 		File avatarFiles[] = avatarsDir.listFiles(new AvatarFilter(name));
 		Log.i(Utils.getLineInfo(),
 				name + ":" + Integer.toString(avatarFiles.length));
-		if (avatarFiles.length > 0) {
-			File cacheAvatar = avatarFiles[0];
+		for (File cacheAvatar : avatarFiles) {
 			if (curVersion == getAvatarStrVersion(name, cacheAvatar.getName())) {
 				Bitmap bitmap = BitmapFactory.decodeFile(cacheAvatar
 						.getAbsolutePath());
 				avatarMap.put(name, bitmap);
+				Log.i(Utils.getLineInfo(), "load form local: " + name);
 				return true;
+			} else {
+				cacheAvatar.delete();
 			}
 		}
 		return false;
@@ -150,10 +155,15 @@ public class ImageManage {
 
 	// 获取文件名的版本号
 	public int getAvatarStrVersion(String username, String filename) {
-		Pattern pat = Pattern.compile("^avatar" + username
-				+ "_([1-9]\\d*|0)\\.jpg$");
-		Matcher mat = pat.matcher(filename);
-		return Integer.parseInt(mat.group(1));
+		Log.i(Utils.getLineInfo(), "filename: " + filename);
+		/*
+		 * Pattern pat = Pattern.compile("^avatar" + username +
+		 * "_(\\d+)\\.jpg$"); Matcher mat = pat.matcher(filename);
+		 */
+		String tmp = filename.substring(("avatar" + username + "_").length(),
+				filename.length() - 4);// mat.group(1);
+		Log.i(Utils.getLineInfo(), "version num: " + tmp);
+		return Integer.parseInt(tmp);
 	}
 
 	// 根据用户名username获取头像File
@@ -209,7 +219,15 @@ public class ImageManage {
 	}
 
 	public void clearBitmap() {
+		clearAvatarBitmap();
+		clearBookBitmap();
+	}
+
+	public void clearAvatarBitmap() {
 		avatarMap.clear();
+	}
+
+	public void clearBookBitmap() {
 		bookImgMap.clear();
 	}
 }

@@ -56,6 +56,8 @@ public class NetAccess {
 	public static final int NETMSG_PROCESS = 20;
 	public static final int NETMSG_AFTER = 30;
 	public static final int NETMSG_ERROR = 40;
+	
+	public static final int MULTI_POOL_MAX_SIZE = 10; 
 
 	public static final String STATUS = "status";
 	public static final String RESPONSE = "response";
@@ -64,11 +66,13 @@ public class NetAccess {
 	private HttpClient httpClient;
 
 	private ExecutorService pool;
+	private ExecutorService multiPool;
 
 	private static NetAccess internetaccess = new NetAccess();
 
 	private NetAccess() {
 		pool = Executors.newSingleThreadExecutor();
+		multiPool = Executors.newFixedThreadPool(MULTI_POOL_MAX_SIZE);
 		KeyStore trustStore;
 		try {
 			trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -165,7 +169,7 @@ public class NetAccess {
 	 */
 	public void createUrlConntectionGetThread(String url, NetProgress progress,
 			StreamProcess process) {
-		pool.execute(new UrlConnectionThread(url, progress, process));
+		multiPool.execute(new UrlConnectionThread(url, progress, process));
 	}
 
 	// 通用四种访问
@@ -363,5 +367,10 @@ public class NetAccess {
 			HttpDelete delete = new HttpDelete(url);
 			return delete;
 		}
+	}
+	
+	public void poolsClose(){
+		pool.shutdown();
+		multiPool.shutdown();
 	}
 }

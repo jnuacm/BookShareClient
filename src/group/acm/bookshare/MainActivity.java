@@ -65,6 +65,10 @@ public class MainActivity extends Activity {
 
 	int listshowsize = 10;
 
+	private static final int OPTIONS_ITEM_PERSONINFO = Menu.FIRST;
+	private static final int OPTIONS_ITEM_SEARCH = Menu.FIRST + 1;
+	private static final int OPTIONS_ITEM_EXIT = Menu.FIRST + 2;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -73,7 +77,7 @@ public class MainActivity extends Activity {
 		localUser = ((LocalApp) getApplication()).getUser();
 
 		bookmanage = new BookListManage(this);
-		friendmanage = new FriendListManage(this);
+		friendmanage = new FriendListManage(this, localUser);
 		informmanage = new InformListManage(this);
 
 		viewList = new ArrayList<View>();
@@ -103,6 +107,36 @@ public class MainActivity extends Activity {
 		receiver = new MessageUpdateReceiver();
 		registerUpdateReceiver();
 		informmanage.reload();
+
+		// 加载图片
+		localUser.loadInitImgs(new BookImgsUpdateProcess());
+		localUser.loadInitAvatar(new AvatarsUpdateProcess());
+	}
+
+	private class BookImgsUpdateProcess extends HttpProcessBase {
+
+		@Override
+		public void statusError(String response) {
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			bookmanage.updateDisplay();
+		}
+
+	}
+
+	private class AvatarsUpdateProcess extends HttpProcessBase {
+
+		@Override
+		public void statusError(String response) {
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			friendmanage.updateDisplay();
+		}
+
 	}
 
 	private void registerUpdateReceiver() {
@@ -123,31 +157,56 @@ public class MainActivity extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
+		switch (currIndex) {
+		case 0:
+			menu.add(Menu.NONE, OPTIONS_ITEM_PERSONINFO, 1, "个人信息");
+			menu.add(Menu.NONE, OPTIONS_ITEM_SEARCH, 2, "搜索书本");
+			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 3, "Exit");
+			break;
+		case 1:
+			menu.add(Menu.NONE, OPTIONS_ITEM_PERSONINFO, 1, "个人信息");
+			menu.add(Menu.NONE, OPTIONS_ITEM_SEARCH, 2, "搜索书本");
+			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 3, "Exit");
+			break;
+		case 2:
+			menu.add(Menu.NONE, OPTIONS_ITEM_PERSONINFO, 1, "个人信息");
+			menu.add(Menu.NONE, OPTIONS_ITEM_SEARCH, 2, "搜索书本");
+			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 3, "Exit");
+			break;
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case OPTIONS_ITEM_PERSONINFO:
+			localUser.getPersonInfo(new GetPersonInfoProcess());
+			break;
+		case OPTIONS_ITEM_SEARCH:
+
+			break;
+		case OPTIONS_ITEM_EXIT:
+			localUser.logout();
+			unregisterReceiver(receiver);
+			PushManager.stopWork(this.getApplicationContext());
+			System.exit(0);
+			break;
+		}
+		return false;
 	}
 
 	@Override
 	public void onResume() {
 		checkUpdate();
 		super.onResume();
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_personal_info:
-			localUser.getPersonInfo(new GetPersonInfoProcess());
-			break;
-		case R.id.action_exit:
-			localUser.logout();
-			unregisterReceiver(receiver);
-			PushManager.stopWork(this.getApplicationContext());
-			finish();
-			break;
-		}
-		return false;
 	}
 
 	private class GetPersonInfoProcess extends HttpProcessBase {
@@ -179,7 +238,6 @@ public class MainActivity extends Activity {
 			hideProgressBar();
 			startActivity(intent);
 		}
-
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {

@@ -57,7 +57,7 @@ public class BookInformationActivity extends Activity {
 		bookDescriptionView.setText("¼ò½é£º" + detailBook.get(Book.DESCRIPTION));
 		bookImageView.setOnClickListener(new BookImgClick());
 		BookImgProcess tmp = new BookImgProcess();
-		localUser.getUrlBookImg((String) detailBook.get(Book.IMG_URL_MIDDLE),
+		localUser.getUrlBookImg((String) detailBook.get(Book.IMG_URL_MEDIUM),
 				tmp, tmp);
 	}
 

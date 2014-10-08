@@ -411,7 +411,22 @@ public class BookListManage {
 		localUser.clearBookData();
 		localUser.addBookDataToList(response);
 		bookAdapter.initViewItemSize();
+		localUser.clearBookBitmap();
+		localUser.loadInitImgs(new BookImgsUpdateProcess());
 		updateDisplay();
+	}
+	
+	private class BookImgsUpdateProcess extends HttpProcessBase {
+
+		@Override
+		public void statusError(String response) {
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			updateDisplay();
+		}
+
 	}
 
 	public void updateDisplay() {

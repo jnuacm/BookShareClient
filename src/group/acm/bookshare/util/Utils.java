@@ -95,6 +95,10 @@ public class Utils {
 		}
 	}
 
+	public static String getCurSystemTime() {
+		return Long.toString(System.currentTimeMillis());
+	}
+
 	public static String getPath(Context context, Uri uri) {
 
 		if ("content".equalsIgnoreCase(uri.getScheme())) {

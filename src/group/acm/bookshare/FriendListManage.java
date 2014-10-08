@@ -1,7 +1,6 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Friend;
-import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
@@ -11,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -30,16 +30,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class FriendListManage {
-	MainActivity activity;
-	User localUser;
+	Activity activity;
+	User curUser;
 
 	ListView myfriendslistview;
-	FriendListAdapter friendAdapter;
-	List<Map<String, Object>> friendList;
+	PageListAdapter friendAdapter;
 
-	public FriendListManage(MainActivity activity) {
+	public FriendListManage(Activity activity, User user) {
 		this.activity = activity;
-		localUser = ((LocalApp) activity.getApplication()).getUser();
+		curUser = user;
 	}
 
 	public View getView() {
@@ -47,10 +46,8 @@ public class FriendListManage {
 	}
 
 	public void initFriendList() {
-		friendList = localUser.getFriendListData();
-
-		friendAdapter = new FriendListAdapter(activity, friendList,
-				localUser.getAvatars());
+		friendAdapter = new FriendListAdapter(activity, curUser.getFriendListData(),
+				curUser.getAvatars());
 
 		View view = LayoutInflater.from(activity).inflate(
 				R.layout.activity_submain_friend, null);
@@ -64,7 +61,7 @@ public class FriendListManage {
 		setItemListener();
 	}
 
-	private class FriendListAdapter extends PageListAdapter {
+	protected class FriendListAdapter extends PageListAdapter {
 		private Context context;
 		private List<Map<String, Object>> datas;
 		private Map<String, Bitmap> avatarMap;
@@ -201,7 +198,7 @@ public class FriendListManage {
 
 		@Override
 		public int loadData() {
-			return localUser.loadAvatars();
+			return curUser.loadAvatars();
 		}
 	}
 
@@ -248,7 +245,7 @@ public class FriendListManage {
 			builder.setMessage("Are you sure to delete "
 					+ item.get(Friend.NAME) + " ?");
 			builder.setPositiveButton("Yes", new DeleteFriendConfirmListener(
-					position));
+					item));
 			builder.setNegativeButton("No", null).show();
 
 			return true;
@@ -285,8 +282,42 @@ public class FriendListManage {
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
 			String addFriendName = addFriendEdit.getText().toString();
-			localUser.addFriend(addFriendName, "我想加你",
+			curUser.addFriend(addFriendName, "我想加你",
 					HttpProgress.createShowProgress(activity, "发送成功", "发送失败"));
+		}
+
+	}
+
+	private class UpdateFriendshipProgress extends HttpProcessBase {
+		public void error(String content) {
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusError(String response) {
+			String content = "更新好友失败";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			reload(response);
+			String content = "更新好友成功";
+			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
+		}
+	}
+
+	private class DeleteFriendConfirmListener implements
+			DialogInterface.OnClickListener {
+		private Map<String, Object> friend;
+
+		public DeleteFriendConfirmListener(Map<String, Object> friend) {
+			this.friend = friend;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			curUser.deleteFriend(friend, new DeleteFriendProgress());
 		}
 
 	}
@@ -311,53 +342,33 @@ public class FriendListManage {
 		}
 	}
 
-	private class UpdateFriendshipProgress extends HttpProcessBase {
-		public void error(String content) {
-			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-		}
-
-		@Override
-		public void statusError(String response) {
-			String content = "更新好友失败";
-			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-		}
-
-		@Override
-		public void statusSuccess(String response) {
-			reload(response);
-			String content = "更新好友成功";
-			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-		}
-	}
-
-	private class DeleteFriendConfirmListener implements
-			DialogInterface.OnClickListener {
-		private int position;
-
-		public DeleteFriendConfirmListener(int position) {
-			this.position = position;
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			localUser.deleteFriend(friendList.get(position),
-					new DeleteFriendProgress());
-		}
-
-	}
-
 	public void updateDisplay() {
 		friendAdapter.notifyDataSetChanged();
 	}
 
 	public void reload() {
-		localUser.getFriendList(new UpdateFriendshipProgress());
+		curUser.getFriendList(new UpdateFriendshipProgress());
 	}
 
 	public void reload(String response) {
-		localUser.clearFriendData();
-		localUser.addFriendDataToList(response);
+		curUser.clearFriendData();
+		curUser.addFriendDataToList(response);
 		friendAdapter.initViewItemSize();
+		curUser.clearAvatarBitmap();
+		curUser.loadInitAvatar(new AvatarsUpdateProcess());
 		updateDisplay();
+	}
+	
+	private class AvatarsUpdateProcess extends HttpProcessBase {
+
+		@Override
+		public void statusError(String response) {
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			updateDisplay();
+		}
+
 	}
 }
