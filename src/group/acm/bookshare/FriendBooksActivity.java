@@ -61,8 +61,7 @@ public class FriendBooksActivity extends Activity {
 		}
 
 		@Override
-		public int loadData() {
-			return 10;
+		public void loadData() {
 		}
 
 		@Override

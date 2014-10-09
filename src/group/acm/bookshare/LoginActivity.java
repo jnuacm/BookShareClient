@@ -89,7 +89,7 @@ public class LoginActivity extends Activity implements Callback {
 		Log.i(Utils.getLineInfo(), "userid:" + userid);
 
 		if ("empty".equals(userid)) {
-			Toast.makeText(this, "wait for a second", Toast.LENGTH_SHORT)
+			Toast.makeText(this, "«Î…‘∫Ú‘Ÿµ«¬º", Toast.LENGTH_SHORT)
 					.show();
 			return;
 		}

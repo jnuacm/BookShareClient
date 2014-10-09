@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,11 +23,13 @@ public class PersonInfoActivity extends Activity {
 
 	private User localUser;
 
+	private ImageView backButton;
 	private ImageView avatarView;
 	private TextView nameView;
 	private TextView areaView;
 	private TextView emailView;
 	private TextView bookNumView;
+	private Button logoutButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +37,13 @@ public class PersonInfoActivity extends Activity {
 		setContentView(R.layout.activity_person_info);
 		localUser = ((LocalApp) getApplication()).getUser();
 
+		backButton = (ImageView) findViewById(R.id.person_info_bar_img);
 		avatarView = (ImageView) findViewById(R.id.personal_avatar_view);
 		nameView = (TextView) findViewById(R.id.personal_textview_name_show);
 		areaView = (TextView) findViewById(R.id.personal_textview_area_show);
 		emailView = (TextView) findViewById(R.id.personal_textview_email_show);
 		bookNumView = (TextView) findViewById(R.id.personal_textview_booknum_show);
+		logoutButton = (Button) findViewById(R.id.person_info_logout);
 
 		localUser.loadAvatar(new AvatarUpdateProcess());
 		setAction();
@@ -46,6 +51,13 @@ public class PersonInfoActivity extends Activity {
 	}
 
 	private void setAction() {
+		backButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+
 		avatarView.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -63,6 +75,14 @@ public class PersonInfoActivity extends Activity {
 				}
 			}
 
+		});
+
+		logoutButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				setResult(RESULT_OK);
+				finish();
+			}
 		});
 	}
 

@@ -24,13 +24,14 @@ public abstract class PageListAdapter extends BaseAdapter implements
 		else
 			curViewSize = Size;
 	}
-
-	public abstract int loadData();
-
+ 
+	public abstract void loadData();
+                                         
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		if (isLastRow && scrollState == OnScrollListener.SCROLL_STATE_IDLE) {
-			curViewSize += loadData();
+			loadData();
+			curViewSize += DEFAULT_PAGE_SIZE;
 			isLastRow = false;
 			notifyDataSetChanged();
 		}

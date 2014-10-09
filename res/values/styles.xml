@@ -36,13 +36,25 @@
         <item name="android:textColor">@color/buttonfont_white</item>
     </style>
 
+    <style name="activity_bar_layout">
+        <item name="android:background">@color/background_gray</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_alignParentTop">true</item>
+    </style>
+
+    <style name="activity_bar_text">
+        <item name="android:textColor">@color/listview_item_title_black</item>
+        <item name="android:textSize">22sp</item>
+    </style>
+
     <style name="listviewItemLayout">
         <item name="android:background">@drawable/listview_item_background</item>
     </style>
-    
+
     <style name="InformationTextStyle">
-        <item name = "android:textColor">@color/textfont_black</item>
-        <item name = "android:textSize">@dimen/information_textfont_size</item>
+        <item name="android:textColor">@color/textfont_black</item>
+        <item name="android:textSize">@dimen/information_textfont_size</item>
     </style>
 
     <style name="ButtonBarButton" />

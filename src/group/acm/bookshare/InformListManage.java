@@ -143,8 +143,7 @@ public class InformListManage {
 		}
 		
 		@Override
-		public int loadData() {
-			return PageListAdapter.DEFAULT_PAGE_SIZE;
+		public void loadData() {
 		}
 
 		@Override

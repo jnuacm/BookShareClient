@@ -32,6 +32,9 @@ public class BookInformationActivity extends Activity {
 
 	TextView bookNameView;
 	TextView bookDescriptionView;
+	TextView bookAuthorView;
+	TextView bookPublisherView;
+	ImageView backButton;
 	ImageView bookImageView;
 
 	@Override
@@ -43,6 +46,9 @@ public class BookInformationActivity extends Activity {
 
 		bookNameView = (TextView) findViewById(R.id.book_name);
 		bookDescriptionView = (TextView) findViewById(R.id.book_description);
+		bookAuthorView = (TextView) findViewById(R.id.book_author);
+		bookPublisherView = (TextView) findViewById(R.id.book_publisher);
+		backButton = (ImageView) findViewById(R.id.book_info_bar_img);
 		bookImageView = (ImageView) findViewById(R.id.book_image);
 
 		Intent intent = getIntent();// 收取 email
@@ -54,7 +60,15 @@ public class BookInformationActivity extends Activity {
 		detailBook = Book.bookToDetail(book, doubanBook);
 
 		bookNameView.setText((String) detailBook.get(Book.NAME));
-		bookDescriptionView.setText("简介：" + detailBook.get(Book.DESCRIPTION));
+		bookDescriptionView.setText("简介： " + detailBook.get(Book.DESCRIPTION));
+		bookAuthorView.setText("作者:" + detailBook.get(Book.AUTHOR));
+		bookPublisherView.setText("出版社:" + detailBook.get(Book.PUBLISHER));
+		backButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
 		bookImageView.setOnClickListener(new BookImgClick());
 		BookImgProcess tmp = new BookImgProcess();
 		localUser.getUrlBookImg((String) detailBook.get(Book.IMG_URL_MEDIUM),

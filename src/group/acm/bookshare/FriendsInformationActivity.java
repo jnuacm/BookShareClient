@@ -30,6 +30,7 @@ public class FriendsInformationActivity extends Activity {
 	private User friend;
 	private User localUser;
 
+	private ImageView backButton;
 	private ImageView FriendImg;
 	private TextView FriendCollection;
 	private TextView FriendName;
@@ -49,6 +50,7 @@ public class FriendsInformationActivity extends Activity {
 		friend = new User(info, getApplication());
 		localUser.setFriend(friend);
 
+		backButton = (ImageView) findViewById(R.id.friend_info_bar_img);
 		FriendName = (TextView) findViewById(R.id.IF_username);
 		FriendArea = (TextView) findViewById(R.id.IF_area);
 		FriendImg = (ImageView) findViewById(R.id.IF_img);
@@ -70,6 +72,12 @@ public class FriendsInformationActivity extends Activity {
 	}
 
 	private void setButtons() {
+		backButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
 		checkBooks.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -152,7 +160,8 @@ public class FriendsInformationActivity extends Activity {
 		Bitmap avatar = friend.getAvatarBitmap();
 		if (avatar == null)
 			Log.i(Utils.getLineInfo(), "null avatar");
-		Log.i(Utils.getLineInfo(), "avatar version" + Integer.toString(friend.getAvatarVersion()));
+		Log.i(Utils.getLineInfo(),
+				"avatar version" + Integer.toString(friend.getAvatarVersion()));
 		if (friend.getAvatarVersion() == ImageManage.AVATAR_VERSION_NONE
 				|| avatar == null) {
 			if (Friend.GROUP == friend.getIs_group()) {

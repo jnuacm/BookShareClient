@@ -63,8 +63,6 @@ public class MainActivity extends Activity {
 	private FriendListManage friendmanage;
 	private InformListManage informmanage;
 
-	int listshowsize = 10;
-
 	private static final int OPTIONS_ITEM_PERSONINFO = Menu.FIRST;
 	private static final int OPTIONS_ITEM_SEARCH = Menu.FIRST + 1;
 	private static final int OPTIONS_ITEM_EXIT = Menu.FIRST + 2;
@@ -236,7 +234,7 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 			hideProgressBar();
-			startActivity(intent);
+			startActivityForResult(intent, Utils.ACTIVITY_REQUEST_LOGOUT);
 		}
 	}
 
@@ -465,6 +463,14 @@ public class MainActivity extends Activity {
 			case Utils.ACTIVITY_REQUEST_SHOWCODE:
 				informmanage.reload();
 				bookmanage.reload();
+				break;
+			case Utils.ACTIVITY_REQUEST_LOGOUT:
+				localUser.logout();
+				unregisterReceiver(receiver);
+				Intent intent = new Intent();
+				intent.setClass(this, LoginActivity.class);
+				startActivity(intent);
+				finish();
 				break;
 			}
 		}

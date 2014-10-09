@@ -131,8 +131,8 @@ public class BookListManage {
 		}
 		
 		@Override
-		public int loadData() {
-			return localUser.loadBookImgs();
+		public void loadData() {
+			localUser.loadBookImgs();
 		}
 
 		@Override

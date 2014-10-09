@@ -40,6 +40,7 @@ public class Utils {
 	public static final int ACTIVITY_REQUEST_ADDBOOK = 1;
 	public static final int REQUEST_SCANBOOK_UPDATESTATUS = 2;
 	public static final int ACTIVITY_REQUEST_SHOWCODE = 3;
+	public static final int ACTIVITY_REQUEST_LOGOUT = 4;
 
 	private static boolean first = true;
 	private static long lastTime;

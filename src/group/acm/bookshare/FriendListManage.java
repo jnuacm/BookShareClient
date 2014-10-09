@@ -197,8 +197,8 @@ public class FriendListManage {
 		}
 
 		@Override
-		public int loadData() {
-			return curUser.loadAvatars();
+		public void loadData() {
+			curUser.loadAvatars();
 		}
 	}
 
