@@ -5,6 +5,7 @@
     android:background="@color/background_white"
     android:orientation="vertical"
     tools:context=".PersonInfoActivity" >
+
     <LinearLayout
         android:id="@+id/person_info_bar"
         style="@style/activity_bar_layout"
@@ -24,132 +25,144 @@
             android:layout_marginLeft="20dp"
             android:gravity="center_vertical"
             android:text="个人信息" />
-
     </LinearLayout>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_information_vertical_margin"
-        android:background="@drawable/person_info_background_layout" >
+        android:layout_height="match_parent" >
 
-        <TextView
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="头像"
-            android:textAppearance="@style/InformationTextStyle" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/background_white"
+            android:orientation="vertical" >
 
-        <ImageView
-            android:id="@+id/personal_avatar_view"
-            android:layout_width="135dp"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:src="@drawable/default_friend_avatar_small" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_information_vertical_margin"
+                android:background="@drawable/person_info_background_layout" >
 
-    </LinearLayout>
+                <TextView
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="头像"
+                    android:textAppearance="@style/InformationTextStyle" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_information_vertical_margin"
-        android:background="@drawable/person_info_background_layout" >
+                <ImageView
+                    android:id="@+id/personal_avatar_view"
+                    android:layout_width="135dp"
+                    android:layout_height="70dp"
+                    android:layout_marginBottom="8dp"
+                    android:src="@drawable/default_friend_avatar_small" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/personal_textview_name"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="用户名"
-            android:textAppearance="@style/InformationTextStyle" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_information_vertical_margin"
+                android:background="@drawable/person_info_background_layout" >
 
-        <TextView
-            android:id="@+id/personal_textview_name_show"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="emtpy"
-            android:textAppearance="@style/InformationTextStyle" />
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/personal_textview_name"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="用户名"
+                    android:textAppearance="@style/InformationTextStyle" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_information_vertical_margin"
-        android:background="@drawable/person_info_background_layout" >
+                <TextView
+                    android:id="@+id/personal_textview_name_show"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="emtpy"
+                    android:textAppearance="@style/InformationTextStyle" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/personal_textview_area"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="地区"
-            android:textAppearance="@style/InformationTextStyle" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_information_vertical_margin"
+                android:background="@drawable/person_info_background_layout" >
 
-        <TextView
-            android:id="@+id/personal_textview_area_show"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="emtpy"
-            android:textAppearance="@style/InformationTextStyle" />
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/personal_textview_area"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="地区"
+                    android:textAppearance="@style/InformationTextStyle" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_information_vertical_margin"
-        android:background="@drawable/person_info_background_layout" >
+                <TextView
+                    android:id="@+id/personal_textview_area_show"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="emtpy"
+                    android:textAppearance="@style/InformationTextStyle" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/personal_textview_booknum"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="藏书量"
-            android:textAppearance="@style/InformationTextStyle" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_information_vertical_margin"
+                android:background="@drawable/person_info_background_layout" >
 
-        <TextView
-            android:id="@+id/personal_textview_booknum_show"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="emtpy"
-            android:textAppearance="@style/InformationTextStyle" />
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/personal_textview_booknum"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="藏书量"
+                    android:textAppearance="@style/InformationTextStyle" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_information_vertical_margin"
-        android:background="@drawable/person_info_background_layout" >
+                <TextView
+                    android:id="@+id/personal_textview_booknum_show"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="emtpy"
+                    android:textAppearance="@style/InformationTextStyle" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/personal_textview_email"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="Email"
-            android:textAppearance="@style/InformationTextStyle" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_information_vertical_margin"
+                android:background="@drawable/person_info_background_layout" >
 
-        <TextView
-            android:id="@+id/personal_textview_email_show"
-            android:layout_width="135dp"
-            android:layout_height="wrap_content"
-            android:text="emtpy"
-            android:textAppearance="@style/InformationTextStyle" />
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/personal_textview_email"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="Email"
+                    android:textAppearance="@style/InformationTextStyle" />
 
-    <Button
-        android:id="@+id/person_info_logout"
-        style="@style/MainButton"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginTop="50dp"
-        android:text="登出"
-        android:textSize="20sp" />
+                <TextView
+                    android:id="@+id/personal_textview_email_show"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:text="emtpy"
+                    android:textAppearance="@style/InformationTextStyle" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/person_info_logout"
+                style="@style/MainButton"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="50dp"
+                android:text="登出"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

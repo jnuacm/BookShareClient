@@ -16,13 +16,13 @@ public class UrlStringFactory {
 		url += appContext.getString(R.string.url_login);
 		return url;
 	}
-	
+
 	public String getRegisterUrl() {
 		String url = appContext.getString(R.string.url_host);
 		url += appContext.getString(R.string.url_register);
 		return url;
 	}
-	
+
 	public String getAimUserUrl(String username) {
 		String url = appContext.getString(R.string.url_host);
 		url += appContext.getString(R.string.url_user);
@@ -104,6 +104,18 @@ public class UrlStringFactory {
 		String url = appContext.getString(R.string.url_host);
 		url += appContext.getString(R.string.url_bookimg);
 		url += isbn;
+		return url;
+	}
+
+	public String getBookSearchUrl(String isbn, String name, String author,
+			String publisher) {
+		String url = appContext.getString(R.string.url_host);
+		url += appContext.getString(R.string.url_book);
+		url += appContext.getString(R.string.url_book_search);
+		url += ("?isbn=" + isbn);
+		url += ("&name=" + name);
+		url += ("&author=" + author);
+		url += ("&publisher=" + publisher);
 		return url;
 	}
 }

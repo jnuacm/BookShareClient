@@ -596,13 +596,13 @@ public class User {
 					new BookImgProcessImpl((String) book.get(Book.ISBN)));
 		}
 	}
-	
-	public void clearBookBitmap(){
+
+	public void clearBookBitmap() {
 		curLoadImgIndex = 0;
 		imgManage.clearBookBitmap();
 	}
-	
-	public void clearAvatarBitmap(){
+
+	public void clearAvatarBitmap() {
 		curLoadAvatarIndex = 0;
 		imgManage.clearAvatarBitmap();
 	}
@@ -677,6 +677,12 @@ public class User {
 
 		String url = urlFactory.getAimAvatarUrl(getUsername());
 		net.createPostThread(url, parts, progress);
+	}
+
+	public void bookSearch(String isbn, String name, String author,
+			String publisher, NetProgress progress) {
+		String url = urlFactory.getBookSearchUrl(isbn, name, author, publisher);
+		net.createGetThread(url, progress);
 	}
 
 	/**

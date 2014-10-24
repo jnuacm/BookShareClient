@@ -8,7 +8,11 @@ import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -51,13 +55,7 @@ public class BookInformationActivity extends Activity {
 		backButton = (ImageView) findViewById(R.id.book_info_bar_img);
 		bookImageView = (ImageView) findViewById(R.id.book_image);
 
-		Intent intent = getIntent();// 收取 email
-		String response = intent.getStringExtra(NetAccess.RESPONSE);
-		int bookId = intent.getIntExtra(Book.ID, -1);
-
-		Map<String, Object> doubanBook = Book.doubanStrToBook(response);
-		Map<String, Object> book = localUser.getBookById(bookId);
-		detailBook = Book.bookToDetail(book, doubanBook);
+		detailBook = getDetailBook();
 
 		bookNameView.setText((String) detailBook.get(Book.NAME));
 		bookDescriptionView.setText("简介： " + detailBook.get(Book.DESCRIPTION));
@@ -105,6 +103,21 @@ public class BookInformationActivity extends Activity {
 					(String) detailBook.get(Book.IMG_URL_LARGE), tmp, tmp);
 		}
 
+	}
+
+	public Map<String, Object> getDetailBook() {
+		Intent intent = getIntent();// 收取 email
+		String response = intent.getStringExtra(NetAccess.RESPONSE);
+		String bookObj = intent.getStringExtra("person_book");
+
+		Map<String, Object> doubanBook = Book.doubanStrToBook(response);
+		Map<String, Object> book = new HashMap<String, Object>();
+		try {
+			book = Book.objToBook(new JSONObject(bookObj));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return Book.bookToDetail(book, doubanBook);
 	}
 
 	public void setListViewHeightBasedOnChildren(ListView listView) {

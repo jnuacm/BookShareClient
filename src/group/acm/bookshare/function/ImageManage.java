@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -28,8 +29,10 @@ public class ImageManage {
 	private static final String CACHE_RELATIVE_PATH_BOOKS = "books";
 
 	private static Context appContext;
-	private Map<String, Bitmap> avatarMap = new HashMap<String, Bitmap>(); // 进程中对头像bitmap保存<username,avatar>
-	private Map<String, Bitmap> bookImgMap = new HashMap<String, Bitmap>(); // 进程中对头像bitmap保存<isbn,book>
+	private Map<String, Bitmap> avatarMap = Collections
+			.synchronizedMap(new HashMap<String, Bitmap>()); // 进程中对头像bitmap保存<username,avatar>
+	private Map<String, Bitmap> bookImgMap = Collections
+			.synchronizedMap(new HashMap<String, Bitmap>()); // 进程中对头像bitmap保存<isbn,book>
 
 	private ImageManage() {
 
@@ -41,9 +44,7 @@ public class ImageManage {
 	}
 
 	public void saveBookImg(String isbn, Bitmap bookImg) {
-		synchronized (bookImgMap) {
-			bookImgMap.put(isbn, bookImg);
-		}
+		bookImgMap.put(isbn, bookImg);
 		setBookImgToCache(isbn, bookImg);
 	}
 
@@ -103,7 +104,7 @@ public class ImageManage {
 				Context.MODE_PRIVATE);
 	}
 
-	public synchronized File getBooksDir() {
+	public File getBooksDir() {
 		return appContext.getDir(CACHE_RELATIVE_PATH_BOOKS,
 				Context.MODE_PRIVATE);
 	}

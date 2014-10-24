@@ -42,6 +42,7 @@
     <color name="viewfinder_mask">#60000000</color>
     <color name="background_green">#ff32bdbd</color>
     <color name="buttonfont_white">#ffffffff</color>
+    <color name="buttonfont_black">#ff000000</color>
     <color name="dividerfont_gray">#ff404040</color>
     <color name="background_white">#ffffffff</color>
     <color name="background_gray">#dddddddd</color>

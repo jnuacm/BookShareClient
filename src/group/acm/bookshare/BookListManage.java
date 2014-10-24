@@ -12,6 +12,8 @@ import group.acm.bookshare.util.Utils;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -25,12 +27,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -129,7 +128,7 @@ public class BookListManage {
 				curViewSize = allViewSize;
 			return curViewSize;
 		}
-		
+
 		@Override
 		public void loadData() {
 			localUser.loadBookImgs();
@@ -376,7 +375,8 @@ public class BookListManage {
 
 			Intent intent = new Intent();
 			Bundle data = new Bundle();
-			data.putInt(Book.ID, (Integer) book.get(Book.ID));
+			JSONObject obj = Book.bookToObj(book);
+			data.putString("person_book", obj.toString());
 			data.putString(NetAccess.RESPONSE, response);
 			intent.putExtras(data);
 			intent.setClass(activity, BookInformationActivity.class);
@@ -415,7 +415,7 @@ public class BookListManage {
 		localUser.loadInitImgs(new BookImgsUpdateProcess());
 		updateDisplay();
 	}
-	
+
 	private class BookImgsUpdateProcess extends HttpProcessBase {
 
 		@Override

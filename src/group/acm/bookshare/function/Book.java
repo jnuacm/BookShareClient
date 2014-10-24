@@ -41,9 +41,9 @@ public class Book {
 	public static final String IMG_URL_SMALL = "small_img";
 	public static final String IMG_URL_MEDIUM = "medium_img";
 	public static final String IMG_URL_LARGE = "large_img";
-	
+
 	public static final String DEFAULT_IMG_URL = "http://www.ttoou.com/qqtouxiang/allimg/110619/1-110619113537.jpg";
-	
+
 	protected List<String> approval;
 	protected List<String> lables;
 
@@ -160,7 +160,7 @@ public class Book {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		String mUrl = url.replaceFirst("spic", "mpic");
 		String lUrl = url.replaceFirst("spic", "lpic");
 
@@ -198,17 +198,37 @@ public class Book {
 		return null;
 	}
 
+	public static JSONObject bookToObj(Map<String, Object> book) {
+		JSONObject obj = new JSONObject();
+		try {
+			obj.put(Book.ISBN, (String) book.get(Book.ISBN));
+			obj.put(Book.NAME, (String) book.get(Book.NAME));
+			obj.put(Book.IMG_URL_SMALL, (String) book.get(Book.IMG_URL_SMALL));
+			obj.put(Book.IMG_URL_MEDIUM, (String) book.get(Book.IMG_URL_MEDIUM));
+			obj.put(Book.IMG_URL_LARGE, (String) book.get(Book.IMG_URL_LARGE));
+			obj.put(Book.AUTHOR, (String) book.get(Book.AUTHOR));
+			obj.put(Book.PUBLISHER, (String) book.get(Book.PUBLISHER));
+
+			obj.put(Book.ID, (Integer) book.get(Book.ID));
+			obj.put(Book.OWNER, (String) book.get(Book.OWNER));
+			obj.put(Book.HOLDER, (String) book.get(Book.HOLDER));
+			obj.put(Book.STATUS, (Integer) book.get(Book.STATUS));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return obj;
+	}
+
 	public static List<Map<String, Object>> jsonArrayToBooks(JSONArray array) {
 		List<Map<String, Object>> books = new ArrayList<Map<String, Object>>();
 		try {
 			for (int i = 0; i < array.length(); i++) {
 				books.add(objToBook(array.getJSONObject(i)));
 			}
-			return books;
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return books;
 	}
 
 	public static Map<String, Object> bookToDetail(Map<String, Object> book,

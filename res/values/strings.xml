@@ -39,6 +39,7 @@
     <string name="url_book_all">/all/</string>
     <string name="url_book_ownbook">/own/</string>
     <string name="url_book_borrowed">/borrowed/</string>
+    <string name="url_book_search">search</string>
     <string name="url_friend">bookshareyii/index.php/api/friend/</string>
     <string name="url_inform">bookshareyii/index.php/api/request/</string>
     <string name="url_inform_from">from/</string>
@@ -59,5 +60,6 @@
     <string name="title_activity_generate_qrcode">GenerateQRCodeActivity</string>
     <string name="title_activity_person_info">PersonInfoActivity</string>
     <string name="title_activity_group_member">GroupMemberActivity</string>
+    <string name="title_activity_book_search">BookSearchActivity</string>
 
 </resources>

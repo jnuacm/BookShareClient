@@ -46,4 +46,9 @@ public abstract class PageListAdapter extends BaseAdapter implements
 		} else
 			isLastRow = false;
 	}
+	
+	public void updateAdapter(){
+		initViewItemSize();
+		this.notifyDataSetChanged();
+	}
 }

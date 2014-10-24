@@ -1,6 +1,5 @@
 package group.acm.bookshare.function.http;
 
-
 public abstract class HttpProcessBase extends HttpProgress implements
 		HttpResponseProcess {
 
@@ -14,13 +13,10 @@ public abstract class HttpProcessBase extends HttpProgress implements
 
 	@Override
 	public void after(int status, String response) {
-		switch (status) {
-		case NetAccess.STATUS_SUCCESS:
+		if (status == NetAccess.STATUS_SUCCESS) {
 			statusSuccess(response);
-			break;
-		case NetAccess.STATUS_ERROR:
+		} else {
 			statusError(response);
-			break;
 		}
 	}
 

@@ -72,9 +72,9 @@ public abstract class HttpProgress implements NetProgress {
 		msg.setData(data);
 		handler.sendMessage(msg);
 	}
-	
-	public static ProgressShow createShowProgress(Context context, String success,
-			String fail) {
+
+	public static ProgressShow createShowProgress(Context context,
+			String success, String fail) {
 		return new ProgressShow(context, success, fail);
 	}
 }

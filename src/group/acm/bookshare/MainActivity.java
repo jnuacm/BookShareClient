@@ -14,8 +14,6 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.baidu.android.pushservice.PushManager;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -43,6 +41,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.baidu.android.pushservice.PushManager;
 
 @SuppressLint("HandlerLeak")
 public class MainActivity extends Activity {
@@ -189,7 +189,8 @@ public class MainActivity extends Activity {
 			localUser.getPersonInfo(new GetPersonInfoProcess());
 			break;
 		case OPTIONS_ITEM_SEARCH:
-
+			Intent intent = new Intent(this, BookSearchActivity.class);
+			startActivity(intent);
 			break;
 		case OPTIONS_ITEM_EXIT:
 			localUser.logout();
