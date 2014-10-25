@@ -74,7 +74,6 @@ public class FriendListManage {
 			this.datas = data;
 			this.context = context;
 			this.avatarMap = avatarMap;
-			initViewItemSize();
 		}
 
 		@Override

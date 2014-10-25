@@ -103,7 +103,6 @@ public class BookListManage {
 			this.datas = data;
 			this.context = context;
 			this.bookImgMap = bookImgMap;
-			initViewItemSize();
 		}
 
 		@Override

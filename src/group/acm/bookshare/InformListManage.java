@@ -139,7 +139,6 @@ public class InformListManage {
 		public InformListAdapter(Context context, List<Map<String, Object>> data) {
 			this.context = context;
 			informs = data;
-			initViewItemSize();
 		}
 		
 		@Override

@@ -11,6 +11,10 @@ public abstract class PageListAdapter extends BaseAdapter implements
 	protected int curViewSize = DEFAULT_PAGE_SIZE;
 	private boolean isLastRow;
 	
+	public PageListAdapter(){
+		initViewItemSize();
+	}
+	
 	/**
 	 * 列表分页显示过程中，如果再刷新后想要将后面的页面清理，需调用此函数后再notify
 	 */

@@ -57,7 +57,6 @@ public class FriendBooksActivity extends Activity {
 				List<Map<String, Object>> data) {
 			this.context = context;
 			datas = data;
-			initViewItemSize();
 		}
 
 		@Override
