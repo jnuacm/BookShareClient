@@ -254,7 +254,7 @@ public class BookSearchActivity extends Activity {
 			hideProgressBar();
 			Toast.makeText(BookSearchActivity.this, response, Toast.LENGTH_LONG)
 					.show();
-			 showResponse("[{\"id\":\"1\",\"name\":\"design\",\"publisher\":\"jp\",\"description\":\"empty\",\"author\":\"fans\",\"isbn\":\"9787302251200\",\"owner\":\"amy\",\"holder\":\"cc\",\"status\":\"0\",\"small_img\":\"url\",\"medium_img\":\"url\",\"large_img\":\"url\"}]");
+			// showResponse("[{\"id\":\"1\",\"name\":\"design\",\"publisher\":\"jp\",\"description\":\"empty\",\"author\":\"fans\",\"isbn\":\"9787302251200\",\"owner\":\"amy\",\"holder\":\"cc\",\"status\":\"0\",\"small_img\":\"url\",\"medium_img\":\"url\",\"large_img\":\"url\"}]");
 		}
 
 		@Override
@@ -281,7 +281,7 @@ public class BookSearchActivity extends Activity {
 		}
 		
 		bookAdapter.setDatas(datas);
-		bookAdapter.updateAdapter();
+		bookAdapter.reloadAdapter();
 	}
 
 	/**

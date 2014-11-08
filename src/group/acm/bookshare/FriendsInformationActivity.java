@@ -5,7 +5,6 @@ import group.acm.bookshare.function.ImageManage;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
-import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.util.Utils;
 
 import java.util.Map;
@@ -113,7 +112,11 @@ public class FriendsInformationActivity extends Activity {
 		@Override
 		public void statusSuccess(String response) {
 			friend.clearFriendData();
-			friend.addFriendDataToList(response);
+			try {
+				friend.addFriendDataToList(new JSONArray(response));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 			friend.deleteFriendData(localUser.getUsername());
 			Intent intent = new Intent();
 			intent.setClass(FriendsInformationActivity.this,

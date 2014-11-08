@@ -6,6 +6,7 @@ import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.TripleDESUtil;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.util.Utils;
 
 import java.util.ArrayList;
@@ -16,8 +17,11 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
@@ -33,7 +37,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
@@ -119,7 +122,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void statusSuccess(String response) {
-			bookmanage.updateDisplay();
+			bookmanage.reloadDisplay();
 		}
 
 	}
@@ -287,7 +290,7 @@ public class MainActivity extends Activity {
 			i.setOnClickListener(new MyOnClickListener(j++));
 	}
 
-	private class MyOnClickListener implements OnClickListener {
+	private class MyOnClickListener implements View.OnClickListener {
 		private int index = 0;
 
 		public MyOnClickListener(int i) {
@@ -360,7 +363,7 @@ public class MainActivity extends Activity {
 			switch (currIndex) {
 			case 0:
 				mainButton.setText("添加书籍");
-				bookmanage.updateDisplay();
+				bookmanage.reloadDisplay();
 				break;
 			case 1:
 				mainButton.setText("添加好友");
@@ -377,7 +380,7 @@ public class MainActivity extends Activity {
 
 	}
 
-	private class BottomButtonClickListener implements OnClickListener {
+	private class BottomButtonClickListener implements View.OnClickListener {
 		@Override
 		public void onClick(View v) {
 			if (Utils.isQuickClick())
@@ -396,7 +399,19 @@ public class MainActivity extends Activity {
 				break;
 			}
 		}
+	}
 
+	private class AddBookConfirmListener implements
+			DialogInterface.OnClickListener {
+		private String isbn;
+
+		public AddBookConfirmListener(String isbn) {
+			this.isbn = isbn;
+		}
+
+		public void onClick(DialogInterface dialog, int which) {
+			localUser.addBook(isbn, bookmanage.getBookChangeProgress());
+		}
 	}
 
 	public void bookListReload() {
@@ -430,12 +445,23 @@ public class MainActivity extends Activity {
 		if (RESULT_OK == resultCode) {
 			Bundle bundle;
 			switch (requestCode) {
-			case Utils.ACTIVITY_REQUEST_ADDBOOK:
+			case Utils.ACTIVITY_REQUEST_ADDBOOK: // 添加书籍
 				bundle = data.getExtras();
 				String isbn = bundle.getString("result");
-				localUser.addBook(isbn, bookmanage.getBookChangeProgress());
+				int bookNum = localUser.findLocalBookByIsbn(isbn);
+				if (bookNum > 0) {
+					Builder builder = new AlertDialog.Builder(this)
+							.setTitle("Confirm");
+					builder = builder.setMessage(
+							"当前该书已添加" + bookNum + "本,确认继续添加?")
+							.setPositiveButton("Yes",
+									new AddBookConfirmListener(isbn));
+					builder = builder.setNegativeButton("No", null);
+					builder.show();
+				} else
+					localUser.addBook(isbn, bookmanage.getBookChangeProgress());
 				break;
-			case Utils.REQUEST_SCANBOOK_UPDATESTATUS:
+			case Utils.REQUEST_SCANBOOK_UPDATESTATUS: // 
 				bundle = data.getExtras();
 				String res = bundle.getString("result");
 				Log.i("result", res);
@@ -472,6 +498,10 @@ public class MainActivity extends Activity {
 				intent.setClass(this, LoginActivity.class);
 				startActivity(intent);
 				finish();
+				break;
+			case Utils.BOOK_DELETE:
+				bundle = data.getExtras();
+				bookmanage.reload(bundle.getString(NetAccess.RESPONSE));
 				break;
 			}
 		}

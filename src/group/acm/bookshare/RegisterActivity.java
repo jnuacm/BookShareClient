@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.Friend;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
@@ -9,6 +10,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -48,6 +50,8 @@ public class RegisterActivity extends Activity {
 		edittext = (EditText) findViewById(R.id.registerarea);
 		area = edittext.getText().toString();
 
+		CheckBox check = (CheckBox) findViewById(R.id.checkbox_group);
+
 		if (!(username.length() > 0 && password.length() > 0 && email.length() > 0)) {
 			Toast.makeText(this, "请输入完整信息", Toast.LENGTH_LONG).show();
 			return;
@@ -55,7 +59,13 @@ public class RegisterActivity extends Activity {
 		if (area.length() <= 0)
 			area = "无";
 
-		localUser.register(username, password, email, area,
+		int is_group;
+		if (check.isChecked())
+			is_group = Friend.GROUP;
+		else
+			is_group = Friend.NOT_GROUP;
+
+		localUser.register(username, password, email, is_group, area,
 				HttpProcessBase.createShowProgress(this, "注册成功", "注册失败"));
 	}
 

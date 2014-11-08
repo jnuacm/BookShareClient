@@ -236,12 +236,17 @@ public class Book {
 		Map<String, Object> ret = new HashMap<String, Object>();
 		ret.put(Book.ID, book.get(Book.ID));
 		ret.put(Book.ISBN, book.get(Book.ISBN));
-		ret.put(Book.NAME, book.get(Book.NAME));
-		ret.put(Book.IMG_URL_SMALL, book.get(Book.IMG_URL_SMALL));
+		ret.put(Book.OWNER, book.get(Book.OWNER));
+		ret.put(Book.HOLDER, book.get(Book.HOLDER));
+		ret.put(Book.STATUS, book.get(Book.STATUS));
+
+		ret.put(Book.NAME, doubanBook.get(Book.NAME));
+		ret.put(Book.IMG_URL_SMALL, doubanBook.get(Book.IMG_URL_SMALL));
 		ret.put(Book.IMG_URL_MEDIUM, doubanBook.get(Book.IMG_URL_MEDIUM));
 		ret.put(Book.IMG_URL_LARGE, doubanBook.get(Book.IMG_URL_LARGE));
 		ret.put(Book.DESCRIPTION, doubanBook.get(Book.DESCRIPTION));
 		ret.put(Book.AUTHOR, doubanBook.get(Book.AUTHOR));
+		ret.put(Book.PUBLISHER, doubanBook.get(Book.PUBLISHER));
 		return ret;
 	}
 }

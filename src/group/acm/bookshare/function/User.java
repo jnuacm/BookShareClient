@@ -132,11 +132,12 @@ public class User {
 	}
 
 	public void register(String username, String password, String email,
-			String area, NetProgress progress) {
+			int is_group, String area, NetProgress progress) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("username", username));
 		nvps.add(new BasicNameValuePair("password", password));
 		nvps.add(new BasicNameValuePair("email", email));
+		nvps.add(new BasicNameValuePair("is_group", Integer.toString(is_group)));
 		nvps.add(new BasicNameValuePair("area", area));
 
 		String url = urlFactory.getRegisterUrl();
@@ -236,13 +237,29 @@ public class User {
 		try {
 			JSONObject jsonobj = new JSONObject(response);
 			JSONArray jsonarray = jsonobj.getJSONArray("friend");
-
-			for (int i = 0; i < jsonarray.length(); i++) {
-				friends.add(Friend.objToFriend(jsonarray.getJSONObject(i)));
-			}
+			addFriendDataToList(jsonarray);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void addFriendDataToList(JSONArray array) {
+		List<Map<String, Object>> groups = new ArrayList<Map<String, Object>>();
+		for (int i = 0; i < array.length(); i++) {
+			try {
+				Map<String, Object> friend = Friend.objToFriend(array
+						.getJSONObject(i));
+				// 此处为了将好友分为普通好友和群组而进行
+				if (((Integer) friend.get(Friend.IS_GROUP)) == Friend.GROUP) {
+					groups.add(friend);
+				} else {
+					friends.add(friend);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		friends.addAll(groups);
 	}
 
 	/**
@@ -265,6 +282,16 @@ public class User {
 			return false;
 		}
 		return true;
+	}
+
+	public int findLocalBookByIsbn(String isbn) {
+		int sum = 0;
+		for (Map<String, Object> book : books) {
+			if (isbn.equals(book.get(Book.ISBN))
+					&& getUsername().equals(book.get(Book.OWNER)))
+				sum++;
+		}
+		return sum;
 	}
 
 	public void addBook(String isbn, NetProgress progress) {

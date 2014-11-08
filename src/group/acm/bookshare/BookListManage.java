@@ -5,6 +5,7 @@ import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.HttpProgress;
 import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
@@ -193,6 +194,7 @@ public class BookListManage {
 			return convertView;
 		}
 
+		// 获取分界View
 		private View getDivider(String title) {
 			View convertView = LayoutInflater.from(context).inflate(
 					R.layout.mybooks_listview_item_divider, null);
@@ -202,6 +204,7 @@ public class BookListManage {
 			return convertView;
 		}
 
+		// 获取书本显示View
 		private View getDataView(int dataPosition) {
 			TextView titleView;
 			TextView statusView;
@@ -227,6 +230,7 @@ public class BookListManage {
 			return convertView;
 		}
 
+		// 获取当前状态的图书需要显示的文本
 		private String getText(Map<String, Object> item) {
 			String text = "";
 			if (localUser.getUsername().equals(item.get(Book.OWNER))) {
@@ -257,6 +261,9 @@ public class BookListManage {
 		mybookslistview.setOnItemLongClickListener(new JudgeListener());
 	}
 
+	/**
+	 * 获取显示具体书本信息
+	 */
 	private class BookInfoListener implements OnItemClickListener {
 		@SuppressWarnings("unchecked")
 		public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -273,6 +280,9 @@ public class BookListManage {
 		}
 	}
 
+	/**
+	 * 根据该图书的状态判断相应的动作
+	 */
 	private class JudgeListener implements OnItemLongClickListener {
 		@SuppressWarnings("unchecked")
 		@Override
@@ -285,22 +295,22 @@ public class BookListManage {
 			Builder builder = new AlertDialog.Builder(activity)
 					.setTitle("Confirm");
 			String text;
-			OnClickListener listener;
+			int actionType;
 			if (localUser.getUsername().equals(book.get(Book.OWNER))) {
 				if (((String) book.get(Book.OWNER)).equals(book
-						.get(Book.HOLDER))) {
+						.get(Book.HOLDER))) { // 自己的书且未借出可删除
 					text = "删书";
-					listener = new DeleteBookListener(book);
-				} else {
+					actionType = Utils.BOOK_DELETE;
+				} else { // 自己的书但已借出则请求对方还书
 					text = "请求对方还书";
-					listener = new AskReturnListener(book);
+					actionType = Utils.BOOK_ASKRETURN;
 				}
-			} else {
+			} else { // 非本人的书则选择还书
 				text = "还书";
-				listener = new ReturnBookListener(book);
+				actionType = Utils.BOOK_RETURN;
 			}
 			builder = builder.setMessage(text).setPositiveButton("Yes",
-					listener);
+					new ActionConfirmListener(actionType, book));
 			builder = builder.setNegativeButton("No", null);
 			builder.show();
 
@@ -308,45 +318,36 @@ public class BookListManage {
 		}
 	}
 
-	private class AskReturnListener implements DialogInterface.OnClickListener {
+	// 相应长按动作
+	private class ActionConfirmListener implements
+			DialogInterface.OnClickListener {
+		private int type;
 		private Map<String, Object> book;
 
-		public AskReturnListener(Map<String, Object> book) {
+		public ActionConfirmListener(int type, Map<String, Object> book) {
+			this.type = type;
 			this.book = book;
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			localUser.askReturn(book, new ReturnBookProgress());
+			switch (type) {
+			case Utils.BOOK_DELETE:
+				localUser.deleteBook(book, new BookChangeProgress());
+				break;
+			case Utils.BOOK_RETURN:
+				localUser.returnBook(book, HttpProgress.createShowProgress(
+						activity, "发送成功", "发送失败"));
+				break;
+			case Utils.BOOK_ASKRETURN:
+				localUser.askReturn(book, HttpProgress.createShowProgress(
+						activity, "发送成功", "发送失败"));
+				break;
+			}
 		}
 	}
 
-	private class ReturnBookListener implements DialogInterface.OnClickListener {
-		private Map<String, Object> book;
-
-		public ReturnBookListener(Map<String, Object> book) {
-			this.book = book;
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			localUser.returnBook(book, new ReturnBookProgress());
-		}
-	}
-
-	private class DeleteBookListener implements DialogInterface.OnClickListener {
-		private Map<String, Object> book;
-
-		public DeleteBookListener(Map<String, Object> book) {
-			this.book = book;
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			localUser.deleteBook(book, new BookChangeProgress());
-		}
-	}
-
+	// 获取书本信息的过程处理
 	private class BookInfoProcess extends HttpProcessBase {
 		private Map<String, Object> book;
 
@@ -375,31 +376,25 @@ public class BookListManage {
 			Intent intent = new Intent();
 			Bundle data = new Bundle();
 			JSONObject obj = Book.bookToObj(book);
+			int actionType;
+			if (localUser.getUsername().equals(book.get(Book.OWNER))) {
+				if (((String) book.get(Book.OWNER)).equals(book
+						.get(Book.HOLDER))) { // 自己的书且未借出可删除
+					actionType = Utils.BOOK_DELETE;
+				} else { // 自己的书但已借出则请求对方还书
+					actionType = Utils.BOOK_ASKRETURN;
+				}
+			} else { // 非本人的书则选择还书
+				actionType = Utils.BOOK_RETURN;
+			}
+			data.putInt("action_type", actionType);
 			data.putString("person_book", obj.toString());
 			data.putString(NetAccess.RESPONSE, response);
 			intent.putExtras(data);
 			intent.setClass(activity, BookInformationActivity.class);
-			activity.startActivity(intent);
+			activity.startActivityForResult(intent,actionType);
 		}
 
-	}
-
-	private class ReturnBookProgress extends HttpProcessBase {
-		public void error(String content) {
-			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-		}
-
-		@Override
-		public void statusError(String response) {
-			String content = "发送成功";
-			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-		}
-
-		@Override
-		public void statusSuccess(String response) {
-			String content = "发送成功";
-			Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
-		}
 	}
 
 	public void reload() {
@@ -409,12 +404,12 @@ public class BookListManage {
 	public void reload(String response) {
 		localUser.clearBookData();
 		localUser.addBookDataToList(response);
-		bookAdapter.initViewItemSize();
 		localUser.clearBookBitmap();
 		localUser.loadInitImgs(new BookImgsUpdateProcess());
-		updateDisplay();
+		reloadDisplay();
 	}
 
+	// 书本图像更新的过程处理
 	private class BookImgsUpdateProcess extends HttpProcessBase {
 
 		@Override
@@ -423,12 +418,12 @@ public class BookListManage {
 
 		@Override
 		public void statusSuccess(String response) {
-			updateDisplay();
+			bookAdapter.notifyDataSetChanged();
 		}
 
 	}
 
-	public void updateDisplay() {
-		bookAdapter.notifyDataSetChanged();
+	public void reloadDisplay() {
+		bookAdapter.reloadAdapter();
 	}
 }

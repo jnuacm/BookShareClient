@@ -22,7 +22,6 @@
             android:layout_marginLeft="20dp"
             android:gravity="center_vertical"
             android:text="作品详情" />
-
     </LinearLayout>
 
     <ScrollView
@@ -66,7 +65,7 @@
                         android:id="@+id/book_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="empty"
+                        android:text="title"
                         android:textColor="@color/listview_item_title_black"
                         android:textSize="20sp" />
 
@@ -75,25 +74,31 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="TextView" />
+                        android:text="author" />
 
                     <TextView
                         android:id="@+id/book_publisher"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="TextView" />
+                        android:text="publisher" />
 
                     <TextView
-                        android:id="@+id/textView3"
+                        android:id="@+id/book_owner"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="TextView" />
+                        android:text="owner" />
 
                     <TextView
-                        android:id="@+id/textView4"
+                        android:id="@+id/book_holder"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="TextView" />
+                        android:text="holder" />
+
+                    <TextView
+                        android:id="@+id/book_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="status" />
                 </LinearLayout>
             </RelativeLayout>
 
@@ -119,6 +124,14 @@
                     android:layout_height="40dp"
                     android:layout_marginLeft="5dp"
                     android:text="添加评论" />
+                
+                <Button
+                    android:id="@+id/button_action"
+                    style="@style/MainButton"
+                    android:layout_width="80dp"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="5dp"
+                    android:text="action" />
             </LinearLayout>
 
             <TextView
@@ -128,7 +141,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_below="@id/buttons_layout"
                 android:layout_marginTop="20dp"
-                android:text="empty"
+                android:text="description"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="@color/listview_item_title_black"
                 android:textSize="15sp" />

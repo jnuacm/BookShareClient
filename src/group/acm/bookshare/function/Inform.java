@@ -52,12 +52,12 @@ public class Inform {
 		{
 		"", "同意", "显码", "扫码", "确认", "", "确认", "", "", "确认",
 		"", "已还", "扫码", "显码", "确认", "", "", "确认", "", "确认",
-		"", "同意", "确认", "", "确认", "", "", "", "", ""};
+		"", "同意", "", "", "确认", "", "确认", "", "", ""};
 	public static final int[] confirmVisibility = 
 		{
 		4, 0, 0, 0, 0, 4, 0, 4, 4, 0,
 		4, 0, 0, 0, 0, 4, 4, 0, 4, 0,
-		4, 0, 0, 4, 0, 4, 4, 4, 4, 4};
+		4, 0, 4, 4, 0, 4, 0, 4, 4, 4};
 	public static final String[] cancelButton =
 		{
 		"取消", "拒绝", "取消", "", "", "", "", "", "", "",
@@ -70,7 +70,6 @@ public class Inform {
 		0, 0, 4, 4, 4, 4, 4, 4, 4, 4};
 
 	private Map<String, Object> inform;
-	private User localUser;
 	public int type;
 	public int status;
 	public int isSelf;
@@ -82,7 +81,7 @@ public class Inform {
 	public interface ButtonsAction {
 		public abstract void permitted();
 		
-		public abstract void permittedAndRefreshFriend();
+		public abstract void confirmAndRefreshFriend();
 
 		public abstract void showCode();
 
@@ -100,7 +99,6 @@ public class Inform {
 	public Inform(Map<String, Object> inform, User localUser,
 			ButtonsAction action) throws JSONException {
 		this.inform = inform;
-		this.localUser = localUser;
 		this.action = action;
 		type = (Integer) inform.get(Inform.TYPE);
 		status = (Integer) inform.get(Inform.STATUS);
@@ -260,12 +258,12 @@ public class Inform {
 		case 18:break;
 		case 19:action.delete();break;
 		case 20:break;
-		case 21:action.permittedAndRefreshFriend();break;
-		case 22:action.deleteAndRefreshFriend();break;
+		case 21:action.confirmAndRefreshFriend();break;
+		case 22:break;
 		case 23:break;
 		case 24:action.delete();break;
 		case 25:break;
-		case 26:break;
+		case 26:action.deleteAndRefreshFriend();break;
 		case 27:break;
 		case 28:break;
 		case 29:break;
@@ -347,9 +345,9 @@ public class Inform {
 		case 15:
 		case 16:
 		case 18:
+		case 22:
 		case 23:
 		case 25:
-		case 26:
 		case 27:
 		case 28:
 		case 29:return false;

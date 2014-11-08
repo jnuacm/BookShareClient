@@ -41,6 +41,13 @@ public class Utils {
 	public static final int REQUEST_SCANBOOK_UPDATESTATUS = 2;
 	public static final int ACTIVITY_REQUEST_SHOWCODE = 3;
 	public static final int ACTIVITY_REQUEST_LOGOUT = 4;
+	
+	// 查看书本具体信息时的请求
+	public static final int DO_NOTHING = 0;
+	public static final int BOOK_DELETE = 5;
+	public static final int BOOK_RETURN = 6;
+	public static final int BOOK_ASKRETURN = 7;
+	public static final int BOOK_BORROW = 8;
 
 	private static boolean first = true;
 	private static long lastTime;
@@ -53,6 +60,11 @@ public class Utils {
 	public static final String PNG = "png";// PNG格式
 	public static final String BMP = "bmp";// BMP格式
 
+	/**
+	 * 将String s从Unicode转化成非Unicode
+	 * @param s
+	 * @return
+	 */
 	public static String decode(String s) {
 		Matcher m = reUnicode.matcher(s);
 		StringBuffer sb = new StringBuffer(s.length());
@@ -64,6 +76,11 @@ public class Utils {
 		return sb.toString();
 	}
 
+	/**
+	 * 将String s从非Unicode转化成Unicode
+	 * @param s
+	 * @return
+	 */
 	public static String encode(String s) {
 		StringBuilder sb = new StringBuilder(s.length() * 3);
 		for (char c : s.toCharArray()) {
@@ -80,6 +97,10 @@ public class Utils {
 		return sb.toString();
 	}
 
+	/**
+	 * 检测是否快速点击，即检测是否在一定时间间隔内重复点击
+	 * @return
+	 */
 	public static boolean isQuickClick() {
 		if (first) {
 			first = false;
@@ -87,7 +108,7 @@ public class Utils {
 			return false;
 		}
 		long time = System.currentTimeMillis();
-		if (time - lastTime < 800) {
+		if (time - lastTime < 800) { //测试间隔为800毫秒
 			lastTime = time;
 			return true;
 		} else {
@@ -100,6 +121,12 @@ public class Utils {
 		return Long.toString(System.currentTimeMillis());
 	}
 
+	/**
+	 * 获取ContentProvider返回的文件地址
+	 * @param context
+	 * @param uri
+	 * @return
+	 */
 	public static String getPath(Context context, Uri uri) {
 
 		if ("content".equalsIgnoreCase(uri.getScheme())) {
@@ -125,6 +152,11 @@ public class Utils {
 		return null;
 	}
 
+	/**
+	 * 将path指定路径的图像文件转化为Bitmap
+	 * @param path
+	 * @return
+	 */
 	public static Bitmap fileToAvatarBitmap(String path) {
 		if (!isAvatarImg(path))
 			return null;
@@ -139,6 +171,11 @@ public class Utils {
 		return bitmap;
 	}
 
+	/**
+	 * 判断指定path的文件是否为头像的图像文件
+	 * @param path
+	 * @return
+	 */
 	public static boolean isAvatarImg(String path) {
 		File file = new File(path);
 		if (!file.isFile())
@@ -156,6 +193,11 @@ public class Utils {
 			return false;
 	}
 
+	/**
+	 * 获取头像的缩放比例
+	 * @param options
+	 * @return
+	 */
 	public static int getAvatarScaleSize(Options options) {
 		int reqHeight = 200;
 		int reqWidth = 200;
@@ -175,6 +217,11 @@ public class Utils {
 		return inSampleSize;
 	}
 
+	/**
+	 * 判断文件大小，大于128*1024返回false，否则返回true
+	 * @param file
+	 * @return
+	 */
 	public static boolean isAvatarFileSize(File file) {
 		if (file.length() <= 128 * 1024)
 			return true;
@@ -277,13 +324,20 @@ public class Utils {
 		editor.commit();
 	}
 
-	// 获取代码文件名及行号
+	/**
+	 *  获取代码文件名及行号
+	 * @return
+	 */
 	public static String getLineInfo() {
 		StackTraceElement ste = new Throwable().getStackTrace()[1];
 		return ste.getFileName() + ": Line " + ste.getLineNumber();
 	}
 
-	// 设置是否有更新
+	/**
+	 * 本地记录是否有更新
+	 * @param appContext
+	 * @param flag
+	 */
 	public static void setHasUpdate(Context appContext, boolean flag) {
 		SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(appContext);
@@ -292,7 +346,11 @@ public class Utils {
 		editor.commit();
 	}
 
-	// 获取是否有更新
+	/**
+	 * 从本地获取是否有更新
+	 * @param appContext
+	 * @return
+	 */
 	public synchronized static boolean hasUpdate(Context appContext) {
 		SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(appContext);

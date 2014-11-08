@@ -9,6 +9,9 @@ import group.acm.bookshare.function.http.HttpProgress;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -342,7 +345,7 @@ public class FriendListManage {
 	}
 
 	public void updateDisplay() {
-		friendAdapter.notifyDataSetChanged();
+		friendAdapter.reloadAdapter();
 	}
 
 	public void reload() {
@@ -351,8 +354,11 @@ public class FriendListManage {
 
 	public void reload(String response) {
 		curUser.clearFriendData();
-		curUser.addFriendDataToList(response);
-		friendAdapter.initViewItemSize();
+		try {
+			curUser.addFriendDataToList(new JSONArray(response));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		curUser.clearAvatarBitmap();
 		curUser.loadInitAvatar(new AvatarsUpdateProcess());
 		updateDisplay();
@@ -366,7 +372,7 @@ public class FriendListManage {
 
 		@Override
 		public void statusSuccess(String response) {
-			updateDisplay();
+			friendAdapter.notifyDataSetChanged();
 		}
 
 	}

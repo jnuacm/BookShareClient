@@ -27,6 +27,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * InformListManage负责对消息列表的界面、动作交互进行管理
+ */
 public class InformListManage {
 	private ListView informlistview;
 	private InformListAdapter informAdapter;
@@ -62,6 +65,7 @@ public class InformListManage {
 		return new ConfirmInformProgress(id);
 	}
 
+	// 确认指定id的处理过程
 	private class ConfirmInformProgress extends HttpProcessBase {
 		int id;
 
@@ -105,6 +109,7 @@ public class InformListManage {
 
 	}
 
+	// 获取本人发送的消息列表时的处理过程
 	private class SendInformProgress extends HttpProcessBase {
 
 		@Override
@@ -118,6 +123,7 @@ public class InformListManage {
 		}
 	}
 
+	// 获取本人接收的消息列表时的处理过程
 	private class ReceiveInformProgress extends HttpProcessBase {
 		@Override
 		public void statusError(String response) {
@@ -129,6 +135,7 @@ public class InformListManage {
 			informAdapter.initViewItemSize();
 			updateDisplay();
 			Utils.setHasUpdate(activity, false);
+			activity.checkUpdate();
 		}
 	}
 
@@ -279,9 +286,9 @@ public class InformListManage {
 			}
 
 			@Override
-			public void permittedAndRefreshFriend() {
+			public void confirmAndRefreshFriend() {
 				localUser.updateRequest((Integer) item.get(Inform.ID),
-						Inform.REQUEST_STATUS_PERMITTED,
+						Inform.REQUEST_STATUS_CONFIRM,
 						new PermittedProgress());
 				reload();
 				activity.friendListReload();
@@ -342,6 +349,6 @@ public class InformListManage {
 	}
 
 	public void updateDisplay() {
-		informAdapter.notifyDataSetChanged();
+		informAdapter.reloadAdapter();
 	}
 }

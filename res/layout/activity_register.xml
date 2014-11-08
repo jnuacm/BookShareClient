@@ -39,6 +39,13 @@
         android:ems="10"
         android:hint="@string/register_area_hint" />
 
+    <CheckBox
+        android:id="@+id/checkbox_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="注册为群组"
+        android:textColor="@color/buttonfont_black" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

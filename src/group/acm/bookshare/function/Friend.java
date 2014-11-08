@@ -16,6 +16,7 @@ public class Friend {
 	public static final String IS_GROUP = "is_group";
 	public static final String AVATAR_VERSION = "avatar";
 	public static final int GROUP = 1;
+	public static final int NOT_GROUP = 0;
 	
 	// 返回的array转换为list
 	public static List<Map<String, Object>> jsonArrayToFriends(
