@@ -54,6 +54,8 @@ public class BookInformationActivity extends Activity {
 
 	private Map<String, Object> detailBook;
 
+	private Intent intent;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -67,7 +69,7 @@ public class BookInformationActivity extends Activity {
 		bookPage = new BookSubPage();
 		commentPage = new CommentSubPage();
 
-		Intent intent = getIntent();
+		intent = getIntent();
 		String response = intent.getStringExtra(NetAccess.RESPONSE);
 		String bookObj = intent.getStringExtra("person_book");
 		int bookActionType = intent
@@ -350,6 +352,10 @@ public class BookInformationActivity extends Activity {
 							BookInformationActivity.this, "发送成功", "发送失败"));
 					break;
 				case Utils.BOOK_BORROW:
+					localUser.borrowBook(intent.getStringExtra("define"), book,
+							HttpProgress.createShowProgress(
+									BookInformationActivity.this, "发送成功",
+									"发送失败"));
 					break;
 				}
 			}

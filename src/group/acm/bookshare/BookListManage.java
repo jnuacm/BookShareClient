@@ -280,6 +280,56 @@ public class BookListManage {
 		}
 	}
 
+	// 获取书本信息的过程处理
+	private class BookInfoProcess extends HttpProcessBase {
+		private Map<String, Object> book;
+
+		public BookInfoProcess(Map<String, Object> book) {
+			this.book = book;
+		}
+
+		public void before() {
+			activity.showProgressBar();
+		}
+
+		public void error(String content) {
+			activity.hideProgressBar();
+		}
+
+		@Override
+		public void statusError(String response) {
+			activity.hideProgressBar();
+			activity.showToast(response);
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			activity.hideProgressBar();
+
+			Intent intent = new Intent();
+			Bundle data = new Bundle();
+			JSONObject obj = Book.bookToObj(book);
+			int actionType;
+			if (localUser.getUsername().equals(book.get(Book.OWNER))) {
+				if (((String) book.get(Book.OWNER)).equals(book
+						.get(Book.HOLDER))) { // 自己的书且未借出可删除
+					actionType = Utils.BOOK_DELETE;
+				} else { // 自己的书但已借出则请求对方还书
+					actionType = Utils.BOOK_ASKRETURN;
+				}
+			} else { // 非本人的书则选择还书
+				actionType = Utils.BOOK_RETURN;
+			}
+			data.putInt("action_type", actionType);
+			data.putString("person_book", obj.toString());
+			data.putString(NetAccess.RESPONSE, response);
+			intent.putExtras(data);
+			intent.setClass(activity, BookInformationActivity.class);
+			activity.startActivityForResult(intent, actionType);
+		}
+
+	}
+
 	/**
 	 * 根据该图书的状态判断相应的动作
 	 */
@@ -345,56 +395,6 @@ public class BookListManage {
 				break;
 			}
 		}
-	}
-
-	// 获取书本信息的过程处理
-	private class BookInfoProcess extends HttpProcessBase {
-		private Map<String, Object> book;
-
-		public BookInfoProcess(Map<String, Object> book) {
-			this.book = book;
-		}
-
-		public void before() {
-			activity.showProgressBar();
-		}
-
-		public void error(String content) {
-			activity.hideProgressBar();
-		}
-
-		@Override
-		public void statusError(String response) {
-			activity.hideProgressBar();
-			activity.showToast(response);
-		}
-
-		@Override
-		public void statusSuccess(String response) {
-			activity.hideProgressBar();
-
-			Intent intent = new Intent();
-			Bundle data = new Bundle();
-			JSONObject obj = Book.bookToObj(book);
-			int actionType;
-			if (localUser.getUsername().equals(book.get(Book.OWNER))) {
-				if (((String) book.get(Book.OWNER)).equals(book
-						.get(Book.HOLDER))) { // 自己的书且未借出可删除
-					actionType = Utils.BOOK_DELETE;
-				} else { // 自己的书但已借出则请求对方还书
-					actionType = Utils.BOOK_ASKRETURN;
-				}
-			} else { // 非本人的书则选择还书
-				actionType = Utils.BOOK_RETURN;
-			}
-			data.putInt("action_type", actionType);
-			data.putString("person_book", obj.toString());
-			data.putString(NetAccess.RESPONSE, response);
-			intent.putExtras(data);
-			intent.setClass(activity, BookInformationActivity.class);
-			activity.startActivityForResult(intent,actionType);
-		}
-
 	}
 
 	public void reload() {

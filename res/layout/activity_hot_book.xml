@@ -1,0 +1,45 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_white"
+    tools:context="group.acm.bookshare.HotBookActivity" >
+
+    <LinearLayout
+        android:id="@+id/hotbook_bar"
+        style="@style/activity_bar_layout"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/hotbook_bar_img"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/back" />
+
+        <TextView
+            android:id="@+id/hotbook_bar_title"
+            style="@style/activity_bar_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="20dp"
+            android:gravity="center_vertical"
+            android:text="热书推荐" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/hotbook_listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/hotbook_bar"
+        android:layout_centerHorizontal="true"
+        android:fadingEdge="none" >
+    </ListView>
+
+    <ProgressBar
+        android:id="@+id/hotbook_progressbar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" />
+
+</RelativeLayout>

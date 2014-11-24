@@ -122,4 +122,8 @@ public class UrlStringFactory {
 	public String getCommentListUrl(String isbn) {
 		return null;
 	}
+
+	public String getHotBookListUrl() {
+		return null;
+	}
 }

@@ -53,6 +53,7 @@ public class User {
 	private List<Map<String, Object>> friends; // 保存uesr的好友列表数据
 	private List<Map<String, Object>> informs; // 保存user的消息列表数据
 	private List<Map<String, Object>> comments; // 临时保存书本评论列表数据
+	private List<Map<String, Object>> hotBooks; // 临时保存热书推荐列表数据
 
 	private User curFriend;
 
@@ -69,6 +70,7 @@ public class User {
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		comments = new ArrayList<Map<String, Object>>();
+		hotBooks = new ArrayList<Map<String, Object>>();
 		this.application = application;
 		avatarVersion = 0;
 		curLoadImgIndex = 0;
@@ -92,6 +94,7 @@ public class User {
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
 		comments = new ArrayList<Map<String, Object>>();
+		hotBooks = new ArrayList<Map<String, Object>>();
 		this.application = application;
 		curLoadImgIndex = 0;
 		curLoadAvatarIndex = 0;
@@ -167,6 +170,7 @@ public class User {
 		friends.clear();
 		informs.clear();
 		comments.clear();
+		hotBooks.clear();
 		imgManage.clearBitmap();
 		imgManage.clearOverCacheFile();
 		curLoadImgIndex = 0;
@@ -192,6 +196,10 @@ public class User {
 	public List<Map<String, Object>> getCommentListData() {
 		return comments;
 	}
+	
+	public List<Map<String,Object>> getHotListData(){
+		return hotBooks;
+	}
 
 	public void clearBookData() {
 		books.clear();
@@ -208,6 +216,10 @@ public class User {
 
 	public void clearCommentData() {
 		comments.clear();
+	}
+	
+	public void clearHotBookData() {
+		hotBooks.clear();
 	}
 
 	/**
@@ -304,6 +316,22 @@ public class User {
 				JSONObject item = jsonarray.getJSONObject(i);
 				Map<String, Object> tmp = Comment.objToComment(item);
 				comments.add(tmp);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean addHotBooksDataToList(String response) {
+		JSONArray jsonarray;
+		try {
+			jsonarray = new JSONArray(response);
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				Map<String, Object> tmp = Book.objToBook(item);
+				hotBooks.add(tmp);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -533,6 +561,14 @@ public class User {
 	 */
 	public void getCommentList(String isbn, NetProgress progress) {
 		String url = urlFactory.getCommentListUrl(isbn);
+		net.createGetThread(url, progress);
+	}
+	
+	/**
+	 * 获取热书推荐列表
+	 */
+	public void getHotBookList(NetProgress progress) {
+		String url = urlFactory.getHotBookListUrl();
 		net.createGetThread(url, progress);
 	}
 

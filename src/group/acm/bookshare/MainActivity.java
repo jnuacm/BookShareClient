@@ -68,7 +68,8 @@ public class MainActivity extends Activity {
 
 	private static final int OPTIONS_ITEM_PERSONINFO = Menu.FIRST;
 	private static final int OPTIONS_ITEM_SEARCH = Menu.FIRST + 1;
-	private static final int OPTIONS_ITEM_EXIT = Menu.FIRST + 2;
+	private static final int OPTIONS_ITEM_HOTBOOKS = Menu.FIRST + 2;
+	private static final int OPTIONS_ITEM_EXIT = Menu.FIRST + 3;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -169,17 +170,20 @@ public class MainActivity extends Activity {
 		case 0:
 			menu.add(Menu.NONE, OPTIONS_ITEM_PERSONINFO, 1, "个人信息");
 			menu.add(Menu.NONE, OPTIONS_ITEM_SEARCH, 2, "搜索书本");
-			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 3, "Exit");
+			menu.add(Menu.NONE, OPTIONS_ITEM_HOTBOOKS, 3, "热书推荐");
+			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 4, "Exit");
 			break;
 		case 1:
 			menu.add(Menu.NONE, OPTIONS_ITEM_PERSONINFO, 1, "个人信息");
 			menu.add(Menu.NONE, OPTIONS_ITEM_SEARCH, 2, "搜索书本");
-			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 3, "Exit");
+			menu.add(Menu.NONE, OPTIONS_ITEM_HOTBOOKS, 3, "热书推荐");
+			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 4, "Exit");
 			break;
 		case 2:
 			menu.add(Menu.NONE, OPTIONS_ITEM_PERSONINFO, 1, "个人信息");
 			menu.add(Menu.NONE, OPTIONS_ITEM_SEARCH, 2, "搜索书本");
-			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 3, "Exit");
+			menu.add(Menu.NONE, OPTIONS_ITEM_HOTBOOKS, 3, "热书推荐");
+			menu.add(Menu.NONE, OPTIONS_ITEM_EXIT, 4, "Exit");
 			break;
 		}
 		return super.onPrepareOptionsMenu(menu);
@@ -193,6 +197,10 @@ public class MainActivity extends Activity {
 			break;
 		case OPTIONS_ITEM_SEARCH:
 			Intent intent = new Intent(this, BookSearchActivity.class);
+			startActivity(intent);
+			break;
+		case OPTIONS_ITEM_HOTBOOKS:
+			intent = new Intent(this, HotBookActivity.class);
 			startActivity(intent);
 			break;
 		case OPTIONS_ITEM_EXIT:

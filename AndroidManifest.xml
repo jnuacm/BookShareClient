@@ -147,6 +147,11 @@
         <meta-data
             android:name="api_key"
             android:value="OErne3qA5cR5q14A0rZiSIaF" />
+
+        <activity
+            android:name=".HotBookActivity"
+            android:label="@string/title_activity_hot_book" >
+        </activity>
     </application>
 
 </manifest>
