@@ -1,17 +1,48 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="@color/background_white" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/comment_bar"
+        style="@style/activity_bar_layout"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/comment_bar_img"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/back" />
+
+        <TextView
+            android:id="@+id/comment_bar_title"
+            style="@style/activity_bar_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="20dp"
+            android:gravity="center_vertical"
+            android:text="评论列表" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/comment_button"
+        style="@style/MainButton"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:text="评论"
+        android:textSize="20sp" />
+
+    <ListView
+        android:id="@+id/comment_listview"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/main_button"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="92dp"
-        android:layout_marginTop="57dp"
-        android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-    
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/comment_bar"
+        android:fadingEdge="none" >
+
+    </ListView>
+
 </RelativeLayout>

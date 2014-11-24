@@ -9,8 +9,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
 
 public class Inform {
 	public static final int REQUEST_TYPE_BORROW = 1;
@@ -109,6 +107,36 @@ public class Inform {
 				+ (type - 1) * STATUS_SUM * IDENTITY_SUM
 				+ status * IDENTITY_SUM
 				+ posSelf;
+	}
+	
+	public static String mapToStr(Map<String, Object> item) {
+		String ret = (String) item.get(Inform.TIME);
+		ret += ("\nfrom:" + item.get(Inform.FROM));
+		ret += ("\nto:" + item.get(Inform.TO));
+		ret += "\n请求:";
+		switch ((Integer) item.get(Inform.TYPE)) {
+		case Inform.REQUEST_TYPE_BORROW:
+			ret += "借书";
+			break;
+		case Inform.REQUEST_TYPE_RETURN:
+			ret += "还书";
+			break;
+		}
+
+		ret += "\n";
+
+		switch ((Integer) item.get(Inform.STATUS)) {
+		case Inform.REQUEST_STATUS_UNPROCESSED:
+			ret += "未处理";
+			break;
+		case Inform.REQUEST_STATUS_PERMITTED:
+			ret += "已允许";
+			break;
+		case Inform.REQUEST_STATUS_REFUSED:
+			ret += "已拒绝";
+			break;
+		}
+		return ret;
 	}
 
 	private IdentityJudge getIdentityJudge() {

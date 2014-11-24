@@ -1,7 +1,9 @@
 package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
+import group.acm.bookshare.function.Comment;
 import group.acm.bookshare.function.LocalApp;
+import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.HttpProgress;
@@ -34,7 +36,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +51,8 @@ public class BookInformationActivity extends Activity {
 	private Context appContext;
 	private BookSubPage bookPage;
 	private CommentSubPage commentPage;
+
+	private Map<String, Object> detailBook;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +81,26 @@ public class BookInformationActivity extends Activity {
 		viewPager = (ViewPager) findViewById(R.id.book_viewpager);
 		viewPager.setAdapter(new MyViewPagerAdapter(viewList));
 		viewPager.setCurrentItem(0);
+
+		// localUser.getCommentList((String) detailBook.get(Book.ISBN),
+		// new CommentGetProgress());
 	}
-	
+
+	private class CommentGetProgress extends HttpProcessBase {
+
+		@Override
+		public void statusError(String response) {
+			Toast.makeText(appContext, response, Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			localUser.addCommentDataToList(response);
+			commentPage.updateDisplay(localUser.getCommentListData());
+		}
+
+	}
+
 	public class MyViewPagerAdapter extends PagerAdapter {
 		private List<View> mListViews;
 		private boolean isCreated[] = { false, false, false };
@@ -114,7 +138,6 @@ public class BookInformationActivity extends Activity {
 
 	private class BookSubPage {
 		private int bookActionType;
-		private Map<String, Object> detailBook;
 
 		private View page;
 
@@ -364,14 +387,146 @@ public class BookInformationActivity extends Activity {
 
 	private class CommentSubPage {
 		private View page;
+		private Button buttonComment;
+		private ImageView buttonBack;
+		private ListView listviewComment;
+
+		private CommentListAdapter adapter;
 
 		public void initCommentPage() {
+			adapter = new CommentListAdapter(localUser.getCommentListData(),
+					BookInformationActivity.this);
 			page = LayoutInflater.from(BookInformationActivity.this).inflate(
 					R.layout.activity_subbook_comment, null);
+
+			// 返回键
+			buttonBack = (ImageView) page.findViewById(R.id.comment_bar_img);
+			buttonBack.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					finish();
+				}
+			});
+
+			// 评论列表
+			listviewComment = (ListView) page
+					.findViewById(R.id.comment_listview);
+			listviewComment.setAdapter(adapter);
+
+			// 添加评论按钮
+			buttonComment = (Button) page.findViewById(R.id.comment_button);
+			buttonComment.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					addComment();
+				}
+			});
+		}
+
+		public void updateDisplay(List<Map<String, Object>> datas) {
+			adapter.setData(datas);
+			adapter.notifyDataSetChanged();
+		}
+
+		private class CommentListAdapter extends PageListAdapter {
+			private List<Map<String, Object>> datas;
+			private Context context;
+
+			public CommentListAdapter(List<Map<String, Object>> datas,
+					Context context) {
+				this.datas = datas;
+				this.context = context;
+			}
+
+			public void setData(List<Map<String, Object>> datas) {
+				this.datas = datas;
+			}
+
+			@Override
+			public int getCount() {
+				if (datas.size() < curViewSize)
+					curViewSize = datas.size();
+				return curViewSize;
+			}
+
+			@Override
+			public Object getItem(int position) {
+				return datas.get(position);
+			}
+
+			@Override
+			public long getItemId(int position) {
+				return position;
+			}
+
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+				TextView person;
+				TextView content;
+				TextView date;
+				convertView = LayoutInflater.from(context).inflate(
+						R.layout.comment_listview_item, null);
+				person = (TextView) convertView
+						.findViewById(R.id.comment_item_person_textview);
+				content = (TextView) convertView
+						.findViewById(R.id.comment_item_content_textview);
+				date = (TextView) convertView
+						.findViewById(R.id.comment_item_date_textview);
+				Map<String, Object> comment = datas.get(position);
+				person.setText((String) comment.get(Comment.PERSON));
+				content.setText((String) comment.get(Comment.CONTENT));
+				date.setText((String) comment.get(Comment.DATE));
+				return convertView;
+
+			}
+
+			@Override
+			public void loadData() {
+			}
 		}
 
 		public View getView() {
 			return page;
 		}
+
+		public void addComment() {
+			View addCommentView = LayoutInflater.from(
+					BookInformationActivity.this).inflate(
+					R.layout.add_friend_alert_dialog, null);
+			EditText addCommentEdit = (EditText) addCommentView
+					.findViewById(R.id.add_friend_name);
+			AlertDialog addFriendDialog = null;
+			AlertDialog.Builder builder = null;
+
+			builder = new AlertDialog.Builder(BookInformationActivity.this);
+			builder.setTitle("评论");
+			builder.setMessage("请输入评论内容:");
+			builder.setView(addCommentView);
+			builder.setPositiveButton("Yes",
+					new AddCommentConfirmDialogListener(addCommentEdit));
+			builder.setNegativeButton("No", null);
+			addFriendDialog = builder.create();
+			addFriendDialog.show();
+		}
+	}
+
+	private class AddCommentConfirmDialogListener implements
+			DialogInterface.OnClickListener {
+		EditText addCommentEdit;
+
+		public AddCommentConfirmDialogListener(EditText addCommentEdit) {
+			this.addCommentEdit = addCommentEdit;
+		}
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			String content = addCommentEdit.getText().toString();
+			if (content.length() <= 0)
+				return;
+			localUser.addComment((String) detailBook.get(Book.ISBN), content,
+					HttpProgress.createShowProgress(
+							BookInformationActivity.this, "评论成功", "评论失败"));
+		}
+
 	}
 }

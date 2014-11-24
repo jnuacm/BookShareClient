@@ -115,7 +115,7 @@
                     style="@style/MainButton"
                     android:layout_width="80dp"
                     android:layout_height="40dp"
-                    android:text="赞" />
+                    android:text="赞(xxxx)" />
 
                 <Button
                     android:id="@+id/button_addcomment"

@@ -31,7 +31,7 @@
     <!-- MainActivity-inform listview -->
     <string name="refresh">刷新</string>
     <!-- url resources -->
-    <string name="url_host">https://192.168.1.32/</string>
+    <string name="url_host">https://192.168.1.104/</string>
     <string name="url_login">bookshareyii/index.php/api/login/</string>
     <string name="url_register">bookshareyii/index.php/api/register/</string>
     <string name="url_user">bookshareyii/index.php/api/user/</string>

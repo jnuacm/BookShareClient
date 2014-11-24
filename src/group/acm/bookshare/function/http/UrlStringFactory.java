@@ -118,4 +118,8 @@ public class UrlStringFactory {
 		url += ("&publisher=" + publisher);
 		return url;
 	}
+
+	public String getCommentListUrl(String isbn) {
+		return null;
+	}
 }

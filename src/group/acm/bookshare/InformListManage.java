@@ -103,7 +103,7 @@ public class InformListManage {
 			if (item == null)
 				return;
 			new AlertDialog.Builder(activity).setTitle("Message")
-					.setMessage(localUser.informMapToStr(item))
+					.setMessage(Inform.mapToStr(item))
 					.setPositiveButton("х╥хо", null).show();
 		}
 

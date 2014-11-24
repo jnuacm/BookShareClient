@@ -52,6 +52,7 @@ public class User {
 	private List<Map<String, Object>> books; // 保存user的书本列表数据
 	private List<Map<String, Object>> friends; // 保存uesr的好友列表数据
 	private List<Map<String, Object>> informs; // 保存user的消息列表数据
+	private List<Map<String, Object>> comments; // 临时保存书本评论列表数据
 
 	private User curFriend;
 
@@ -67,6 +68,7 @@ public class User {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
+		comments = new ArrayList<Map<String, Object>>();
 		this.application = application;
 		avatarVersion = 0;
 		curLoadImgIndex = 0;
@@ -89,6 +91,7 @@ public class User {
 		books = new ArrayList<Map<String, Object>>();
 		friends = new ArrayList<Map<String, Object>>();
 		informs = new ArrayList<Map<String, Object>>();
+		comments = new ArrayList<Map<String, Object>>();
 		this.application = application;
 		curLoadImgIndex = 0;
 		curLoadAvatarIndex = 0;
@@ -163,6 +166,7 @@ public class User {
 		books.clear();
 		friends.clear();
 		informs.clear();
+		comments.clear();
 		imgManage.clearBitmap();
 		imgManage.clearOverCacheFile();
 		curLoadImgIndex = 0;
@@ -185,6 +189,10 @@ public class User {
 		return informs;
 	}
 
+	public List<Map<String, Object>> getCommentListData() {
+		return comments;
+	}
+
 	public void clearBookData() {
 		books.clear();
 	}
@@ -196,6 +204,10 @@ public class User {
 	public void clearInformData() {
 		Utils.setHasUpdate(application, false);
 		informs.clear();
+	}
+
+	public void clearCommentData() {
+		comments.clear();
 	}
 
 	/**
@@ -276,6 +288,22 @@ public class User {
 				if (!inform.showThisInform())
 					continue;
 				informs.add(tmp);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public boolean addCommentDataToList(String response) {
+		JSONArray jsonarray;
+		try {
+			jsonarray = new JSONArray(response);
+			for (int i = 0; i < jsonarray.length(); i++) {
+				JSONObject item = jsonarray.getJSONObject(i);
+				Map<String, Object> tmp = Comment.objToComment(item);
+				comments.add(tmp);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -398,6 +426,19 @@ public class User {
 		}
 	}
 
+	public void addComment(String isbn, String content, NetProgress progress) {
+		String url = urlFactory.getCommentListUrl(isbn);
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+
+		nvps.add(new BasicNameValuePair(Comment.CONTENT, content));
+		try {
+			net.createPostThread(url,
+					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void borrowBook(String aimName, Map<String, Object> book,
 			NetProgress progress) {
 		bookRequest(aimName, book, "借书消息", Inform.REQUEST_TYPE_BORROW, progress);
@@ -488,6 +529,14 @@ public class User {
 	}
 
 	/**
+	 * 通过isbn获取书本评论
+	 */
+	public void getCommentList(String isbn, NetProgress progress) {
+		String url = urlFactory.getCommentListUrl(isbn);
+		net.createGetThread(url, progress);
+	}
+
+	/**
 	 * 更新消息的status
 	 */
 	public void updateRequest(int id, int status, NetProgress progress) {
@@ -534,36 +583,6 @@ public class User {
 				return;
 			}
 		}
-	}
-
-	public String informMapToStr(Map<String, Object> item) {
-		String ret = (String) item.get(Inform.TIME);
-		ret += ("\nfrom:" + item.get(Inform.FROM));
-		ret += ("\nto:" + item.get(Inform.TO));
-		ret += "\n请求:";
-		switch ((Integer) item.get(Inform.TYPE)) {
-		case Inform.REQUEST_TYPE_BORROW:
-			ret += "借书";
-			break;
-		case Inform.REQUEST_TYPE_RETURN:
-			ret += "还书";
-			break;
-		}
-
-		ret += "\n";
-
-		switch ((Integer) item.get(Inform.STATUS)) {
-		case Inform.REQUEST_STATUS_UNPROCESSED:
-			ret += "未处理";
-			break;
-		case Inform.REQUEST_STATUS_PERMITTED:
-			ret += "已允许";
-			break;
-		case Inform.REQUEST_STATUS_REFUSED:
-			ret += "已拒绝";
-			break;
-		}
-		return ret;
 	}
 
 	/**
