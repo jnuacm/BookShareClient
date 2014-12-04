@@ -100,13 +100,6 @@ public class UrlStringFactory {
 		return url;
 	}
 
-	public String getAimBookImgUrl(String isbn) {
-		String url = appContext.getString(R.string.url_host);
-		url += appContext.getString(R.string.url_bookimg);
-		url += isbn;
-		return url;
-	}
-
 	public String getBookSearchUrl(String isbn, String name, String author,
 			String publisher) {
 		String url = appContext.getString(R.string.url_host);
@@ -118,12 +111,32 @@ public class UrlStringFactory {
 		url += ("&publisher=" + publisher);
 		return url;
 	}
-
-	public String getCommentListUrl(String isbn) {
-		return null;
+	
+	public String getDoubanBookUrl(String isbn) {
+		String url = appContext.getString(R.string.douban_url);
+		url += isbn;
+		return url;
 	}
 
-	public String getHotBookListUrl() {
-		return null;
+	public String getDoubanSearchUrl(String tag) {
+		String url = appContext.getString(R.string.douban_url_search);
+		url += appContext.getString(R.string.douban_search_tag);
+		url += tag;
+		return url;
+	}
+	
+	public String getCommentUrl(String isbn) {
+		String url = appContext.getString(R.string.url_host);
+		url += appContext.getString(R.string.url_comment);
+		url += appContext.getString(R.string.url_comment_isbn);
+		url += isbn;
+		return url;
+	}
+	
+	public String getCommentUrl(int id) {
+		String url = appContext.getString(R.string.url_host);
+		url += appContext.getString(R.string.url_comment);
+		url += id;
+		return url;
 	}
 }

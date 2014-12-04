@@ -1,5 +1,6 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.Book;
 import group.acm.bookshare.util.Utils;
 
 import java.text.SimpleDateFormat;
@@ -103,10 +104,24 @@ public class PushMessageReceiver extends FrontiaPushMessageReceiver {
 		}
 
 		// Demo更新界面展示代码，应用请在这里加入自己的处理逻辑
-		// 更新标志并发送更新广播
-		Utils.setHasUpdate(context.getApplicationContext(), true);
-		context.sendBroadcast(new Intent(
-				"group.acm.bookshare.action.UPDATEMESSAGE"));
+		JSONObject obj;
+		try {
+			obj = new JSONObject(message);
+			if (obj.getString("subject").equals("comment")) {
+				String isbn = obj.getString("isbn");
+				Intent intent = new Intent(
+						"group.acm.bookshare.action.UPDATECOMMENT");
+				intent.putExtra(Book.ISBN, isbn);
+				context.sendBroadcast(intent);
+			} else {
+				// 更新标志并发送更新广播
+				Utils.setHasUpdate(context.getApplicationContext(), true);
+				context.sendBroadcast(new Intent(
+						"group.acm.bookshare.action.UPDATEMESSAGE"));
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

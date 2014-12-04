@@ -34,6 +34,7 @@ public class Book {
 	public static final String PUBLISHER = "publisher";
 	public static final String DESCRIPTION = "description";
 	public static final String AUTHOR = "author";
+	public static final String AVERAGE = "average";
 	public static final String ISBN = "isbn";
 	public static final String OWNER = "owner";
 	public static final String HOLDER = "holder";
@@ -41,8 +42,9 @@ public class Book {
 	public static final String IMG_URL_SMALL = "small_img";
 	public static final String IMG_URL_MEDIUM = "medium_img";
 	public static final String IMG_URL_LARGE = "large_img";
+	public static final String TAGS = "tags";
 
-	public static final String DEFAULT_IMG_URL = "http://www.ttoou.com/qqtouxiang/allimg/110619/1-110619113537.jpg";
+	public static final String DEFAULT_IMG_URL = "http://img.teapic.com/thumbs/201207/27/110424piwidgogvirydcfj.jpg.middle.jpg";
 
 	protected List<String> approval;
 	protected List<String> lables;
@@ -50,7 +52,6 @@ public class Book {
 	protected Application application;
 
 	public Book() {
-
 	}
 
 	public Book(Application application) {
@@ -61,50 +62,35 @@ public class Book {
 		NetAccess network = NetAccess.getInstance();
 		String url = application.getString(R.string.douban_url);
 		url += isbn;
-		url += application.getString(R.string.douban_form);
-		network.createUrlConntectionGetThread(url, new BookProgress(progress),
-				new BookInfoProcess());
+		network.createGetThread(url, progress);
+		// url += application.getString(R.string.douban_form);
+		// network.createUrlConntectionGetThread(url, new
+		// BookProgress(progress),
+		// new BookInfoProcess());
 	}
 
-	private class BookInfoProcess implements StreamProcess {
-		@Override
-		public String getResponse(int status, InputStream responseStream) {
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					responseStream));
-			String ret = "";
-			String tmp;
-			try {
-				while ((tmp = br.readLine()) != null) {
-					ret += tmp;
-				}
-			} catch (IOException e) {
-				ret = e.toString();
-			}
-			return ret;
-		}
-	}
-
-	private class BookProgress extends HttpProcessBase {
-		private NetProgress progress;
-
-		public BookProgress(NetProgress progress) {
-			this.progress = progress;
-		}
-
-		public void error(String content) {
-			progress.setError(content);
-		}
-
-		@Override
-		public void statusError(String response) {
-			progress.setError("豆瓣访问错误");
-		}
-
-		@Override
-		public void statusSuccess(String response) {
-			progress.setAfter(NetAccess.STATUS_SUCCESS, response);
-		}
-	}
+	/*
+	 * private class BookInfoProcess implements StreamProcess {
+	 * 
+	 * @Override public String getResponse(int status, InputStream
+	 * responseStream) { BufferedReader br = new BufferedReader(new
+	 * InputStreamReader( responseStream)); String ret = ""; String tmp; try {
+	 * while ((tmp = br.readLine()) != null) { ret += tmp; } } catch
+	 * (IOException e) { ret = e.toString(); } return ret; } }
+	 * 
+	 * private class BookProgress extends HttpProcessBase { private NetProgress
+	 * progress;
+	 * 
+	 * public BookProgress(NetProgress progress) { this.progress = progress; }
+	 * 
+	 * public void error(String content) { progress.setError(content); }
+	 * 
+	 * @Override public void statusError(String response) {
+	 * progress.setError("豆瓣访问错误"); }
+	 * 
+	 * @Override public void statusSuccess(String response) {
+	 * progress.setAfter(NetAccess.STATUS_SUCCESS, response); } }
+	 */
 
 	public static Map<String, Object> doubanStrToBook(String response) {
 		Map<String, Object> ret = new HashMap<String, Object>();
@@ -112,65 +98,108 @@ public class Book {
 		String authors = "";
 		String description = "empty";
 		String publisher = "empty";
+		String isbn = "";
+		double average = 0;
 		String url = DEFAULT_IMG_URL;
+		String mUrl = DEFAULT_IMG_URL;
+		String lUrl = DEFAULT_IMG_URL;
+		String tags = "[]";
+
+		/*
+		 * JSONObject bookObj = new JSONObject(); try { bookObj = new
+		 * JSONObject(response); name =
+		 * bookObj.getJSONObject("title").getString("$t"); } catch
+		 * (JSONException e) { e.printStackTrace(); } try { JSONArray array =
+		 * bookObj.getJSONArray("author"); for (int i = 0; i < array.length();
+		 * i++) { authors += (array.getJSONObject(i).getJSONObject("name")
+		 * .getString("$t") + " "); } } catch (JSONException e) { authors =
+		 * "empty"; }
+		 * 
+		 * try { description = bookObj.getJSONObject("summary").getString("$t");
+		 * } catch (JSONException e) { description = "empty"; } try { JSONArray
+		 * attrsArray = bookObj.getJSONArray("db:attribute");
+		 * 
+		 * for (int i = 0; i < attrsArray.length(); i++) { JSONObject obj =
+		 * attrsArray.getJSONObject(i); if
+		 * ("publisher".equals(obj.getString("@name"))) { publisher =
+		 * obj.getString("$t"); } } } catch (Exception e) { e.printStackTrace();
+		 * }
+		 * 
+		 * try { JSONArray attrsArray = bookObj.getJSONArray("link"); for (int i
+		 * = 0; i < attrsArray.length(); i++) { JSONObject obj =
+		 * attrsArray.getJSONObject(i); if
+		 * ("image".equals(obj.getString("@rel"))) { url =
+		 * obj.getString("@href"); } } } catch (JSONException e) {
+		 * e.printStackTrace(); }
+		 */
 
 		JSONObject bookObj = new JSONObject();
+
 		try {
 			bookObj = new JSONObject(response);
-			name = bookObj.getJSONObject("title").getString("$t");
+			name = bookObj.getString("title");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+		try {
+			isbn = bookObj.getString("isbn13");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
 		try {
 			JSONArray array = bookObj.getJSONArray("author");
 			for (int i = 0; i < array.length(); i++) {
-				authors += (array.getJSONObject(i).getJSONObject("name")
-						.getString("$t") + " ");
+				authors += (array.getJSONObject(i).getString("name") + " ");
 			}
 		} catch (JSONException e) {
 			authors = "empty";
 		}
 
 		try {
-			description = bookObj.getJSONObject("summary").getString("$t");
+			description = bookObj.getString("summary");
 		} catch (JSONException e) {
 			description = "empty";
 		}
 		try {
-			JSONArray attrsArray = bookObj.getJSONArray("db:attribute");
+			publisher = bookObj.getString("publisher");
 
-			for (int i = 0; i < attrsArray.length(); i++) {
-				JSONObject obj = attrsArray.getJSONObject(i);
-				if ("publisher".equals(obj.getString("@name"))) {
-					publisher = obj.getString("$t");
-				}
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		try {
-			JSONArray attrsArray = bookObj.getJSONArray("link");
-			for (int i = 0; i < attrsArray.length(); i++) {
-				JSONObject obj = attrsArray.getJSONObject(i);
-				if ("image".equals(obj.getString("@rel"))) {
-					url = obj.getString("@href");
-				}
-			}
+			average = bookObj.getJSONObject("rating").getDouble("average");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		try {
+			JSONObject imageObj = bookObj.getJSONObject("images");
+			url = imageObj.getString("small");
+			mUrl = imageObj.getString("medium");
+			lUrl = imageObj.getString("large");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-		String mUrl = url.replaceFirst("spic", "mpic");
-		String lUrl = url.replaceFirst("spic", "lpic");
+		try {
+			tags = bookObj.getString("tags");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 
+		ret.put(Book.ISBN, isbn);
 		ret.put(Book.AUTHOR, authors);
 		ret.put(Book.DESCRIPTION, description);
 		ret.put(Book.NAME, name);
 		ret.put(Book.PUBLISHER, publisher);
+		ret.put(Book.AVERAGE, average);
 		ret.put(Book.IMG_URL_SMALL, url);
 		ret.put(Book.IMG_URL_MEDIUM, mUrl);
 		ret.put(Book.IMG_URL_LARGE, lUrl);
+		ret.put(Book.TAGS, tags);
 
 		return ret;
 	}
@@ -185,6 +214,7 @@ public class Book {
 			map.put(Book.IMG_URL_LARGE, item.getString(Book.IMG_URL_LARGE));
 			map.put(Book.AUTHOR, item.getString(Book.AUTHOR));
 			map.put(Book.PUBLISHER, item.getString(Book.PUBLISHER));
+			map.put(Book.TAGS, item.getString(Book.TAGS));
 
 			map.put(Book.ID, item.getInt(Book.ID));
 			map.put(Book.OWNER, item.getString(Book.OWNER));
@@ -208,6 +238,7 @@ public class Book {
 			obj.put(Book.IMG_URL_LARGE, (String) book.get(Book.IMG_URL_LARGE));
 			obj.put(Book.AUTHOR, (String) book.get(Book.AUTHOR));
 			obj.put(Book.PUBLISHER, (String) book.get(Book.PUBLISHER));
+			obj.put(Book.TAGS, (String) book.get(Book.TAGS));
 
 			obj.put(Book.ID, (Integer) book.get(Book.ID));
 			obj.put(Book.OWNER, (String) book.get(Book.OWNER));
@@ -247,6 +278,58 @@ public class Book {
 		ret.put(Book.DESCRIPTION, doubanBook.get(Book.DESCRIPTION));
 		ret.put(Book.AUTHOR, doubanBook.get(Book.AUTHOR));
 		ret.put(Book.PUBLISHER, doubanBook.get(Book.PUBLISHER));
+		ret.put(Book.TAGS, doubanBook.get(Book.TAGS));
+		return ret;
+	}
+
+	public static List<Map<String, Object>> getTags(Map<String, Object> book) {
+		List<Map<String, Object>> tags = new ArrayList<Map<String, Object>>();
+		try {
+			JSONArray array = new JSONArray((String) book.get(Book.TAGS));
+			for (int i = 0; i < array.length(); i++) {
+				Map<String, Object> tag = new HashMap<String, Object>();
+				JSONObject obj = array.getJSONObject(i);
+				tag.put("name", obj.getString("name"));
+				tag.put("count", obj.getInt("count"));
+				tags.add(tag);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return tags;
+	}
+
+	public static List<Map<String, Object>> getWantedBooks(String searchResponse) {
+		List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
+		try {
+			// 找出average最高的两本书
+			JSONObject obj = new JSONObject(searchResponse);
+			JSONArray array = obj.getJSONArray("books");
+			int m1 = -1, m2 = -1;
+			double c1 = 0, c2 = 0;
+			for (int i = 0; i < array.length(); i++) {
+				JSONObject bookObj = array.getJSONObject(i);
+				double t = bookObj.getJSONObject("rating").getDouble("average");
+				if (t > c1) {
+					c2 = c1;
+					m2 = m1;
+					m1 = i;
+					c1 = t;
+				} else if (t > c2) {
+					m2 = i;
+					c2 = t;
+				}
+			}
+			if (m1 != -1) {
+				ret.add(Book.doubanStrToBook(array.getString(m1)));
+			}
+			if (m2 != -1) {
+				ret.add(Book.doubanStrToBook(array.getString(m2)));
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
 		return ret;
 	}
 }

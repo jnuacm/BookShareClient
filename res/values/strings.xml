@@ -31,7 +31,7 @@
     <!-- MainActivity-inform listview -->
     <string name="refresh">刷新</string>
     <!-- url resources -->
-    <string name="url_host">https://192.168.1.104/</string>
+    <string name="url_host">https://192.168.1.103/</string>
     <string name="url_login">bookshareyii/index.php/api/login/</string>
     <string name="url_register">bookshareyii/index.php/api/register/</string>
     <string name="url_user">bookshareyii/index.php/api/user/</string>
@@ -45,12 +45,15 @@
     <string name="url_inform_from">from/</string>
     <string name="url_inform_to">to/</string>
     <string name="url_avatar">bookshareyii/index.php/api/avatar/</string>
-    <string name="url_bookimg"></string>
+    <string name="url_comment">bookshareyii/index.php/api/comment/</string>
+    <string name="url_comment_isbn">isbn/</string>
 
     <!-- douban url -->
-    <string name="douban_url">http://api.douban.com/book/subject/isbn/</string>
+    <string name="douban_url">https://api.douban.com/v2/book/isbn/</string>
+    <string name="douban_url_search">https://api.douban.com/v2/book/search?</string>
     <!-- api key &amp;apikey=060debf571622a801229c3e054267f80 -->
     <string name="douban_form">\?alt=json</string>
+    <string name="douban_search_tag">tag=</string>
     <string name="add_friend">添加</string>
     <string name="group">组群</string>
     <string name="title_activity_group">GroupActivity</string>

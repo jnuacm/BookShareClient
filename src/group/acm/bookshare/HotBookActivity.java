@@ -2,7 +2,6 @@ package group.acm.bookshare;
 
 import group.acm.bookshare.function.Book;
 import group.acm.bookshare.function.LocalApp;
-import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
@@ -26,6 +25,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -61,7 +61,7 @@ public class HotBookActivity extends Activity {
 		localUser.getHotBookList(new HotBookProgress());
 	}
 
-	private class BookListAdapter extends PageListAdapter {
+	private class BookListAdapter extends BaseAdapter {
 		private Context context;
 		private List<Map<String, Object>> datas;
 		private Map<String, Bitmap> bookImgMap;
@@ -75,14 +75,7 @@ public class HotBookActivity extends Activity {
 
 		@Override
 		public int getCount() {
-			if (datas.size() <= curViewSize)
-				curViewSize = datas.size();
-			return curViewSize;
-		}
-
-		@Override
-		public void loadData() {
-			localUser.loadBookImgs();
+			return datas.size();
 		}
 
 		@Override
@@ -92,7 +85,7 @@ public class HotBookActivity extends Activity {
 
 		@Override
 		public long getItemId(int position) {
-			return 0;
+			return position;
 		}
 
 		@SuppressLint("InflateParams")
@@ -184,6 +177,7 @@ public class HotBookActivity extends Activity {
 		}
 	}
 
+	// 热书列表获取过程界面处理
 	private class HotBookProgress extends HttpProcessBase {
 
 		@Override
@@ -195,11 +189,31 @@ public class HotBookActivity extends Activity {
 
 		@Override
 		public void statusSuccess(String response) {
-			localUser.clearHotBookData();
-			localUser.addHotBooksDataToList(response);
 			bar.setVisibility(View.INVISIBLE);
 			adapter.notifyDataSetChanged();
+			Toast.makeText(HotBookActivity.this,
+					":" + localUser.getHotListData().size(), Toast.LENGTH_LONG)
+					.show();
+			List<Map<String, Object>> hotBooks = localUser.getHotListData();
+			for (Map<String, Object> book : hotBooks) {
+				Log.i(Utils.getLineInfo(), "name:" + book.get(Book.NAME)
+						+ " url:" + book.get(Book.IMG_URL_SMALL));
+				localUser.loadBookImg(book, new UpdateImgsProgress());
+			}
 		}
 
+	}
+
+	// 图像加载过程界面显示处理
+	private class UpdateImgsProgress extends HttpProcessBase {
+
+		@Override
+		public void statusError(String response) {
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			adapter.notifyDataSetChanged();
+		}
 	}
 }

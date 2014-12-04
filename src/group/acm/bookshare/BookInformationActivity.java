@@ -23,9 +23,11 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -35,6 +37,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -49,12 +53,14 @@ public class BookInformationActivity extends Activity {
 	private ViewPager viewPager;// viewpager
 
 	private Context appContext;
-	private BookSubPage bookPage;
-	private CommentSubPage commentPage;
+	private BookSubPage bookPage; // 显示书本信息页面
+	private CommentSubPage commentPage; // 显示评论页面
 
-	private Map<String, Object> detailBook;
+	private Map<String, Object> detailBook; // 记录当前这本书的所有信息
 
 	private Intent intent;
+
+	private BroadcastReceiver receiver; // 评论更新推送接收
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +78,7 @@ public class BookInformationActivity extends Activity {
 		intent = getIntent();
 		String response = intent.getStringExtra(NetAccess.RESPONSE);
 		String bookObj = intent.getStringExtra("person_book");
+		// 通过bookActionType判断是从何处跳转过来，判断当前按钮的执行操作
 		int bookActionType = intent
 				.getIntExtra("action_type", Utils.DO_NOTHING);
 
@@ -84,10 +91,18 @@ public class BookInformationActivity extends Activity {
 		viewPager.setAdapter(new MyViewPagerAdapter(viewList));
 		viewPager.setCurrentItem(0);
 
-		// localUser.getCommentList((String) detailBook.get(Book.ISBN),
-		// new CommentGetProgress());
+		// 注册接收到推送时的更新receiver
+		receiver = new MessageUpdateReceiver();
+		registerUpdateReceiver();
+
+		// 获取评论列表
+		localUser.getCommentList((String) detailBook.get(Book.ISBN),
+				new CommentGetProgress());
 	}
 
+	/**
+	 * 评论获取过程的界面更新
+	 */
 	private class CommentGetProgress extends HttpProcessBase {
 
 		@Override
@@ -97,12 +112,22 @@ public class BookInformationActivity extends Activity {
 
 		@Override
 		public void statusSuccess(String response) {
+			localUser.clearCommentData();
 			localUser.addCommentDataToList(response);
-			commentPage.updateDisplay(localUser.getCommentListData());
+			commentPage.updateDisplay();
 		}
-
 	}
 
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(receiver); // 在onCreate注册，因此在onDestroy取消
+		localUser.clearCommentData();
+		super.onDestroy();
+	}
+
+	/**
+	 * viewPager的适配器
+	 */
 	public class MyViewPagerAdapter extends PagerAdapter {
 		private List<View> mListViews;
 		private boolean isCreated[] = { false, false, false };
@@ -224,6 +249,7 @@ public class BookInformationActivity extends Activity {
 			return text;
 		}
 
+		// 根据type获取按钮显示
 		private String getActionButtonText() {
 			String text = "";
 			switch (bookActionType) {
@@ -329,6 +355,7 @@ public class BookInformationActivity extends Activity {
 			}
 		}
 
+		// 按钮被点击后的动作通过type选择调用
 		private class ActionConfirmListener implements
 				DialogInterface.OnClickListener {
 			private Map<String, Object> book;
@@ -361,6 +388,7 @@ public class BookInformationActivity extends Activity {
 			}
 		}
 
+		// 书本列表发生变化后的过程处理
 		private class BookChangeProgress extends HttpProcessBase {
 
 			public void error(String content) {
@@ -418,6 +446,7 @@ public class BookInformationActivity extends Activity {
 			listviewComment = (ListView) page
 					.findViewById(R.id.comment_listview);
 			listviewComment.setAdapter(adapter);
+			listviewComment.setOnItemLongClickListener(new DeleteListener());
 
 			// 添加评论按钮
 			buttonComment = (Button) page.findViewById(R.id.comment_button);
@@ -429,9 +458,8 @@ public class BookInformationActivity extends Activity {
 			});
 		}
 
-		public void updateDisplay(List<Map<String, Object>> datas) {
-			adapter.setData(datas);
-			adapter.notifyDataSetChanged();
+		public void updateDisplay() {
+			adapter.reloadAdapter();
 		}
 
 		private class CommentListAdapter extends PageListAdapter {
@@ -442,10 +470,6 @@ public class BookInformationActivity extends Activity {
 					Context context) {
 				this.datas = datas;
 				this.context = context;
-			}
-
-			public void setData(List<Map<String, Object>> datas) {
-				this.datas = datas;
 			}
 
 			@Override
@@ -483,7 +507,6 @@ public class BookInformationActivity extends Activity {
 				content.setText((String) comment.get(Comment.CONTENT));
 				date.setText((String) comment.get(Comment.DATE));
 				return convertView;
-
 			}
 
 			@Override
@@ -495,6 +518,7 @@ public class BookInformationActivity extends Activity {
 			return page;
 		}
 
+		// 弹窗添加评论
 		public void addComment() {
 			View addCommentView = LayoutInflater.from(
 					BookInformationActivity.this).inflate(
@@ -516,6 +540,7 @@ public class BookInformationActivity extends Activity {
 		}
 	}
 
+	// 确认响应接口
 	private class AddCommentConfirmDialogListener implements
 			DialogInterface.OnClickListener {
 		EditText addCommentEdit;
@@ -531,8 +556,70 @@ public class BookInformationActivity extends Activity {
 				return;
 			localUser.addComment((String) detailBook.get(Book.ISBN), content,
 					HttpProgress.createShowProgress(
-							BookInformationActivity.this, "评论成功", "评论失败"));
+							BookInformationActivity.this, "发送成功", "发送失败"));
+		}
+	}
+
+	// 长按item删除评论接口
+	private class DeleteListener implements OnItemLongClickListener {
+
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view,
+				int position, long id) {
+			AlertDialog deleteDialog = null;
+			AlertDialog.Builder builder = null;
+
+			builder = new AlertDialog.Builder(BookInformationActivity.this);
+			builder.setTitle("删除评论");
+			Map<String, Object> comment = (Map<String, Object>) parent
+					.getItemAtPosition(position);
+			builder.setMessage("确认删除评论?\n" + comment.get(Comment.PERSON));
+			builder.setPositiveButton("Yes", new DeleteConfirmListener(comment));
+			builder.setNegativeButton("No", null);
+			deleteDialog = builder.create();
+			deleteDialog.show();
+			return false;
 		}
 
+		// 确认删除接口
+		private class DeleteConfirmListener implements
+				android.content.DialogInterface.OnClickListener {
+			private Map<String, Object> comment;
+
+			public DeleteConfirmListener(Map<String, Object> comment) {
+				this.comment = comment;
+			}
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				localUser.deleteComment(comment, HttpProgress
+						.createShowProgress(BookInformationActivity.this,
+								"发送成功", "发送失败"));
+			}
+
+		}
+	}
+
+	// 注册推送的receiver
+	private void registerUpdateReceiver() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction("group.acm.bookshare.action.UPDATECOMMENT");
+		registerReceiver(receiver, filter);
+	}
+
+	private class MessageUpdateReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(
+					"group.acm.bookshare.action.UPDATECOMMENT")) {
+				if (intent.getStringExtra(Book.ISBN).equals(
+						detailBook.get(Book.ISBN))) {
+					localUser.getCommentList(
+							(String) detailBook.get(Book.ISBN),
+							new CommentGetProgress());
+				}
+			}
+		}
 	}
 }

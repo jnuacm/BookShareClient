@@ -13,6 +13,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +35,7 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -196,8 +200,8 @@ public class User {
 	public List<Map<String, Object>> getCommentListData() {
 		return comments;
 	}
-	
-	public List<Map<String,Object>> getHotListData(){
+
+	public List<Map<String, Object>> getHotListData() {
 		return hotBooks;
 	}
 
@@ -217,7 +221,7 @@ public class User {
 	public void clearCommentData() {
 		comments.clear();
 	}
-	
+
 	public void clearHotBookData() {
 		hotBooks.clear();
 	}
@@ -323,7 +327,7 @@ public class User {
 		}
 		return true;
 	}
-	
+
 	public boolean addHotBooksDataToList(String response) {
 		JSONArray jsonarray;
 		try {
@@ -400,6 +404,7 @@ public class User {
 				.get(Book.PUBLISHER)));
 		nvps.add(new BasicNameValuePair(Book.STATUS, Integer
 				.toString(Book.STATUS_BORROW)));
+		nvps.add(new BasicNameValuePair(Book.TAGS, (String) data.get(Book.TAGS)));
 
 		for (NameValuePair i : nvps) {
 			Log.i("nvps:", i.getName() + ":" + i.getValue());
@@ -455,16 +460,32 @@ public class User {
 	}
 
 	public void addComment(String isbn, String content, NetProgress progress) {
-		String url = urlFactory.getCommentListUrl(isbn);
+		String url = urlFactory.getCommentUrl(isbn);
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 
+		nvps.add(new BasicNameValuePair(Comment.PERSON, getUsername()));
 		nvps.add(new BasicNameValuePair(Comment.CONTENT, content));
+		Time now = new Time();
+		now.setToNow();
+		String timeStr = now.toString();
+		nvps.add(new BasicNameValuePair(Comment.DATE, timeStr));
+
+		for (NameValuePair i : nvps) {
+			Log.i("nvps:", i.getName() + ":" + i.getValue());
+		}
+
 		try {
 			net.createPostThread(url,
 					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void deleteComment(Map<String, Object> comment, NetProgress progress) {
+		String url = urlFactory
+				.getCommentUrl((Integer) comment.get(Comment.ID));
+		net.createDeleteThread(url, progress);
 	}
 
 	public void borrowBook(String aimName, Map<String, Object> book,
@@ -560,16 +581,83 @@ public class User {
 	 * 通过isbn获取书本评论
 	 */
 	public void getCommentList(String isbn, NetProgress progress) {
-		String url = urlFactory.getCommentListUrl(isbn);
+		String url = urlFactory.getCommentUrl(isbn);
 		net.createGetThread(url, progress);
 	}
-	
+
 	/**
 	 * 获取热书推荐列表
 	 */
 	public void getHotBookList(NetProgress progress) {
-		String url = urlFactory.getHotBookListUrl();
-		net.createGetThread(url, progress);
+		clearHotBookData();
+		if (books.size() <= 0)
+			return;
+		Map<String, Integer> tagsMap = new HashMap<String, Integer>();
+		Map<String, Boolean> flags = new HashMap<String, Boolean>();
+		for (Map<String, Object> book : books) {
+			if (flags.containsKey(book.get(Book.NAME)))
+				continue;
+			flags.put((String) book.get(Book.NAME), true);
+			List<Map<String, Object>> tags = Book.getTags(book);
+			for (Map<String, Object> tag : tags) {
+				String name = (String) tag.get("name");
+				int count = (Integer) tag.get("count");
+				if (!tagsMap.containsKey(name)) {
+					tagsMap.put(name, count);
+				} else {
+					tagsMap.put(name, tagsMap.get(name) + count);
+				}
+			}
+		}
+
+		List<Map.Entry<String, Integer>> result = new ArrayList<Map.Entry<String, Integer>>(
+				tagsMap.entrySet());
+		Collections.sort(result, new Comparator<Map.Entry<String, Integer>>() {
+			@Override
+			public int compare(Map.Entry<String, Integer> lhs,
+					Map.Entry<String, Integer> rhs) {
+				return rhs.getValue() - lhs.getValue();
+			}
+		});
+
+		if (result.size() <= 0)
+			return;
+
+		Map.Entry<String, Integer> tag = result.get(0);
+		String tagSearchUrl = urlFactory.getDoubanSearchUrl(tag.getKey());
+		net.createGetThread(tagSearchUrl, new TagSearchProgress(0, result,
+				progress));
+	}
+
+	private class TagSearchProgress extends HttpProcessBase {
+		private int curTagIdx;
+		private List<Map.Entry<String, Integer>> result;
+		private NetProgress progress;
+
+		public TagSearchProgress(int curIdx,
+				List<Map.Entry<String, Integer>> result, NetProgress progress) {
+			this.curTagIdx = curIdx;
+			this.progress = progress;
+			this.result = result;
+		}
+
+		@Override
+		public void statusError(String response) {
+		}
+
+		@Override
+		public void statusSuccess(String response) {
+			hotBooks.addAll(Book.getWantedBooks(response));
+			int nextIdx = curTagIdx + 1;
+			if (curTagIdx == result.size() - 1 || curTagIdx == 4) { // 最后一个标签或第5个标签被搜索完成后
+				progress.setAfter(NetAccess.STATUS_SUCCESS, "成功");
+				return;
+			}
+			String tagSearchUrl = urlFactory.getDoubanSearchUrl(result.get(
+					nextIdx).getKey());
+			net.createGetThread(tagSearchUrl, new TagSearchProgress(nextIdx,
+					result, progress));
+		}
 	}
 
 	/**
