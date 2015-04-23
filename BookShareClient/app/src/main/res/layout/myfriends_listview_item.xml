@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/listviewItemLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ImageView
+        android:id="@+id/myfriendslistitem_friendimage"
+        android:layout_width="40dp"
+        android:layout_height="80dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="5dp"
+        android:src="@drawable/default_friend_avatar_small" />
+
+    <TextView
+        android:id="@+id/myfriendslistitem_friendname"
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="25dp"
+        android:layout_toRightOf="@id/myfriendslistitem_friendimage"
+        android:gravity="center_vertical"
+        android:textColor="@color/listview_item_title_black"
+        android:textSize="25sp" />
+
+</RelativeLayout>

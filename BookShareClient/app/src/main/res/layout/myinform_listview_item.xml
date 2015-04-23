@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/listviewItemLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants" >
+
+    <TextView
+        android:id="@+id/informlistviewitem_title"
+        android:layout_width="150dp"
+        android:layout_height="20dp"
+        android:layout_marginLeft="@dimen/listview_item_horizontal_margin"
+        android:gravity="center_vertical"
+        android:text="hehe"
+        android:textColor="@color/listview_item_title_black"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/informlistviewitem_content"
+        android:layout_width="180dp"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/informlistviewitem_title"
+        android:layout_marginLeft="@dimen/listview_item_horizontal_margin"
+        android:gravity="center_vertical"
+        android:text="TextView"
+        android:textColor="@color/listview_item_title_black" />
+
+    <Button
+        android:id="@+id/informlistviewitem_cancel"
+        style="@style/MainButton"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/listview_item_horizontal_margin"
+        android:background="@color/background_green"
+        android:focusable="false"
+        android:text="取消"
+        android:textColor="@color/buttonfont_white"
+        android:textSize="10sp" />
+
+    <Button
+        android:id="@+id/informlistviewitem_confirm"
+        style="@style/MainButton"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_centerInParent="false"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="2dp"
+        android:layout_toLeftOf="@id/informlistviewitem_cancel"
+        android:focusable="false"
+        android:text="确认"
+        android:textSize="10sp" />
+
+</RelativeLayout>

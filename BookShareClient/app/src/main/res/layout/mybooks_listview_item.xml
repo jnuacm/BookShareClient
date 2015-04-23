@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/listviewItemLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ImageView
+        android:id="@+id/mybookslistitem_bookimage"
+        android:layout_width="40dp"
+        android:layout_height="60dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="@dimen/listview_item_horizontal_margin" />
+
+    <TextView
+        android:id="@+id/mybookslistitem_bookname"
+        android:layout_width="180dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/mybookslistitem_bookimage"
+        android:gravity="center_vertical"
+        android:text="bookname"
+        android:textColor="@color/listview_item_title_black" />
+
+    <TextView
+        android:id="@+id/mybookslistitem_bookstate"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/listview_item_horizontal_margin"
+        android:gravity="center_vertical"
+        android:text="state"
+        android:textColor="@color/listview_item_title_black" />
+
+</RelativeLayout>
