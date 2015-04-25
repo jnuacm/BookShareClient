@@ -270,16 +270,13 @@ public class BookListManage {
                                 long id) {
             Log.i(Utils.getLineInfo(), "item click: position:" + position
                     + "  id:" + id);
-            //FIXME
-            Intent intent = new Intent(activity, BookInformationActivity.class);
-            activity.startActivity(intent);
-//            Map<String, Object> item = (Map<String, Object>) parent
-//                    .getItemAtPosition(position);
-//            if (item == null)
-//                return;
-//            Book book = new Book(activity.getApplication());
-//            book.getBookByIsbn((String) item.get(Book.ISBN),
-//                    new BookInfoProcess(item));
+            Map<String, Object> item = (Map<String, Object>) parent
+                    .getItemAtPosition(position);
+            if (item == null)
+                return;
+            Book book = new Book(activity.getApplication());
+            book.getBookByIsbn((String) item.get(Book.ISBN),
+                    new BookInfoProcess(item));
         }
     }
 

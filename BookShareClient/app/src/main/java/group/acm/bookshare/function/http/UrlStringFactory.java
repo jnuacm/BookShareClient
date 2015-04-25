@@ -1,7 +1,7 @@
 package group.acm.bookshare.function.http;
 
 public class UrlStringFactory {
-    public static final String URL_HOST = "https://192.168.1.103/";
+    public static String URL_HOST = "https://192.168.1.103/";
 
     public static final String DOUBAN_URL = "https://api.douban.com/v2/book/isbn/";
     public static final String DOUBAN_URL_SEARCH = "https://api.douban.com/v2/book/search?";

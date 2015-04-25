@@ -133,14 +133,12 @@ public class User {
             Log.i("nvps:", i.getName() + ":" + i.getValue());
         }
 
-        // FIXME:注释网络部分
-        progress.setAfter(NetProgress.STATUS_SUCCESS, "");
-//        try {
-//            net.createPostThread(url,
-//                    new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
-//        } catch (UnsupportedEncodingException e) {
-//            progress.setError(e.toString());
-//        }
+        try {
+            net.createPostThread(url,
+                    new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
+        } catch (UnsupportedEncodingException e) {
+            progress.setError(e.toString());
+        }
     }
 
     public void register(String username, String password, String email,

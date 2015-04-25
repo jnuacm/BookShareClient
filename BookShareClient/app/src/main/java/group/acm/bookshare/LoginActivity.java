@@ -60,7 +60,8 @@ public class LoginActivity extends Activity implements Callback {
         setContentView(R.layout.activity_login);
         LocalApp localapp = (LocalApp) getApplication();
         localUser = localapp.getUser();
-        initWithApiKey(); // 绑定推送service
+        // FIXME 注释推送服务
+//        initWithApiKey(); // 绑定推送service
     }
 
     private void initWithApiKey() {
@@ -82,30 +83,19 @@ public class LoginActivity extends Activity implements Callback {
         userToPwd.put(username, password);
         update_accounts();
         initDatas();
-        // FIXME:跳过检测直接登录
-        localUser.clearBookData();
-        localUser.clearFriendData();
-        localUser.clearInformData();
-        localUser.addBookDataToList("{own_book:[{id:0,name:\"name\",publisher:\"publisher\",description:\"des\"," +
-                "author:\"au\",average:\"ave\",isbn:\"32143465\"," +
-                "owner:\"me\",holder:\"me\",status:0,small_img:\"empty\",medium_img:\"empty\"," +
-                "large_img:\"empty\",tags:\"tags\"}],borrowed_book:[],friend:[]}");
-        localUser.addFriendDataToList("{own_book:[],borrowed_book:[],friend:[]}");
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        localUser.setUser(username, password, "");
-        finish();
+        // FIXME 注释推送服务
+        String userid= "000000";
 //        String userid = Utils.getPushInfo(getApplicationContext());
-//
-//        Log.i(Utils.getLineInfo(), "userid:" + userid);
-//
-//        if ("empty".equals(userid)) {
-//            Toast.makeText(this, "请稍候再登录", Toast.LENGTH_SHORT)
-//                    .show();
-//            return;
-//        }
-//        localUser.setUser(username, password, userid);
-//        localUser.login(new LoginProgress());
+
+        Log.i(Utils.getLineInfo(), "userid:" + userid);
+
+        if ("empty".equals(userid)) {
+            Toast.makeText(this, "请稍候再登录", Toast.LENGTH_SHORT)
+                    .show();
+            return;
+        }
+        localUser.setUser(username, password, userid);
+        localUser.login(new LoginProgress());
     }
 
     private void update_accounts() {

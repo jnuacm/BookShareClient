@@ -111,9 +111,8 @@ public class MainActivity extends Activity {
         informmanage.reload();
 
         // 加载图片
-        // FIXME:跳过网络部分
-//        localUser.loadInitImgs(new BookImgsUpdateProcess());
-//        localUser.loadInitAvatar(new AvatarsUpdateProcess());
+        localUser.loadInitImgs(new BookImgsUpdateProcess());
+        localUser.loadInitAvatar(new AvatarsUpdateProcess());
     }
 
     private class BookImgsUpdateProcess extends HttpProcessBase {
@@ -194,12 +193,7 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case OPTIONS_ITEM_PERSONINFO:
-                // FIXME:
-                Intent tintent = new Intent(MainActivity.this,
-                        PersonInfoActivity.class);
-                startActivity(tintent);
-
-//                localUser.getPersonInfo(new GetPersonInfoProcess());
+                localUser.getPersonInfo(new GetPersonInfoProcess());
                 break;
             case OPTIONS_ITEM_SEARCH:
                 Intent intent = new Intent(this, BookSearchActivity.class);

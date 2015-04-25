@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
+
+import group.acm.bookshare.function.http.UrlStringFactory;
 
 public class WelcomeActivity extends Activity {
 
@@ -15,18 +18,22 @@ public class WelcomeActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.activity_welcome);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
-                startActivity(intent);
-                WelcomeActivity.this.finish();
-            }
-        }, 2000);
+        // FIXME : 暂时不自动跳过该界面
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
+//                startActivity(intent);
+//                WelcomeActivity.this.finish();
+//            }
+//        }, 2000);
 
     }
 
     public void Enter(View v) {
+        // FIXME:暂时获取ip
+        EditText input = (EditText) findViewById(R.id.input_host);
+        UrlStringFactory.URL_HOST = input.getText().toString();
         Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
         startActivity(intent);
         WelcomeActivity.this.finish();
