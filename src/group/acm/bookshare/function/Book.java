@@ -5,6 +5,7 @@ import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 import group.acm.bookshare.function.http.NetProgress;
+import group.acm.bookshare.function.http.UrlStringFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class Book {
 
 	public void getBookByIsbn(String isbn, NetProgress progress) {
 		NetAccess network = NetAccess.getInstance();
-		String url = application.getString(R.string.douban_url);
+		String url = UrlStringFactory.DOUBAN_URL;
 		url += isbn;
 		network.createGetThread(url, progress);
 		// url += application.getString(R.string.douban_form);

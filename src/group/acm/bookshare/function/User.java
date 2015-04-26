@@ -63,7 +63,7 @@ public class User {
 
 	private Application application;
 	private ImageManage imgManage; // 图像管理对象
-	private UrlStringFactory urlFactory; // url构造类
+	private UrlStringFactory urlFactory = new UrlStringFactory(); // url构造类
 	private NetAccess net; // 网络访问对象
 
 	/**
@@ -80,7 +80,6 @@ public class User {
 		curLoadImgIndex = 0;
 		curLoadAvatarIndex = 0;
 		imgManage = ImageManage.getInstance(application);
-		urlFactory = new UrlStringFactory(application);
 		net = NetAccess.getInstance();
 	}
 
@@ -103,7 +102,6 @@ public class User {
 		curLoadImgIndex = 0;
 		curLoadAvatarIndex = 0;
 		imgManage = ImageManage.getInstance(application);
-		urlFactory = new UrlStringFactory(application);
 		net = NetAccess.getInstance();
 	}
 
