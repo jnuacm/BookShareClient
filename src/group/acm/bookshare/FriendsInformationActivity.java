@@ -5,6 +5,7 @@ import group.acm.bookshare.function.ImageManage;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.util.Utils;
 
 import java.util.Map;
@@ -70,6 +71,7 @@ public class FriendsInformationActivity extends Activity {
 		FriendCollection.setText(Integer.toString(friend.getPersonBookNum()));
 	}
 
+	private NetThread getBookThread;
 	private void setButtons() {
 		backButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -77,12 +79,12 @@ public class FriendsInformationActivity extends Activity {
 				finish();
 			}
 		});
-		checkBooks.setOnClickListener(new OnClickListener() {
+		checkBooks.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				if (Utils.isQuickClick())
+				if (getBookThread != null && !getBookThread.isCanceled())
 					return;
-				friend.getBookList(new BooksLoadProgress());
+				getBookThread = friend.getBookList(new BooksLoadProgress());
 			}
 		});
 		if (friend.getIs_group() == Friend.GROUP) {

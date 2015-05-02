@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.baidu.frontia.api.FrontiaPushMessageReceiver;
 
@@ -67,6 +68,7 @@ public class PushMessageReceiver extends FrontiaPushMessageReceiver {
 			Utils.setBind(context, true);
 		}
 
+		Toast.makeText(context.getApplicationContext(), (System.currentTimeMillis() - Utils.createTime)+" "+userId, Toast.LENGTH_LONG).show();
 		// Ó›ä›ÍÆËÍµÄuserid
 		Utils.setPushInfo(context.getApplicationContext(), userId);
 	}

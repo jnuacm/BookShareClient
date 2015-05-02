@@ -4,6 +4,7 @@ import group.acm.bookshare.function.Friend;
 import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.util.Utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -34,8 +35,6 @@ public class RegisterActivity extends Activity {
 
 	@SuppressLint("HandlerLeak")
 	public void confirm(View v) { // 确定回调函数
-		if (Utils.isQuickClick())
-			return;
 		String username, password, email, area;
 
 		EditText edittext = (EditText) findViewById(R.id.registerusername);

@@ -1,5 +1,7 @@
 package group.acm.bookshare;
 
+import org.apache.http.util.TextUtils;
+
 import group.acm.bookshare.function.http.UrlStringFactory;
 import android.app.Activity;
 import android.content.Intent;
@@ -30,7 +32,10 @@ public class WelcomeActivity extends Activity {
 
 	public void Enter(View v) {
 		EditText input = (EditText) findViewById(R.id.input_host);
-		UrlStringFactory.URL_HOST = input.getText().toString();
+		String url = input.getText().toString();
+		if (!TextUtils.isEmpty(url)) {
+			UrlStringFactory.URL_HOST = url;
+		}
 		Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
 		startActivity(intent);
 		WelcomeActivity.this.finish();

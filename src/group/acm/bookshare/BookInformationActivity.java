@@ -8,6 +8,7 @@ import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.HttpProgress;
 import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 import group.acm.bookshare.util.Utils;
 
@@ -355,6 +356,7 @@ public class BookInformationActivity extends Activity {
 			}
 		}
 
+		private NetThread borrowBookThread;
 		// 按钮被点击后的动作通过type选择调用
 		private class ActionConfirmListener implements
 				DialogInterface.OnClickListener {
@@ -379,7 +381,9 @@ public class BookInformationActivity extends Activity {
 							BookInformationActivity.this, "发送成功", "发送失败"));
 					break;
 				case Utils.BOOK_BORROW:
-					localUser.borrowBook(intent.getStringExtra("define"), book,
+					if (borrowBookThread != null && !borrowBookThread.isCanceled())
+						return;
+					borrowBookThread = localUser.borrowBook(intent.getStringExtra("define"), book,
 							HttpProgress.createShowProgress(
 									BookInformationActivity.this, "发送成功",
 									"发送失败"));

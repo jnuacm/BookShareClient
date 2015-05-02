@@ -7,6 +7,7 @@ import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.HttpProgress;
 import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
 
@@ -20,7 +21,6 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -264,6 +264,7 @@ public class BookListManage {
 	/**
 	 * 获取显示具体书本信息
 	 */
+	private NetThread bookItemThread;
 	private class BookInfoListener implements OnItemClickListener {
 		@SuppressWarnings("unchecked")
 		public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -274,8 +275,10 @@ public class BookListManage {
 					.getItemAtPosition(position);
 			if (item == null)
 				return;
+			if (bookItemThread != null && !bookItemThread.isCanceled())
+				return;
 			Book book = new Book(activity.getApplication());
-			book.getBookByIsbn((String) item.get(Book.ISBN),
+			bookItemThread = book.getBookByIsbn((String) item.get(Book.ISBN),
 					new BookInfoProcess(item));
 		}
 	}

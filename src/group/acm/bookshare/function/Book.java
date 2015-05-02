@@ -1,16 +1,10 @@
 package group.acm.bookshare.function;
 
-import group.acm.bookshare.R;
-import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
-import group.acm.bookshare.function.http.NetAccess.StreamProcess;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.function.http.UrlStringFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,11 +53,11 @@ public class Book {
 		this.application = application;
 	}
 
-	public void getBookByIsbn(String isbn, NetProgress progress) {
+	public NetThread getBookByIsbn(String isbn, NetProgress progress) {
 		NetAccess network = NetAccess.getInstance();
 		String url = UrlStringFactory.DOUBAN_URL;
 		url += isbn;
-		network.createGetThread(url, progress);
+		return network.createGetThread(url, progress);
 		// url += application.getString(R.string.douban_form);
 		// network.createUrlConntectionGetThread(url, new
 		// BookProgress(progress),

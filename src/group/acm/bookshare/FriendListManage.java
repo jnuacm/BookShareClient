@@ -5,6 +5,7 @@ import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.HttpProgress;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 
 import java.util.List;
 import java.util.Map;

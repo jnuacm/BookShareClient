@@ -56,14 +56,15 @@ public class NetAccess {
 	public static final int NETMSG_PROCESS = 20;
 	public static final int NETMSG_AFTER = 30;
 	public static final int NETMSG_ERROR = 40;
-	
-	public static final int MULTI_POOL_MAX_SIZE = 10; 
+
+	public static final int MULTI_POOL_MAX_SIZE = 10;
 
 	public static final String STATUS = "status";
 	public static final String RESPONSE = "response";
 	public static final String ERROR = "error";
 
 	private HttpClient httpClient;
+	private HttpClient httpsClient;
 
 	private ExecutorService pool;
 	private ExecutorService multiPool;
@@ -104,11 +105,12 @@ public class NetAccess {
 			ClientConnectionManager conManager = new ThreadSafeClientConnManager(
 					params, schReg);
 
-			httpClient = new DefaultHttpClient(conManager, params);
+			httpsClient = new DefaultHttpClient(conManager, params);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		httpClient = new DefaultHttpClient();
 	}
 
 	private class SSLSocketFactoryEx extends SSLSocketFactory {
@@ -167,36 +169,48 @@ public class NetAccess {
 	/**
 	 * UrlConnection线程获取方法
 	 */
-	public void createUrlConntectionGetThread(String url, NetProgress progress,
+	public UrlConnectionThread createUrlConntectionGetThread(String url, NetProgress progress,
 			StreamProcess process) {
-		multiPool.execute(new UrlConnectionThread(url, progress, process));
+		UrlConnectionThread thread = new UrlConnectionThread(url, progress, process);
+		multiPool.execute(thread);
+		return thread;
 	}
 
 	// 通用四种访问
-	public void createPostThread(String url, HttpEntity entity,
+	public NetThread createPostThread(String url, HttpEntity entity,
 			NetProgress progress) {
-		pool.execute(new PostThread(url, entity, progress,
-				new SimpleProcessImpl()));
+		NetThread thread = new PostThread(url, entity, progress,
+				new SimpleProcessImpl());
+		pool.execute(thread);
+		return thread;
 	}
 
-	public void createGetThread(String url, NetProgress progress) {
-		pool.execute(new GetThread(url, progress, new SimpleProcessImpl()));
+	public NetThread createGetThread(String url, NetProgress progress) {
+		NetThread thread = new GetThread(url, progress, new SimpleProcessImpl());
+		pool.execute(thread);
+		return thread;
 	}
 
-	public void createPutThread(String url, HttpEntity entity,
+	public NetThread createPutThread(String url, HttpEntity entity,
 			NetProgress progress) {
-		pool.execute(new PutThread(url, entity, progress,
-				new SimpleProcessImpl()));
+		NetThread thread = new PutThread(url, entity, progress,
+				new SimpleProcessImpl());
+		pool.execute(thread);
+		return thread;
 	}
 
-	public void createDeleteThread(String url, NetProgress progress) {
-		pool.execute(new DeleteThread(url, progress, new SimpleProcessImpl()));
+	public NetThread createDeleteThread(String url, NetProgress progress) {
+		NetThread thread = new DeleteThread(url, progress, new SimpleProcessImpl());
+		pool.execute(thread);
+		return thread;
 	}
 
 	// 包含文件的网络访问
-	public void createFileGetThread(String url, NetProgress progress,
+	public NetThread createFileGetThread(String url, NetProgress progress,
 			EntityProcess eprocess) {
-		pool.execute(new GetThread(url, progress, eprocess));
+		NetThread thread = new GetThread(url, progress, eprocess);
+		pool.execute(thread);
+		return thread;
 	}
 
 	// 单独线程类从豆瓣获取图书信息(直接用httpClient会出现500错误)
@@ -204,16 +218,30 @@ public class NetAccess {
 		String url;
 		NetProgress progress;
 		StreamProcess process;
+		private boolean bIsCancel;
 
 		public UrlConnectionThread(String url, NetProgress progress,
 				StreamProcess process) {
 			this.url = url;
 			this.progress = progress;
 			this.process = process;
+			this.bIsCancel = false;
+		}
+		
+		public boolean isCanceled() {
+			return bIsCancel;
+		}
+		
+		public void cancelRequest() {
+			bIsCancel = true;
 		}
 
 		public void run() {
+			if (bIsCancel)
+				return;
 			progress.setBefore();
+			if (bIsCancel)
+				return;
 			int status = STATUS_DEFAULT;
 			String response = "";
 
@@ -230,11 +258,16 @@ public class NetAccess {
 				Log.i("NetAccess:url", url);
 				Log.i("NetAccess:status", Integer.toString(status));
 				Log.i("NetAccess:response", response);
+				if (bIsCancel)
+					return;
 				progress.setAfter(status, response);
 
 			} catch (Exception e) {
+				if (bIsCancel)
+					return;
 				progress.setError(e.toString());
 			}
+			bIsCancel = true;
 		}
 	}
 
@@ -251,22 +284,42 @@ public class NetAccess {
 		protected String url; // 目标url
 		protected NetProgress progress; // 进度接口
 		protected EntityProcess entityProcess; // 返回的HttpEntity的处理接口
+		private boolean bIsCancel;
 
 		private NetThread(String url, NetProgress progress,
 				EntityProcess entityProcess) {
 			this.url = url;
 			this.progress = progress;
 			this.entityProcess = entityProcess;
+			this.bIsCancel = false;
+		}
+		
+		public boolean isCanceled() {
+			return bIsCancel;
+		}
+		
+		public void cancelRequest() {
+			bIsCancel = true;
 		}
 
 		public void run() {
+			if (bIsCancel)
+				return;
 			progress.setBefore();
 			int status = STATUS_DEFAULT;
 			try {
 				HttpUriRequest request = getRequest();
 				HttpResponse httpResponse;
-				synchronized (httpClient) {
-					httpResponse = httpClient.execute(request);
+				if (bIsCancel)
+					return;
+				if (url.startsWith("https")) {
+					synchronized (httpsClient) {
+						httpResponse = httpsClient.execute(request);
+					}
+				} else {
+					synchronized (httpClient) {
+						httpResponse = httpClient.execute(request);
+					}
 				}
 				status = httpResponse.getStatusLine().getStatusCode();
 				HttpEntity responseEntity = httpResponse.getEntity();
@@ -274,10 +327,15 @@ public class NetAccess {
 				Log.i("NetAccess:status", Integer.toString(status));
 				String response = entityProcess.getResponse(status,
 						responseEntity);
+				if (bIsCancel)
+					return;
 				progress.setAfter(status, response);
 			} catch (Exception e) {
+				if (bIsCancel)
+					return;
 				progress.setError(e.toString());
 			}
+			bIsCancel = true;
 		}
 
 		// 获取请求类型
@@ -368,8 +426,8 @@ public class NetAccess {
 			return delete;
 		}
 	}
-	
-	public void poolsClose(){
+
+	public void poolsClose() {
 		pool.shutdown();
 		multiPool.shutdown();
 	}

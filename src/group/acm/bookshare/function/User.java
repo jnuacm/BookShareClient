@@ -3,6 +3,7 @@ package group.acm.bookshare.function;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetAccess.EntityProcess;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.function.http.ProgressNone;
@@ -119,7 +120,12 @@ public class User {
 		setAvatarVersion((Integer) item.get(Friend.AVATAR_VERSION));
 	}
 
+	private NetThread loginThread;
+	
 	public void login(NetProgress progress) {
+		if (loginThread != null && !loginThread.isCanceled()) {
+			return;
+		}
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("username", getUsername()));
 		nvps.add(new BasicNameValuePair("password", getPassword()));
@@ -132,15 +138,18 @@ public class User {
 		}
 
 		try {
-			net.createPostThread(url,
+			loginThread = net.createPostThread(url,
 					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
 		} catch (UnsupportedEncodingException e) {
 			progress.setError(e.toString());
 		}
 	}
 
+	private NetThread confirmThread;
 	public void register(String username, String password, String email,
 			int is_group, String area, NetProgress progress) {
+		if (confirmThread != null && !confirmThread.isCanceled())
+				return;
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("username", username));
 		nvps.add(new BasicNameValuePair("password", password));
@@ -155,7 +164,7 @@ public class User {
 		}
 
 		try {
-			net.createPostThread(url,
+			confirmThread = net.createPostThread(url,
 					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
 		} catch (UnsupportedEncodingException e) {
 			progress.setError(e.toString());
@@ -445,12 +454,15 @@ public class User {
 		return true;
 	}
 
+	private NetThread addFriendThread;
 	public void addFriend(String aimName, String message, NetProgress progress) {
+		if (addFriendThread != null && !addFriendThread.isCanceled())
+			return;
 		try {
 			JSONObject obj = new JSONObject();
 			obj.put("message", message);
 			String description = obj.toString();
-			createRequest(aimName, Inform.REQUEST_TYPE_ADDFRIEND, description,
+			addFriendThread = createRequest(aimName, Inform.REQUEST_TYPE_ADDFRIEND, description,
 					progress);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -486,25 +498,25 @@ public class User {
 		net.createDeleteThread(url, progress);
 	}
 
-	public void borrowBook(String aimName, Map<String, Object> book,
+	public NetThread borrowBook(String aimName, Map<String, Object> book,
 			NetProgress progress) {
-		bookRequest(aimName, book, "借书消息", Inform.REQUEST_TYPE_BORROW, progress);
+		return bookRequest(aimName, book, "借书消息", Inform.REQUEST_TYPE_BORROW, progress);
 	}
 
-	public void askReturn(Map<String, Object> book, NetProgress progress) {
+	public NetThread askReturn(Map<String, Object> book, NetProgress progress) {
 		String holder = (String) book.get(Book.HOLDER);
-		bookRequest(holder, book, "请快点还书", Inform.REQUEST_TYPE_RETURN, progress);
+		return bookRequest(holder, book, "请快点还书", Inform.REQUEST_TYPE_RETURN, progress);
 	}
 
-	public void returnBook(Map<String, Object> book, NetProgress progress) {
+	public NetThread returnBook(Map<String, Object> book, NetProgress progress) {
 		String owner = (String) book.get(Book.OWNER);
-		bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, progress);
+		return bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, progress);
 	}
 
 	/**
 	 * 构造书本的description并且创建请求
 	 */
-	private void bookRequest(String aimName, Map<String, Object> book,
+	private NetThread bookRequest(String aimName, Map<String, Object> book,
 			String message, int type, NetProgress progress) {
 		try {
 			JSONObject obj = new JSONObject();
@@ -516,17 +528,18 @@ public class User {
 			obj.put(Book.HOLDER, (String) book.get(Book.HOLDER));
 			obj.put(Book.OWNER, (String) book.get(Book.OWNER));
 			String description = obj.toString();
-			createRequest(aimName, type, description, progress);
+			return createRequest(aimName, type, description, progress);
 
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
 	/**
 	 * 创建请求
 	 */
-	private void createRequest(String aimName, int type, String description,
+	private NetThread createRequest(String aimName, int type, String description,
 			NetProgress progress) {
 		String url = urlFactory.getInformCreateUrl();
 
@@ -540,31 +553,35 @@ public class User {
 		}
 
 		try {
-			net.createPostThread(url,
+			return net.createPostThread(url,
 					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
 		} catch (UnsupportedEncodingException e) {
 			progress.setError(e.toString());
 		}
+		return null;
 	}
 
 	/**
 	 * 获取书本列表
 	 */
-	public void getBookList(NetProgress progress) {
-		getBookList(getUsername(), progress);
+	public NetThread getBookList(NetProgress progress) {
+		return getBookList(getUsername(), progress);
 	}
 
-	public void getBookList(String name, NetProgress progress) {
+	public NetThread getBookList(String name, NetProgress progress) {
 		String url = urlFactory.getBookListUrl(name);
-		net.createGetThread(url, progress);
+		return net.createGetThread(url, progress);
 	}
 
 	/**
 	 * 获取from为自身的列表
 	 */
+	private NetThread getSendInformThread;
 	public void getSendInformList(NetProgress progress) {
+		if (getSendInformThread != null && !getSendInformThread.isCanceled())
+			return;
 		String url = urlFactory.getInformListFromUrl(getUsername());
-		net.createGetThread(url, progress);
+		getSendInformThread = net.createGetThread(url, progress);
 	}
 
 	/**
@@ -661,7 +678,7 @@ public class User {
 	/**
 	 * 更新消息的status
 	 */
-	public void updateRequest(int id, int status, NetProgress progress) {
+	public NetThread updateRequest(int id, int status, NetProgress progress) {
 		String url = urlFactory.getAimInformUrl(id);
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -672,16 +689,17 @@ public class User {
 		}
 
 		try {
-			net.createPutThread(url,
+			return net.createPutThread(url,
 					new UrlEncodedFormEntity(nvps, HTTP.UTF_8), progress);
 		} catch (UnsupportedEncodingException e) {
 			progress.setError(e.toString());
 		}
+		return null;
 	}
 
-	public void deleteRequest(int id, NetProgress progress) {
+	public NetThread deleteRequest(int id, NetProgress progress) {
 		String url = urlFactory.getAimInformUrl(id);
-		net.createDeleteThread(url, progress);
+		return net.createDeleteThread(url, progress);
 	}
 
 	/**

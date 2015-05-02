@@ -4,6 +4,7 @@ import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.LoginUserNameAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.util.BaiduPushConstants;
 import group.acm.bookshare.util.Utils;
 
 import java.io.File;
@@ -62,19 +63,17 @@ public class LoginActivity extends Activity implements Callback {
 		setContentView(R.layout.activity_login);
 		LocalApp localapp = (LocalApp) getApplication();
 		localUser = localapp.getUser();
+		Utils.createTime = System.currentTimeMillis();
 		initWithApiKey(); // 绑定推送service
 	}
 
 	private void initWithApiKey() {
 		// Push: 无账号初始化，用api key绑定
 		PushManager.startWork(getApplicationContext(),
-				PushConstants.LOGIN_TYPE_API_KEY,
-				Utils.getMetaValue(LoginActivity.this, "api_key"));
+				PushConstants.LOGIN_TYPE_API_KEY, BaiduPushConstants.apiKey);
 	}
 
 	public void Login(View v) { // 登录回调函数
-		if (Utils.isQuickClick())
-			return;
 		String username, password;
 		username = ((TextView) findViewById(R.id.USERNAME)).getText()
 				.toString();
@@ -148,8 +147,6 @@ public class LoginActivity extends Activity implements Callback {
 	}
 
 	public void Register(View v) { // 注册回调函数
-		if (Utils.isQuickClick())
-			return;
 		Intent intent = new Intent();
 		intent.setClass(this, RegisterActivity.class);
 		startActivity(intent);

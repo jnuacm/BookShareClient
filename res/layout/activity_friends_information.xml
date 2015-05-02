@@ -172,6 +172,8 @@
                 style="@style/MainButton"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="15dp"
                 android:text="查看成员"
                 android:textSize="20sp"

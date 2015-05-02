@@ -391,8 +391,6 @@ public class MainActivity extends Activity {
 	private class BottomButtonClickListener implements View.OnClickListener {
 		@Override
 		public void onClick(View v) {
-			if (Utils.isQuickClick())
-				return;
 			switch (currIndex) {
 			case 0:
 				Intent intent = new Intent(MainActivity.this,

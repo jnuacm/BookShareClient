@@ -45,10 +45,12 @@
         </activity>
         <activity
             android:name=".LoginActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".RegisterActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
@@ -59,14 +61,17 @@
         <activity
             android:name=".FriendsInformationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".BookInformationActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".FriendBooksActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
@@ -80,18 +85,22 @@
         <activity
             android:name=".GenerateQRCodeActivity"
             android:label="@string/title_activity_generate_qrcode"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".PersonInfoActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".GroupMemberActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".BookSearchActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
 

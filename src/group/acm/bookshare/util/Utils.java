@@ -101,7 +101,7 @@ public class Utils {
 	 * 检测是否快速点击，即检测是否在一定时间间隔内重复点击
 	 * @return
 	 */
-	public static boolean isQuickClick() {
+	/*public static boolean isQuickClick() {
 		if (first) {
 			first = false;
 			lastTime = System.currentTimeMillis();
@@ -115,7 +115,7 @@ public class Utils {
 			lastTime = time;
 			return false;
 		}
-	}
+	}*/
 
 	public static String getCurSystemTime() {
 		return Long.toString(System.currentTimeMillis());
@@ -288,7 +288,7 @@ public class Utils {
 				.getDefaultSharedPreferences(context);
 		Editor editor = sp.edit();
 		editor.putString("bind_flag", flagStr);
-		editor.commit();
+		editor.apply();
 	}
 
 	public static List<String> getTagsList(String originalText) {
@@ -356,4 +356,6 @@ public class Utils {
 				.getDefaultSharedPreferences(appContext);
 		return sp.getBoolean("has_update", false);
 	}
+	
+	public static long createTime;
 }
