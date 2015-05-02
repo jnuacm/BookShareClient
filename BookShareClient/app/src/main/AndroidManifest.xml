@@ -45,10 +45,12 @@
         </activity>
         <activity
             android:name=".LoginActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".RegisterActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
@@ -59,14 +61,17 @@
         <activity
             android:name=".FriendsInformationActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".BookInformationActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".FriendBooksActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
@@ -80,66 +85,70 @@
         <activity
             android:name=".GenerateQRCodeActivity"
             android:label="@string/title_activity_generate_qrcode"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".PersonInfoActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".GroupMemberActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".BookSearchActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
 
-        <!--&lt;!&ndash; push应用定义消息receiver声明 &ndash;&gt;-->
-        <!--<receiver android:name=".PushMessageReceiver" >-->
-            <!--<intent-filter>-->
+        <!-- push应用定义消息receiver声明 -->
+        <receiver android:name=".PushMessageReceiver" >
+            <intent-filter>
 
-                <!--&lt;!&ndash; 接收push消息 &ndash;&gt;-->
-                <!--<action android:name="com.baidu.android.pushservice.action.MESSAGE" />-->
-                <!--&lt;!&ndash; 接收bind,unbind,fetch,delete等反馈消息 &ndash;&gt;-->
-                <!--<action android:name="com.baidu.android.pushservice.action.RECEIVE" />-->
-                <!--<action android:name="com.baidu.android.pushservice.action.notification.CLICK" />-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
+                <!-- 接收push消息 -->
+                <action android:name="com.baidu.android.pushservice.action.MESSAGE" />
+                <!-- 接收bind,unbind,fetch,delete等反馈消息 -->
+                <action android:name="com.baidu.android.pushservice.action.RECEIVE" />
+                <action android:name="com.baidu.android.pushservice.action.notification.CLICK" />
+            </intent-filter>
+        </receiver>
 
-        <!--&lt;!&ndash; push必须的receviver和service声明 &ndash;&gt;-->
-        <!--<receiver-->
-            <!--android:name="com.baidu.android.pushservice.PushServiceReceiver"-->
-            <!--android:process=":bdservice_v1" >-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
-                <!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
-                <!--<action android:name="com.baidu.android.pushservice.action.notification.SHOW" />-->
-                <!--<action android:name="com.baidu.android.pushservice.action.media.CLICK" />-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
-        <!--<receiver-->
-            <!--android:name="com.baidu.android.pushservice.RegistrationReceiver"-->
-            <!--android:process=":bdservice_v1" >-->
-            <!--<intent-filter>-->
-                <!--<action android:name="com.baidu.android.pushservice.action.METHOD" />-->
-                <!--<action android:name="com.baidu.android.pushservice.action.BIND_SYNC" />-->
-            <!--</intent-filter>-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.PACKAGE_REMOVED" />-->
+        <!-- push必须的receviver和service声明 -->
+        <receiver
+            android:name="com.baidu.android.pushservice.PushServiceReceiver"
+            android:process=":bdservice_v1" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="com.baidu.android.pushservice.action.notification.SHOW" />
+                <action android:name="com.baidu.android.pushservice.action.media.CLICK" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="com.baidu.android.pushservice.RegistrationReceiver"
+            android:process=":bdservice_v1" >
+            <intent-filter>
+                <action android:name="com.baidu.android.pushservice.action.METHOD" />
+                <action android:name="com.baidu.android.pushservice.action.BIND_SYNC" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
 
-                <!--<data android:scheme="package" />-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
 
-        <!--<service-->
-            <!--android:name="com.baidu.android.pushservice.PushService"-->
-            <!--android:exported="true"-->
-            <!--android:process=":bdservice_v1" >-->
-            <!--<intent-filter>-->
-                <!--<action android:name="com.baidu.android.pushservice.action.PUSH_SERVICE" />-->
-            <!--</intent-filter>-->
-        <!--</service>-->
+        <service
+            android:name="com.baidu.android.pushservice.PushService"
+            android:exported="true"
+            android:process=":bdservice_v1" >
+            <intent-filter>
+                <action android:name="com.baidu.android.pushservice.action.PUSH_SERVICE" />
+            </intent-filter>
+        </service>
         <!-- push结束 -->
 
 

@@ -1,5 +1,18 @@
 package group.acm.bookshare;
 
+import group.acm.bookshare.function.Friend;
+import group.acm.bookshare.function.PageListAdapter;
+import group.acm.bookshare.function.User;
+import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.HttpProgress;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
+
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -19,18 +32,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.util.List;
-import java.util.Map;
-
-import group.acm.bookshare.function.Friend;
-import group.acm.bookshare.function.PageListAdapter;
-import group.acm.bookshare.function.User;
-import group.acm.bookshare.function.http.HttpProcessBase;
-import group.acm.bookshare.function.http.HttpProgress;
 
 public class FriendListManage {
     Activity activity;
@@ -173,6 +174,8 @@ public class FriendListManage {
 
         private View getDataView(int dataPosition) {
             TextView nameView;
+            TextView emailView;
+            TextView numView;
             ImageView avatarView;
             View convertView;
             convertView = LayoutInflater.from(context).inflate(
@@ -182,6 +185,10 @@ public class FriendListManage {
                     .findViewById(R.id.myfriendslistitem_friendimage);
             nameView = (TextView) convertView
                     .findViewById(R.id.myfriendslistitem_friendname);
+            emailView = (TextView) convertView
+                    .findViewById(R.id.myfriendslistitem_friendemail);
+            numView = (TextView) convertView
+                    .findViewById(R.id.myfriendslistitem_friendnum);
 
             Map<String, Object> item = datas.get(dataPosition);
 
@@ -194,6 +201,8 @@ public class FriendListManage {
                 avatarView
                         .setImageResource(R.drawable.default_group_avatar_small);
             nameView.setText((String) item.get(Friend.NAME));
+            emailView.setText((String) item.get(Friend.EMAIL));
+            numView.setText("藏书"+"xx本");
 
             return convertView;
         }

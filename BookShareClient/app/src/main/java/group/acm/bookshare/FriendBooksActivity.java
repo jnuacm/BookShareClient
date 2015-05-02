@@ -6,6 +6,7 @@ import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.util.Utils;
 
 import java.util.List;
@@ -181,6 +182,7 @@ public class FriendBooksActivity extends Activity {
             return convertView;
         }
 
+        private NetThread borrowThread;
         private class ItemButtonClick implements OnClickListener {
             private int position;
 
@@ -190,9 +192,9 @@ public class FriendBooksActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                if (Utils.isQuickClick())
+                if (borrowThread != null && !borrowThread.isCanceled())
                     return;
-                localUser.borrowBook(friend.getUsername(), datas.get(position),
+                borrowThread = localUser.borrowBook(friend.getUsername(), datas.get(position),
                         new BorrowBookProgress());
             }
 

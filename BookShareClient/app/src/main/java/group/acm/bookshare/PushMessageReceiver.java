@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.baidu.frontia.api.FrontiaPushMessageReceiver;
 
@@ -67,6 +68,7 @@ public class PushMessageReceiver extends FrontiaPushMessageReceiver {
             Utils.setBind(context, true);
         }
 
+        Toast.makeText(context.getApplicationContext(), (System.currentTimeMillis() - Utils.createTime)+" "+userId, Toast.LENGTH_LONG).show();
         // 記錄推送的userid
         Utils.setPushInfo(context.getApplicationContext(), userId);
     }
@@ -114,8 +116,7 @@ public class PushMessageReceiver extends FrontiaPushMessageReceiver {
                 intent.putExtra(Book.ISBN, isbn);
                 context.sendBroadcast(intent);
             } else {
-                // 更新标志并发送更新广播
-                Utils.setHasUpdate(context.getApplicationContext(), true);
+                // 发送更新广播
                 context.sendBroadcast(new Intent(
                         "group.acm.bookshare.action.UPDATEMESSAGE"));
             }

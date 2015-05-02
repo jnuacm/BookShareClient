@@ -8,6 +8,7 @@ import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.HttpProgress;
 import group.acm.bookshare.function.http.NetAccess;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 import group.acm.bookshare.util.Utils;
 
@@ -31,6 +32,8 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -112,9 +115,16 @@ public class BookInformationActivity extends Activity {
 
         @Override
         public void statusSuccess(String response) {
-            localUser.clearCommentData();
-            localUser.addCommentDataToList(response);
-            commentPage.updateDisplay();
+            final String commentResponse = response;
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                @Override
+                public void run() {
+                    localUser.clearCommentData();
+                    localUser.addCommentDataToList(commentResponse);
+                    commentPage.updateDisplay();
+                }
+            });
         }
     }
 
@@ -215,14 +225,15 @@ public class BookInformationActivity extends Activity {
                     finish();
                 }
             });
-            bookImageView.setOnClickListener(new BookImgClick());
+            // FIXME 注释点击加载
+//            bookImageView.setOnClickListener(new BookImgClick());
 
             actionButton.setText(getActionButtonText());
             actionButton.setOnClickListener(new JudgeListener(detailBook));
 
             BookImgProcess tmp = new BookImgProcess();
             localUser.getUrlBookImg(
-                    (String) detailBook.get(Book.IMG_URL_MEDIUM), tmp, tmp);
+                    (String) detailBook.get(Book.IMG_URL_LARGE), tmp, tmp);
         }
 
         public View getView() {
@@ -355,6 +366,7 @@ public class BookInformationActivity extends Activity {
             }
         }
 
+        private NetThread borrowBookThread;
         // 按钮被点击后的动作通过type选择调用
         private class ActionConfirmListener implements
                 DialogInterface.OnClickListener {
@@ -379,7 +391,9 @@ public class BookInformationActivity extends Activity {
                                 BookInformationActivity.this, "发送成功", "发送失败"));
                         break;
                     case Utils.BOOK_BORROW:
-                        localUser.borrowBook(intent.getStringExtra("define"), book,
+                        if (borrowBookThread != null && !borrowBookThread.isCanceled())
+                            return;
+                        borrowBookThread = localUser.borrowBook(intent.getStringExtra("define"), book,
                                 HttpProgress.createShowProgress(
                                         BookInformationActivity.this, "发送成功",
                                         "发送失败"));

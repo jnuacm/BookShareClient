@@ -70,7 +70,7 @@ public class GenerateQRCodeActivity extends Activity {
 
             // 根据字符串生成二维码图片并显示在界面上，第二个参数为图片的大小（500*500）
             Bitmap qrCodeBitmap;
-            Log.i("jsonObj.toString() = ", jsonObject.toString());
+            Log.i("jsonObject.toString() = ", jsonObject.toString());
             qrCodeBitmap = EncodingHandler.createQRCode(jsonObject.toString(),
                     500);
             qrImgImageView.setImageBitmap(qrCodeBitmap);

@@ -148,12 +148,22 @@ public class MainActivity extends Activity {
     }
 
     private class MessageUpdateReceiver extends BroadcastReceiver {
+        private int mReceiveSum = 0;
+
+        public void resetReceiveSum() {
+            mReceiveSum = 0;
+        }
 
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(
-                    "group.acm.bookshare.action.UPDATEMESSAGE"))
-                checkUpdate();
+                    "group.acm.bookshare.action.UPDATEMESSAGE")) {
+                if (currIndex != 2) {
+                    mReceiveSum ++;
+                    ((TextView) textViews.get(2)).setText("消息("+mReceiveSum+")");
+                }
+                InformListReload();
+            }
         }
     }
 
@@ -215,7 +225,6 @@ public class MainActivity extends Activity {
 
     @Override
     public void onResume() {
-        checkUpdate();
         super.onResume();
     }
 
@@ -259,14 +268,6 @@ public class MainActivity extends Activity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    public void checkUpdate() {
-        if (Utils.hasUpdate(getApplicationContext())) {
-            ((TextView) textViews.get(2)).setText("有更新");
-        } else {
-            ((TextView) textViews.get(2)).setText("消息");
-        }
     }
 
     private void InitImageView() {
@@ -380,10 +381,9 @@ public class MainActivity extends Activity {
                 case 2:
                     mainButton.setText("刷新");
                     informmanage.updateDisplay();
+                    ((TextView) textViews.get(2)).setText("消息");
                     break;
             }
-
-            checkUpdate();
         }
 
     }
@@ -391,8 +391,6 @@ public class MainActivity extends Activity {
     private class BottomButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if (Utils.isQuickClick())
-                return;
             switch (currIndex) {
                 case 0:
                     Intent intent = new Intent(MainActivity.this,
@@ -404,6 +402,7 @@ public class MainActivity extends Activity {
                     break;
                 case 2:
                     informmanage.reload();
+                    ((TextView) textViews.get(2)).setText("消息");
                     break;
             }
         }

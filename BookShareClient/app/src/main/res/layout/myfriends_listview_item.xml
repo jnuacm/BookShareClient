@@ -2,25 +2,46 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/listviewItemLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/myfriendslistitem_friendimage"
-        android:layout_width="40dp"
+        android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_alignParentLeft="true"
-        android:layout_marginLeft="5dp"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
         android:src="@drawable/default_friend_avatar_small" />
 
     <TextView
         android:id="@+id/myfriendslistitem_friendname"
         android:layout_width="wrap_content"
-        android:layout_height="80dp"
-        android:layout_centerVertical="true"
+        android:layout_height="50dp"
         android:layout_marginLeft="25dp"
         android:layout_toRightOf="@id/myfriendslistitem_friendimage"
-        android:gravity="center_vertical"
+        android:text="name"
         android:textColor="@color/listview_item_title_black"
         android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/myfriendslistitem_friendemail"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_below="@+id/myfriendslistitem_friendname"
+        android:layout_marginLeft="25dp"
+        android:layout_toRightOf="@id/myfriendslistitem_friendimage"
+        android:text="email"
+        android:textColor="@color/listview_item_title_black"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/myfriendslistitem_friendnum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:text="cangshu" />
 
 </RelativeLayout>

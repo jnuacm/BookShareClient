@@ -5,6 +5,7 @@ import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.PageListAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
 
@@ -16,6 +17,8 @@ import org.json.JSONException;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -134,8 +137,6 @@ public class InformListManage {
             localUser.addInformDataToList(response);
             informAdapter.initViewItemSize();
             updateDisplay();
-            Utils.setHasUpdate(activity, false);
-            activity.checkUpdate();
         }
     }
 
@@ -170,6 +171,15 @@ public class InformListManage {
         }
 
         public class PermittedProgress extends HttpProcessBase {
+            public boolean bRefreshFriend = false;
+
+            public PermittedProgress() {
+            }
+
+            public PermittedProgress(boolean refresh) {
+                bRefreshFriend = refresh;
+            }
+
             public void error(String content) {
                 Toast.makeText(activity, content, Toast.LENGTH_LONG).show();
             }
@@ -183,6 +193,9 @@ public class InformListManage {
             public void statusSuccess(String response) {
                 String tmp = "完成";
                 Toast.makeText(activity, tmp, Toast.LENGTH_LONG).show();
+                reload();
+                if (bRefreshFriend)
+                    activity.friendListReload();
             }
         }
 
@@ -249,8 +262,6 @@ public class InformListManage {
 
             @Override
             public void onClick(View v) {
-                if (Utils.isQuickClick())
-                    return;
                 inform.clickConfirm();
             }
         }
@@ -264,8 +275,6 @@ public class InformListManage {
 
             @Override
             public void onClick(View v) {
-                if (Utils.isQuickClick())
-                    return;
                 inform.clickCancel();
             }
         }
@@ -277,21 +286,28 @@ public class InformListManage {
                 this.item = item;
             }
 
+            private NetThread permittedThread;
+
             @Override
             public void permitted() {
-                localUser.updateRequest((Integer) item.get(Inform.ID),
+                if (permittedThread != null && !permittedThread.isCanceled())
+                    return;
+                permittedThread = localUser.updateRequest(
+                        (Integer) item.get(Inform.ID),
                         Inform.REQUEST_STATUS_PERMITTED,
                         new PermittedProgress());
-                reload();
             }
+
+            private NetThread confirmAndRThread;
 
             @Override
             public void confirmAndRefreshFriend() {
-                localUser.updateRequest((Integer) item.get(Inform.ID),
-                        Inform.REQUEST_STATUS_CONFIRM,
-                        new PermittedProgress());
-                reload();
-                activity.friendListReload();
+                if (confirmAndRThread != null
+                        && !confirmAndRThread.isCanceled())
+                    return;
+                confirmAndRThread = localUser.updateRequest(
+                        (Integer) item.get(Inform.ID),
+                        Inform.REQUEST_STATUS_CONFIRM, new PermittedProgress(true));
             }
 
             @Override
@@ -312,40 +328,60 @@ public class InformListManage {
                         Utils.REQUEST_SCANBOOK_UPDATESTATUS);
             }
 
+            private NetThread refusedThread;
+
             @Override
             public void refused() {
-                localUser.updateRequest((Integer) item.get(Inform.ID),
+                if (refusedThread != null && !refusedThread.isCanceled())
+                    return;
+                refusedThread = localUser.updateRequest(
+                        (Integer) item.get(Inform.ID),
                         Inform.REQUEST_STATUS_REFUSED, new PermittedProgress());
-                reload();
             }
+
+            private NetThread deleteThread;
 
             @Override
             public void delete() {
-                localUser.deleteRequest((Integer) item.get(Inform.ID),
-                        new PermittedProgress());
-                reload();
+                if (deleteThread != null && !deleteThread.isCanceled())
+                    return;
+                deleteThread = localUser.deleteRequest(
+                        (Integer) item.get(Inform.ID), new PermittedProgress());
             }
+
+            private NetThread deleteAndRThread;
 
             @Override
             public void deleteAndRefreshFriend() {
+                if (deleteAndRThread != null && !deleteAndRThread.isCanceled())
+                    return;
                 localUser.deleteRequest((Integer) item.get(Inform.ID),
-                        new PermittedProgress());
-                reload();
-                activity.friendListReload();
+                        new PermittedProgress(true));
             }
+
+            private NetThread cancelThread;
 
             @Override
             public void cancel() {
-                localUser.updateRequest((Integer) item.get(Inform.ID),
+                if (cancelThread != null && !cancelThread.isCanceled())
+                    return;
+                cancelThread = localUser.updateRequest(
+                        (Integer) item.get(Inform.ID),
                         Inform.REQUEST_STATUS_CANCEL, new PermittedProgress());
-                reload();
             }
         }
     }
 
     public void reload() {
-        localUser.clearInformData();
-        localUser.getSendInformList(new SendInformProgress());
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+            @Override
+            public void run() {
+                localUser.clearInformData();
+                localUser.getSendInformList(new SendInformProgress());
+            }
+
+        });
     }
 
     public void updateDisplay() {

@@ -9,7 +9,7 @@
     <!-- 主体背景颜色值 -->
     <item android:bottom="@dimen/listview_item_divider_line">
         <shape>
-            <solid android:color="@color/background_white" />
+            <solid android:color="@color/ActivityBackgroundGray" />
         </shape>
     </item>
 

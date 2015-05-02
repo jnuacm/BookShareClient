@@ -4,8 +4,10 @@ import group.acm.bookshare.function.LocalApp;
 import group.acm.bookshare.function.LoginUserNameAdapter;
 import group.acm.bookshare.function.User;
 import group.acm.bookshare.function.http.HttpProcessBase;
+import group.acm.bookshare.util.BaiduPushConstants;
 import group.acm.bookshare.util.Utils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
@@ -49,7 +52,7 @@ public class LoginActivity extends Activity implements Callback {
     private RelativeLayout USERNAME_linear_layout;
     private int pwidth;
     private EditText username;
-    private ImageView down_pull_image;
+    private ImageView down_pull_image;;
     private ListView listView = null;
     private Handler handler;
     private JSONArray accounts;
@@ -60,20 +63,17 @@ public class LoginActivity extends Activity implements Callback {
         setContentView(R.layout.activity_login);
         LocalApp localapp = (LocalApp) getApplication();
         localUser = localapp.getUser();
-        // FIXME 注释推送服务
-//        initWithApiKey(); // 绑定推送service
+        Utils.createTime = System.currentTimeMillis();
+        initWithApiKey(); // 绑定推送service
     }
 
     private void initWithApiKey() {
         // Push: 无账号初始化，用api key绑定
         PushManager.startWork(getApplicationContext(),
-                PushConstants.LOGIN_TYPE_API_KEY,
-                Utils.getMetaValue(LoginActivity.this, "api_key"));
+                PushConstants.LOGIN_TYPE_API_KEY, BaiduPushConstants.apiKey);
     }
 
     public void Login(View v) { // 登录回调函数
-        if (Utils.isQuickClick())
-            return;
         String username, password;
         username = ((TextView) findViewById(R.id.USERNAME)).getText()
                 .toString();
@@ -81,11 +81,9 @@ public class LoginActivity extends Activity implements Callback {
                 .toString();
 
         userToPwd.put(username, password);
-        update_accounts();
+        updata_accounts();
         initDatas();
-        // FIXME 注释推送服务
-        String userid= "000000";
-//        String userid = Utils.getPushInfo(getApplicationContext());
+        String userid = Utils.getPushInfo(getApplicationContext());
 
         Log.i(Utils.getLineInfo(), "userid:" + userid);
 
@@ -98,7 +96,7 @@ public class LoginActivity extends Activity implements Callback {
         localUser.login(new LoginProgress());
     }
 
-    private void update_accounts() {
+    private void updata_accounts() {
         accounts = new JSONArray();
         Iterator<Entry<String, String>> iter = userToPwd.entrySet().iterator();
         while (iter.hasNext()) {
@@ -149,8 +147,6 @@ public class LoginActivity extends Activity implements Callback {
     }
 
     public void Register(View v) { // 注册回调函数
-        if (Utils.isQuickClick())
-            return;
         Intent intent = new Intent();
         intent.setClass(this, RegisterActivity.class);
         startActivity(intent);
@@ -231,7 +227,7 @@ public class LoginActivity extends Activity implements Callback {
      */
 
     @SuppressWarnings("deprecation")
-    @SuppressLint({"InlinedApi", "InflateParams"})
+    @SuppressLint({ "InlinedApi", "InflateParams" })
     private void initPopuWindow() {
 
         initDatas();
@@ -252,6 +248,8 @@ public class LoginActivity extends Activity implements Callback {
 
     /**
      * 显示PopupWindow窗口
+     *
+     * @param popupwindow
      */
     public void popupWindwShowing() {
         selectPopupWindow.showAsDropDown(USERNAME_linear_layout, 0, -3);
@@ -283,7 +281,7 @@ public class LoginActivity extends Activity implements Callback {
                 int delIndex = data.getInt("delIndex");
                 userToPwd.remove(datas.get(delIndex));
                 datas.remove(delIndex);
-                update_accounts();
+                updata_accounts();
                 // 刷新下拉列表
                 userNameAdapter.notifyDataSetChanged();
                 break;
