@@ -110,7 +110,26 @@ public class Inform {
     }
 
     public static String mapToStr(Map<String, Object> item) {
-        String ret = (String) item.get(Inform.TIME);
+        String description = (String) item.get(Inform.DESCRIPTION);
+        String ret;
+        try {
+            JSONObject object = new JSONObject(description);
+            String message = object.getString("message");
+            object = new JSONObject(message);
+            if (object.getInt("type") == 0) {
+                ret = "约定时间：" + object.getString("date");
+                ret += "\n";
+                ret += "约定地点：" + object.getString("location");
+                ret += "\n";
+            } else {
+                ret = "内容：" + object.getString("content");
+                ret += "\n";
+            }
+        } catch (JSONException e) {
+            ret = "";
+            e.printStackTrace();
+        }
+        ret += (String) item.get(Inform.TIME);
         ret += ("\nfrom:" + item.get(Inform.FROM));
         ret += ("\nto:" + item.get(Inform.TO));
         ret += "\n请求:";

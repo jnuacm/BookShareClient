@@ -1,184 +1,112 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/ActivityBackgroundGray"
-    android:orientation="vertical"
-    tools:context=".FriendsInformationActivity" >
+    android:paddingLeft="15dp"
+    android:paddingRight="15dp"
+    android:paddingTop="15dp"
+    tools:context=".FriendsInformationActivity">
+
+    <ImageView
+        android:id="@+id/IF_img"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/default_friend_avatar_small" />
 
     <LinearLayout
-        android:id="@+id/friend_info_bar"
-        style="@style/activity_bar_layout"
-        android:orientation="horizontal" >
-
-        <ImageView
-            android:id="@+id/friend_info_bar_img"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:src="@drawable/back" />
+        android:id="@+id/linearLayoutAccount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/IF_img">
 
         <TextView
-            android:id="@+id/friend_info_bar_title"
-            style="@style/activity_bar_text"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="20dp"
-            android:gravity="center_vertical"
-            android:text="好友信息" />
+            android:layout_width="90dp"
+            android:layout_height="wrap_content"
+            android:text="用户名"
+            android:textAppearance="@style/InformationTextStyle"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/IF_username"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="未知"
+            android:textAppearance="@style/InformationTextStyle" />
     </LinearLayout>
 
-    <ScrollView
+    <LinearLayout
+        android:id="@+id/linearLayoutArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayoutAccount"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_toRightOf="@+id/IF_img">
+
+        <TextView
+            android:layout_width="90dp"
+            android:layout_height="wrap_content"
+            android:text="地区"
+            android:textAppearance="@style/InformationTextStyle"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/IF_area"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:text="未知"
+            android:textAppearance="@style/InformationTextStyle" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayoutArea"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_toRightOf="@+id/IF_img">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/ActivityBackgroundGray"
-            android:orientation="vertical" >
+        <TextView
+            android:layout_width="90dp"
+            android:layout_height="wrap_content"
+            android:text="Email"
+            android:textAppearance="@style/InformationTextStyle"
+            android:textSize="20sp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_information_vertical_margin"
-                android:background="@drawable/person_info_background_layout" >
+        <TextView
+            android:id="@+id/IF_email"
+            android:layout_width="135dp"
+            android:layout_height="wrap_content"
+            android:text="未知"
+            android:textAppearance="@style/InformationTextStyle" />
+    </LinearLayout>
 
-                <TextView
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="头像"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
+    <TextView
+        android:id="@+id/linearLayoutTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/IF_img"
+        android:layout_marginTop="15dp"
+        android:text="用户书表"
+        android:textSize="18sp" />
 
-                <ImageView
-                    android:id="@+id/IF_img"
-                    android:layout_width="135dp"
-                    android:layout_height="70dp"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/default_friend_avatar_small" />
-            </LinearLayout>
+    <ListView
+        android:id="@+id/friend_book_listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayoutTitle"
+        android:fadingEdge="none" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_information_vertical_margin"
-                android:background="@drawable/person_info_background_layout" >
+    <ProgressBar
+        android:id="@+id/friend_books_progressbar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" />
 
-                <TextView
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="用户名"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/IF_username"
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="未知"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_information_vertical_margin"
-                android:background="@drawable/person_info_background_layout" >
-
-                <TextView
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="地区"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/IF_area"
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="未知"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_information_vertical_margin"
-                android:background="@drawable/person_info_background_layout" >
-
-                <TextView
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="藏书量"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/IF_collection"
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="未知"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_information_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_information_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_information_vertical_margin"
-                android:background="@drawable/person_info_background_layout" >
-
-                <TextView
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="Email"
-                    android:textAppearance="@style/InformationTextStyle"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/IF_email"
-                    android:layout_width="135dp"
-                    android:layout_height="wrap_content"
-                    android:text="未知"
-                    android:textAppearance="@style/InformationTextStyle" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/friend_checkbook_button"
-                style="@style/MainButton"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="20dp"
-                android:text="查看书表"
-                android:textSize="20sp" />
-
-            <Button
-                android:id="@+id/group_checkfriend_button"
-                style="@style/MainButton"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="15dp"
-                android:text="查看成员"
-                android:textSize="20sp"
-                android:visibility="invisible" />
-        </LinearLayout>
-    </ScrollView>
-
-</LinearLayout>
+</RelativeLayout>

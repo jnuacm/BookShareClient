@@ -60,8 +60,6 @@ public class User {
     private List<Map<String, Object>> comments; // 临时保存书本评论列表数据
     private List<Map<String, Object>> hotBooks; // 临时保存热书推荐列表数据
 
-    private User curFriend;
-
     private Application application;
     private ImageManage imgManage; // 图像管理对象
     private UrlStringFactory urlFactory = new UrlStringFactory(); // url构造类
@@ -498,19 +496,34 @@ public class User {
         net.createDeleteThread(url, progress);
     }
 
-    public NetThread borrowBook(String aimName, Map<String, Object> book,
-                                NetProgress progress) {
-        return bookRequest(aimName, book, "借书消息", Inform.REQUEST_TYPE_BORROW, progress);
+    public NetThread borrowBook(String aimName, Map<String, Object> book, String date, String location,
+                                NetProgress progress) throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("type", 0);
+        obj.put("date",date);
+        obj.put("location",location);
+        obj.put("title","借书消息");
+        return bookRequest(aimName, book, obj.toString(), Inform.REQUEST_TYPE_BORROW, progress);
     }
 
-    public NetThread askReturn(Map<String, Object> book, NetProgress progress) {
+    public NetThread askReturn(Map<String, Object> book, String date, String location, NetProgress progress) throws JSONException {
         String holder = (String) book.get(Book.HOLDER);
-        return bookRequest(holder, book, "请快点还书", Inform.REQUEST_TYPE_RETURN, progress);
+        JSONObject obj = new JSONObject();
+        obj.put("type", 0);
+        obj.put("date",date);
+        obj.put("location",location);
+        obj.put("title","请快点还书");
+        return bookRequest(holder, book, obj.toString(), Inform.REQUEST_TYPE_RETURN, progress);
     }
 
-    public NetThread returnBook(Map<String, Object> book, NetProgress progress) {
+    public NetThread returnBook(Map<String, Object> book, String date, String location, NetProgress progress) throws JSONException {
         String owner = (String) book.get(Book.OWNER);
-        return bookRequest(owner, book, "还书啦", Inform.REQUEST_TYPE_RETURN, progress);
+        JSONObject obj = new JSONObject();
+        obj.put("type", 0);
+        obj.put("date",date);
+        obj.put("location",location);
+        obj.put("title","还书啦");
+        return bookRequest(owner, book, obj.toString(), Inform.REQUEST_TYPE_RETURN, progress);
     }
 
     /**
@@ -975,14 +988,6 @@ public class User {
 
     public int getAvatarVersion() {
         return avatarVersion;
-    }
-
-    public void setFriend(User friend) {
-        curFriend = friend;
-    }
-
-    public User getFriend() {
-        return curFriend;
     }
 
     public String getArea() {

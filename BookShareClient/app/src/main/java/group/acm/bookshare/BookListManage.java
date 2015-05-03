@@ -10,11 +10,14 @@ import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
+import group.acm.bookshare.util.WidgetUtil;
 
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -207,6 +210,7 @@ public class BookListManage {
         // 获取书本显示View
         private View getDataView(int dataPosition) {
             TextView titleView;
+            TextView authorView;
             TextView statusView;
             ImageView coverView;
             View convertView = LayoutInflater.from(context).inflate(
@@ -215,6 +219,8 @@ public class BookListManage {
                     .findViewById(R.id.mybookslistitem_bookimage);
             titleView = (TextView) convertView
                     .findViewById(R.id.mybookslistitem_bookname);
+            authorView = (TextView) convertView
+                    .findViewById(R.id.mybookslistitem_bookauthor);
             statusView = (TextView) convertView
                     .findViewById(R.id.mybookslistitem_bookstate);
 
@@ -225,6 +231,7 @@ public class BookListManage {
             else
                 coverView.setImageResource(R.drawable.default_book_big);
             titleView.setText((String) item.get(Book.NAME));
+            authorView.setText((String) item.get(Book.AUTHOR));
             statusView.setText(getText(item)); // 状态显示
 
             return convertView;
@@ -389,12 +396,34 @@ public class BookListManage {
                     localUser.deleteBook(book, new BookChangeProgress());
                     break;
                 case Utils.BOOK_RETURN:
-                    localUser.returnBook(book, HttpProgress.createShowProgress(
-                            activity, "发送成功", "发送失败"));
+                    WidgetUtil.createApmDialog(activity, new WidgetUtil.ApmConfirm() {
+                        @Override
+                        public void onInput(String time, String location) {
+                            try {
+                                localUser.returnBook(book, time, location, HttpProgress.createShowProgress(
+                                        activity, "发送成功", "发送失败"));
+                            } catch (JSONException e) {
+                                Toast.makeText(activity, e.toString(), Toast.LENGTH_LONG).show();
+                                e.printStackTrace();
+                            }
+                        }
+                    }).show();
+
                     break;
                 case Utils.BOOK_ASKRETURN:
-                    localUser.askReturn(book, HttpProgress.createShowProgress(
-                            activity, "发送成功", "发送失败"));
+                    WidgetUtil.createApmDialog(activity, new WidgetUtil.ApmConfirm() {
+                        @Override
+                        public void onInput(String time, String location) {
+                            try {
+                                localUser.askReturn(book, time, location, HttpProgress.createShowProgress(
+                                        activity, "发送成功", "发送失败"));
+                            } catch (JSONException e) {
+                                Toast.makeText(activity, e.toString(), Toast.LENGTH_LONG).show();
+                                e.printStackTrace();
+                            }
+                        }
+                    }).show();
+
                     break;
             }
         }

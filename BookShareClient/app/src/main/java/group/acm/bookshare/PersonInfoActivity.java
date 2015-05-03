@@ -18,12 +18,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class PersonInfoActivity extends Activity {
+public class PersonInfoActivity extends BaseActivity {
     public static final int REQUEST_FILE_SELECT = 1;
 
     private User localUser;
 
-    private ImageView backButton;
     private ImageView avatarView;
     private TextView nameView;
     private TextView areaView;
@@ -35,9 +34,11 @@ public class PersonInfoActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_person_info);
+
+        setActionBarTitle("个人信息");
+
         localUser = ((LocalApp) getApplication()).getUser();
 
-        backButton = (ImageView) findViewById(R.id.person_info_bar_img);
         avatarView = (ImageView) findViewById(R.id.personal_avatar_view);
         nameView = (TextView) findViewById(R.id.personal_textview_name_show);
         areaView = (TextView) findViewById(R.id.personal_textview_area_show);
@@ -51,13 +52,6 @@ public class PersonInfoActivity extends Activity {
     }
 
     private void setAction() {
-        backButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
         avatarView.setOnClickListener(new OnClickListener() {
 
             @Override

@@ -6,27 +6,6 @@
     android:orientation="vertical"
     tools:context=".PersonInfoActivity" >
 
-    <LinearLayout
-        android:id="@+id/person_info_bar"
-        style="@style/activity_bar_layout"
-        android:orientation="horizontal" >
-
-        <ImageView
-            android:id="@+id/person_info_bar_img"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:src="@drawable/back" />
-
-        <TextView
-            android:id="@+id/person_info_bar_title"
-            style="@style/activity_bar_text"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="20dp"
-            android:gravity="center_vertical"
-            android:text="个人信息" />
-    </LinearLayout>
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent" >

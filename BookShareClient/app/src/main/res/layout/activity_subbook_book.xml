@@ -4,31 +4,10 @@
     android:layout_height="match_parent"
     android:background="@color/ActivityBackgroundGray" >
 
-    <LinearLayout
-        android:id="@+id/book_info_bar"
-        style="@style/activity_bar_layout"
-        android:orientation="horizontal" >
-
-        <ImageView
-            android:id="@+id/book_info_bar_img"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:src="@drawable/back" />
-
-        <TextView
-            android:id="@+id/book_info_bar_title"
-            style="@style/activity_bar_text"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="20dp"
-            android:gravity="center_vertical"
-            android:text="作品详情" />
-    </LinearLayout>
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/book_info_bar"
+        android:layout_alignParentTop="true"
         android:fadingEdge="none" >
 
         <RelativeLayout

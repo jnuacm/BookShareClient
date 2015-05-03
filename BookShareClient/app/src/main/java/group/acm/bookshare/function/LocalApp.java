@@ -2,7 +2,9 @@ package group.acm.bookshare.function;
 
 import android.app.Application;
 
-public class LocalApp extends Application {
+import com.baidu.frontia.FrontiaApplication;
+
+public class LocalApp extends FrontiaApplication {
 	private User user = new User(this);
 
 	@Override

@@ -32,9 +32,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class HotBookActivity extends Activity {
+public class HotBookActivity extends BaseActivity {
     private User localUser;
-    private ImageView backButton;
     private ListView bookListView;
     private BookListAdapter adapter;
     private ProgressBar bar;
@@ -44,17 +43,12 @@ public class HotBookActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hot_book);
 
+        setActionBarTitle("热书推荐");
+
         localUser = ((LocalApp) getApplication()).getUser();
         adapter = new BookListAdapter(this, localUser.getHotListData(),
                 localUser.getBookImgs());
         bar = (ProgressBar) findViewById(R.id.hotbook_progressbar);
-        backButton = (ImageView) findViewById(R.id.hotbook_bar_img);
-        backButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
         bookListView = (ListView) findViewById(R.id.hotbook_listview);
         bookListView.setAdapter(adapter);
         bookListView.setOnItemClickListener(new BookInfoListener());

@@ -6,19 +6,16 @@
 
     <ImageView
         android:id="@+id/myfriendslistitem_friendimage"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="10dp"
         android:src="@drawable/default_friend_avatar_small" />
 
     <TextView
         android:id="@+id/myfriendslistitem_friendname"
         android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_height="40dp"
         android:layout_marginLeft="25dp"
         android:layout_toRightOf="@id/myfriendslistitem_friendimage"
         android:text="name"
@@ -28,7 +25,7 @@
     <TextView
         android:id="@+id/myfriendslistitem_friendemail"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
+        android:layout_height="25dp"
         android:layout_below="@+id/myfriendslistitem_friendname"
         android:layout_marginLeft="25dp"
         android:layout_toRightOf="@id/myfriendslistitem_friendimage"

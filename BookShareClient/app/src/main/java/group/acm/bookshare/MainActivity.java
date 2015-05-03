@@ -76,6 +76,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getActionBar().hide();
+
         localUser = ((LocalApp) getApplication()).getUser();
 
         bookmanage = new BookListManage(this);

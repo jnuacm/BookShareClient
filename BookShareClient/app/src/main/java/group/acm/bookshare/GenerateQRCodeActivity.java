@@ -27,6 +27,8 @@ public class GenerateQRCodeActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_qrcode);
 
+        getActionBar().hide();
+
         ImageView qrImgImageView = (ImageView) this
                 .findViewById(R.id.gen_qr_image);
         try {

@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -268,6 +269,8 @@ public class FriendListManage {
                 R.layout.add_friend_alert_dialog, null);
         EditText addFriendEdit = (EditText) addFrienView
                 .findViewById(R.id.add_friend_name);
+        EditText validateInput = (EditText) addFrienView
+                .findViewById(R.id.validate_message);
         AlertDialog addFriendDialog = null;
         AlertDialog.Builder builder = null;
 
@@ -276,7 +279,7 @@ public class FriendListManage {
         builder.setMessage("Please input your firend'account.");
         builder.setView(addFrienView);
         builder.setPositiveButton("Yes", new AddFriendConfirmDialogListener(
-                addFriendEdit));
+                addFriendEdit, validateInput));
         builder.setNegativeButton("No", null);
         addFriendDialog = builder.create();
         addFriendDialog.show();
@@ -285,16 +288,29 @@ public class FriendListManage {
     private class AddFriendConfirmDialogListener implements
             DialogInterface.OnClickListener {
         EditText addFriendEdit;
+        EditText validateInput;
 
-        public AddFriendConfirmDialogListener(EditText addFriendEdit) {
+        public AddFriendConfirmDialogListener(EditText addFriendEdit, EditText validateInput) {
             this.addFriendEdit = addFriendEdit;
+            this.validateInput = validateInput;
         }
 
         @Override
         public void onClick(DialogInterface dialog, int which) {
             String addFriendName = addFriendEdit.getText().toString();
-            curUser.addFriend(addFriendName, "我想加你",
-                    HttpProgress.createShowProgress(activity, "发送成功", "发送失败"));
+            String validate = validateInput.getText().toString();
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("type", 1);
+                obj.put("content", validate);
+                obj.put("title", "我想加你");
+                curUser.addFriend(addFriendName, obj.toString(),
+                        HttpProgress.createShowProgress(activity, "发送成功", "发送失败"));
+            } catch (JSONException e) {
+                Toast.makeText(activity, e.toString(), Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
+
         }
 
     }

@@ -29,6 +29,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -46,7 +47,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class BookSearchActivity extends Activity {
+public class BookSearchActivity extends BaseActivity {
     private User localUser;
 
     private Spinner typeSpinner; // 下拉列表
@@ -61,6 +62,8 @@ public class BookSearchActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_search);
+
+        setActionBarTitle("图书搜索");
 
         localUser = ((LocalApp) getApplication()).getUser();
 
@@ -105,8 +108,6 @@ public class BookSearchActivity extends Activity {
 
     /**
      * 获取显示的图书列表
-     *
-     * @param response
      * @return
      */
     private void initListView() {

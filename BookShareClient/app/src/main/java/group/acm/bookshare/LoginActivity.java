@@ -61,6 +61,7 @@ public class LoginActivity extends Activity implements Callback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        getActionBar().hide();
         LocalApp localapp = (LocalApp) getApplication();
         localUser = localapp.getUser();
         Utils.createTime = System.currentTimeMillis();
@@ -248,8 +249,6 @@ public class LoginActivity extends Activity implements Callback {
 
     /**
      * 显示PopupWindow窗口
-     *
-     * @param popupwindow
      */
     public void popupWindwShowing() {
         selectPopupWindow.showAsDropDown(USERNAME_linear_layout, 0, -3);

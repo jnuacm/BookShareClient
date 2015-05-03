@@ -11,6 +11,7 @@ import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetAccess.StreamProcess;
 import group.acm.bookshare.util.Utils;
+import group.acm.bookshare.util.WidgetUtil;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -36,7 +37,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -49,7 +53,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class BookInformationActivity extends Activity {
+import com.baidu.android.pushservice.PushManager;
+
+public class BookInformationActivity extends BaseActivity {
     private User localUser;
 
     private List<View> viewList; // 各个页面
@@ -69,6 +75,8 @@ public class BookInformationActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_information);
+
+        setActionBarTitle("作品详情");
 
         localUser = ((LocalApp) getApplication()).getUser();
         appContext = getApplicationContext();
@@ -93,6 +101,26 @@ public class BookInformationActivity extends Activity {
         viewPager = (ViewPager) findViewById(R.id.book_viewpager);
         viewPager.setAdapter(new MyViewPagerAdapter(viewList));
         viewPager.setCurrentItem(0);
+        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    setActionBarTitle("作品详情");
+                } else {
+                    setActionBarTitle("评论列表");
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         // 注册接收到推送时的更新receiver
         receiver = new MessageUpdateReceiver();
@@ -140,7 +168,7 @@ public class BookInformationActivity extends Activity {
      */
     public class MyViewPagerAdapter extends PagerAdapter {
         private List<View> mListViews;
-        private boolean isCreated[] = { false, false, false };
+        private boolean isCreated[] = {false, false, false};
 
         public MyViewPagerAdapter(List<View> mListViews) {
             this.mListViews = mListViews;// 构造方法，参数是我们的页卡，这样比较方便。
@@ -185,7 +213,6 @@ public class BookInformationActivity extends Activity {
         private TextView bookOwnerView;
         private TextView bookHolderView;
         private TextView bookStatusView;
-        private ImageView backButton;
         private ImageView bookImageView;
         private Button actionButton;
 
@@ -204,7 +231,6 @@ public class BookInformationActivity extends Activity {
             bookOwnerView = (TextView) page.findViewById(R.id.book_owner);
             bookHolderView = (TextView) page.findViewById(R.id.book_holder);
             bookStatusView = (TextView) page.findViewById(R.id.book_status);
-            backButton = (ImageView) page.findViewById(R.id.book_info_bar_img);
             bookImageView = (ImageView) page.findViewById(R.id.book_image);
             actionButton = (Button) page.findViewById(R.id.button_action);
 
@@ -219,12 +245,6 @@ public class BookInformationActivity extends Activity {
             bookHolderView.setText("持有人:" + detailBook.get(Book.HOLDER));
             bookStatusView.setText(getStatusText());
 
-            backButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finish();
-                }
-            });
             // FIXME 注释点击加载
 //            bookImageView.setOnClickListener(new BookImgClick());
 
@@ -367,6 +387,7 @@ public class BookInformationActivity extends Activity {
         }
 
         private NetThread borrowBookThread;
+
         // 按钮被点击后的动作通过type选择调用
         private class ActionConfirmListener implements
                 DialogInterface.OnClickListener {
@@ -383,20 +404,52 @@ public class BookInformationActivity extends Activity {
                         localUser.deleteBook(book, new BookChangeProgress());
                         break;
                     case Utils.BOOK_RETURN:
-                        localUser.returnBook(book, HttpProgress.createShowProgress(
-                                BookInformationActivity.this, "发送成功", "发送失败"));
+                        WidgetUtil.createApmDialog(BookInformationActivity.this, new WidgetUtil.ApmConfirm() {
+                            @Override
+                            public void onInput(String time, String location) {
+                                try {
+                                    localUser.returnBook(book, time, location, HttpProgress.createShowProgress(
+                                            BookInformationActivity.this, "发送成功", "发送失败"));
+                                } catch (JSONException e) {
+                                    Toast.makeText(BookInformationActivity.this, e.toString(),Toast.LENGTH_LONG).show();
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).show();
+
                         break;
                     case Utils.BOOK_ASKRETURN:
-                        localUser.askReturn(book, HttpProgress.createShowProgress(
-                                BookInformationActivity.this, "发送成功", "发送失败"));
+                        WidgetUtil.createApmDialog(BookInformationActivity.this, new WidgetUtil.ApmConfirm() {
+                            @Override
+                            public void onInput(String time, String location) {
+                                try {
+                                    localUser.askReturn(book, time, location, HttpProgress.createShowProgress(
+                                            BookInformationActivity.this, "发送成功", "发送失败"));
+                                } catch (JSONException e) {
+                                    Toast.makeText(BookInformationActivity.this, e.toString(),Toast.LENGTH_LONG).show();
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).show();
+
                         break;
                     case Utils.BOOK_BORROW:
-                        if (borrowBookThread != null && !borrowBookThread.isCanceled())
-                            return;
-                        borrowBookThread = localUser.borrowBook(intent.getStringExtra("define"), book,
-                                HttpProgress.createShowProgress(
-                                        BookInformationActivity.this, "发送成功",
-                                        "发送失败"));
+                        WidgetUtil.createApmDialog(BookInformationActivity.this, new WidgetUtil.ApmConfirm() {
+                            @Override
+                            public void onInput(String time, String location) {
+                                if (borrowBookThread != null && !borrowBookThread.isCanceled())
+                                    return;
+                                try {
+                                    borrowBookThread = localUser.borrowBook(intent.getStringExtra("define"), book, time, location,
+                                            HttpProgress.createShowProgress(
+                                                    BookInformationActivity.this, "发送成功",
+                                                    "发送失败"));
+                                } catch (JSONException e) {
+                                    Toast.makeText(BookInformationActivity.this, e.toString(),Toast.LENGTH_LONG).show();
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).show();
                         break;
                 }
             }
@@ -436,7 +489,6 @@ public class BookInformationActivity extends Activity {
     private class CommentSubPage {
         private View page;
         private Button buttonComment;
-        private ImageView buttonBack;
         private ListView listviewComment;
 
         private CommentListAdapter adapter;
@@ -446,15 +498,6 @@ public class BookInformationActivity extends Activity {
                     BookInformationActivity.this);
             page = LayoutInflater.from(BookInformationActivity.this).inflate(
                     R.layout.activity_subbook_comment, null);
-
-            // 返回键
-            buttonBack = (ImageView) page.findViewById(R.id.comment_bar_img);
-            buttonBack.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finish();
-                }
-            });
 
             // 评论列表
             listviewComment = (ListView) page

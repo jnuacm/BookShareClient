@@ -8,10 +8,12 @@ import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess;
 import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.util.Utils;
+import group.acm.bookshare.util.WidgetUtil;
 
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -46,7 +48,6 @@ public class FriendBooksActivity extends Activity {
         setContentView(R.layout.activity_friend_books);
 
         localUser = ((LocalApp) getApplication()).getUser();
-        friend = localUser.getFriend();
 
         // 设置界面
         bar = (ProgressBar) findViewById(R.id.friend_books_progressbar);
@@ -192,10 +193,21 @@ public class FriendBooksActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                if (borrowThread != null && !borrowThread.isCanceled())
-                    return;
-                borrowThread = localUser.borrowBook(friend.getUsername(), datas.get(position),
-                        new BorrowBookProgress());
+                WidgetUtil.createApmDialog(FriendBooksActivity.this, new WidgetUtil.ApmConfirm() {
+                    @Override
+                    public void onInput(String time, String location) {
+                        if (borrowThread != null && !borrowThread.isCanceled())
+                            return;
+                        try {
+                            borrowThread = localUser.borrowBook(friend.getUsername(), datas.get(position), time, location,
+                                    new BorrowBookProgress());
+                        } catch (JSONException e) {
+                            Toast.makeText(FriendBooksActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }).show();
+
             }
 
         }

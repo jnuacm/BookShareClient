@@ -120,6 +120,8 @@ public class PushMessageReceiver extends FrontiaPushMessageReceiver {
                 context.sendBroadcast(new Intent(
                         "group.acm.bookshare.action.UPDATEMESSAGE"));
             }
+
+            Toast.makeText(context.getApplicationContext(), "接收到推送消息",Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }
