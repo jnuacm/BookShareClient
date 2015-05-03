@@ -202,7 +202,7 @@ public class FriendListManage {
                         .setImageResource(R.drawable.default_group_avatar_small);
             nameView.setText((String) item.get(Friend.NAME));
             emailView.setText((String) item.get(Friend.EMAIL));
-            numView.setText("藏书"+"xx本");
+//            numView.setText("藏书"+"xx本");
 
             return convertView;
         }

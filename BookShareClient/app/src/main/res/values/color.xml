@@ -48,7 +48,7 @@
     <color name="background_gray">#dddddddd</color>
     <color name="listview_item_gray">#fff0f0f0</color>
     <color name="listview_item_title_black">#ff111111</color>
-    <color name="listview_item_divider_line">#ff32bdbd</color>
+    <color name="listview_item_divider_line">#ff000000</color>
     <color name="textfont_black">#ff111111</color>
     <color name="textfont_gray">#ff808080</color>
 

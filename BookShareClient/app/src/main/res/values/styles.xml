@@ -32,7 +32,7 @@
     </style>
 
     <style name="MainButton">
-        <item name="android:background">@color/background_green</item>
+        <item name="android:background">@drawable/main_button</item>
         <item name="android:textColor">@color/buttonfont_white</item>
     </style>
 
@@ -50,6 +50,10 @@
 
     <style name="listviewItemLayout">
         <item name="android:background">@drawable/listview_item_background</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
     </style>
 
     <style name="InformationTextStyle">

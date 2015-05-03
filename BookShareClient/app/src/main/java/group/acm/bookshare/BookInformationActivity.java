@@ -569,8 +569,20 @@ public class BookInformationActivity extends Activity {
             if (content.length() <= 0)
                 return;
             localUser.addComment((String) detailBook.get(Book.ISBN), content,
-                    HttpProgress.createShowProgress(
-                            BookInformationActivity.this, "发送成功", "发送失败"));
+                    new HttpProcessBase() {
+                        @Override
+                        public void statusError(String response) {
+                            Toast.makeText(appContext, "发送失败", Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void statusSuccess(String response) {
+                            Toast.makeText(appContext, "发送成功", Toast.LENGTH_LONG).show();
+                            localUser.getCommentList(
+                                    (String) detailBook.get(Book.ISBN),
+                                    new CommentGetProgress());
+                        }
+                    });
         }
     }
 

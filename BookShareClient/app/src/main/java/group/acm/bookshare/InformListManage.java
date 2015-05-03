@@ -373,15 +373,8 @@ public class InformListManage {
     }
 
     public void reload() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-            @Override
-            public void run() {
-                localUser.clearInformData();
-                localUser.getSendInformList(new SendInformProgress());
-            }
-
-        });
+        localUser.clearInformData();
+        localUser.getSendInformList(new SendInformProgress());
     }
 
     public void updateDisplay() {
