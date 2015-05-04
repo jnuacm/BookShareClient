@@ -243,13 +243,13 @@ public class BookListManage {
             if (localUser.getUsername().equals(item.get(Book.OWNER))) {
                 switch ((Integer) item.get(Book.STATUS)) {
                     case Book.STATUS_BUY | Book.STATUS_BORROW:
-                        text += "可卖/可借";
+                        text += "可借";
                         break;
                     case Book.STATUS_BUY | Book.STATUS_UNBORROW:
-                        text += "可卖/不可借";
+                        text += "不可借";
                         break;
                     case Book.STATUS_UNBUY | Book.STATUS_BORROW:
-                        text += "不可卖/可借";
+                        text += "可借";
                         break;
                     case Book.STATUS_UNBUY | Book.STATUS_UNBORROW:
                         text += "已借出";

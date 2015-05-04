@@ -8,6 +8,7 @@ import group.acm.bookshare.function.http.HttpProcessBase;
 import group.acm.bookshare.function.http.NetAccess.NetThread;
 import group.acm.bookshare.function.http.NetProgress;
 import group.acm.bookshare.util.Utils;
+import group.acm.bookshare.util.WidgetUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -332,11 +334,18 @@ public class InformListManage {
 
             @Override
             public void refused() {
-                if (refusedThread != null && !refusedThread.isCanceled())
-                    return;
-                refusedThread = localUser.updateRequest(
-                        (Integer) item.get(Inform.ID),
-                        Inform.REQUEST_STATUS_REFUSED, new PermittedProgress());
+                WidgetUtil.createContentDialog(activity, "请输入拒绝理由", new WidgetUtil.ContentConfirm() {
+                    @Override
+                    public void onInput(String content) {
+                        if (refusedThread != null && !refusedThread.isCanceled())
+                            return;
+                        if (TextUtils.isEmpty(content))
+                            content = "无";
+                        refusedThread = localUser.refusedRequest(
+                                (Integer) item.get(Inform.ID),
+                                Inform.REQUEST_STATUS_REFUSED, content, item, new PermittedProgress());
+                    }
+                }).show();
             }
 
             private NetThread deleteThread;

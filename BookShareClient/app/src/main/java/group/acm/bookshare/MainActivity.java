@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
     private List<View> viewList; // 各个页面
     private ViewPager viewPager;// viewpager
     private Button mainButton; // 底部按钮
-    private BroadcastReceiver receiver;
+    private MessageUpdateReceiver receiver;
 
     private User localUser;
 
@@ -75,8 +75,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        getActionBar().hide();
 
         localUser = ((LocalApp) getApplication()).getUser();
 
@@ -383,6 +381,7 @@ public class MainActivity extends Activity {
                 case 2:
                     mainButton.setText("刷新");
                     informmanage.updateDisplay();
+                    receiver.resetReceiveSum();
                     ((TextView) textViews.get(2)).setText("消息");
                     break;
             }

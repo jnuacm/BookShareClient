@@ -93,6 +93,7 @@ public class HotBookActivity extends BaseActivity {
         private View getDataView(int dataPosition) {
             TextView titleView;
             TextView statusView;
+            TextView authroView;
             ImageView coverView;
             View convertView = LayoutInflater.from(context).inflate(
                     R.layout.mybooks_listview_item, null);
@@ -102,6 +103,8 @@ public class HotBookActivity extends BaseActivity {
                     .findViewById(R.id.mybookslistitem_bookname);
             statusView = (TextView) convertView
                     .findViewById(R.id.mybookslistitem_bookstate);
+            authroView = (TextView) convertView
+                    .findViewById(R.id.mybookslistitem_bookauthor);
 
             Map<String, Object> item = datas.get(dataPosition);
 
@@ -110,8 +113,8 @@ public class HotBookActivity extends BaseActivity {
             else
                 coverView.setImageResource(R.drawable.default_book_big);
             titleView.setText((String) item.get(Book.NAME));
-            statusView.setText("x个赞"); // 状态显示
-
+            statusView.setText("火");
+            authroView.setText((String) item.get(Book.AUTHOR));
             return convertView;
         }
     }
@@ -168,6 +171,7 @@ public class HotBookActivity extends BaseActivity {
             data.putString(NetAccess.RESPONSE, response);
             intent.putExtras(data);
             intent.setClass(HotBookActivity.this, BookInformationActivity.class);
+            startActivity(intent);
         }
     }
 
@@ -186,7 +190,7 @@ public class HotBookActivity extends BaseActivity {
             bar.setVisibility(View.INVISIBLE);
             adapter.notifyDataSetChanged();
             Toast.makeText(HotBookActivity.this,
-                    ":" + localUser.getHotListData().size(), Toast.LENGTH_LONG)
+                    localUser.getHotListData().size() + "本", Toast.LENGTH_LONG)
                     .show();
             List<Map<String, Object>> hotBooks = localUser.getHotListData();
             for (Map<String, Object> book : hotBooks) {

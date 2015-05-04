@@ -211,10 +211,10 @@ public class Book {
             map.put(Book.PUBLISHER, item.getString(Book.PUBLISHER));
             map.put(Book.TAGS, item.getString(Book.TAGS));
 
-            map.put(Book.ID, item.getInt(Book.ID));
-            map.put(Book.OWNER, item.getString(Book.OWNER));
-            map.put(Book.HOLDER, item.getString(Book.HOLDER));
-            map.put(Book.STATUS, item.getInt(Book.STATUS));
+            map.put(Book.ID, item.optInt(Book.ID, -1));
+            map.put(Book.OWNER, item.optString(Book.OWNER));
+            map.put(Book.HOLDER, item.optString(Book.HOLDER));
+            map.put(Book.STATUS, item.optInt(Book.STATUS, -1));
 
             return map;
         } catch (JSONException e) {

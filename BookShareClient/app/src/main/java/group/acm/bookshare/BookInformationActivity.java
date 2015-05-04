@@ -202,7 +202,7 @@ public class BookInformationActivity extends BaseActivity {
     }
 
     private class BookSubPage {
-        private int bookActionType;
+        public int bookActionType;
 
         private View page;
 
@@ -510,6 +510,8 @@ public class BookInformationActivity extends BaseActivity {
             buttonComment.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (bookPage.bookActionType == Utils.DO_NOTHING)
+                        return;
                     addComment();
                 }
             });

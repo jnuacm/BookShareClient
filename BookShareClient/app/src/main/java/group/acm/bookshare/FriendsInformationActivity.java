@@ -272,7 +272,6 @@ public class FriendsInformationActivity extends BaseActivity {
                     BookInformationActivity.class);
             startActivityForResult(intent, actionType);
         }
-
     }
 
     private class FriendBooksAdapter extends BaseAdapter {

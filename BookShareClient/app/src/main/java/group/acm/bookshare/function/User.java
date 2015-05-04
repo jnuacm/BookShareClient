@@ -36,6 +36,7 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
@@ -144,6 +145,7 @@ public class User {
     }
 
     private NetThread confirmThread;
+
     public void register(String username, String password, String email,
                          int is_group, String area, NetProgress progress) {
         if (confirmThread != null && !confirmThread.isCanceled())
@@ -453,6 +455,7 @@ public class User {
     }
 
     private NetThread addFriendThread;
+
     public void addFriend(String aimName, String message, NetProgress progress) {
         if (addFriendThread != null && !addFriendThread.isCanceled())
             return;
@@ -500,9 +503,9 @@ public class User {
                                 NetProgress progress) throws JSONException {
         JSONObject obj = new JSONObject();
         obj.put("type", 0);
-        obj.put("date",date);
-        obj.put("location",location);
-        obj.put("title","借书消息");
+        obj.put("date", date);
+        obj.put("location", location);
+        obj.put("title", "借书消息");
         return bookRequest(aimName, book, obj.toString(), Inform.REQUEST_TYPE_BORROW, progress);
     }
 
@@ -510,9 +513,9 @@ public class User {
         String holder = (String) book.get(Book.HOLDER);
         JSONObject obj = new JSONObject();
         obj.put("type", 0);
-        obj.put("date",date);
-        obj.put("location",location);
-        obj.put("title","请快点还书");
+        obj.put("date", date);
+        obj.put("location", location);
+        obj.put("title", "请快点还书");
         return bookRequest(holder, book, obj.toString(), Inform.REQUEST_TYPE_RETURN, progress);
     }
 
@@ -520,9 +523,9 @@ public class User {
         String owner = (String) book.get(Book.OWNER);
         JSONObject obj = new JSONObject();
         obj.put("type", 0);
-        obj.put("date",date);
-        obj.put("location",location);
-        obj.put("title","还书啦");
+        obj.put("date", date);
+        obj.put("location", location);
+        obj.put("title", "还书啦");
         return bookRequest(owner, book, obj.toString(), Inform.REQUEST_TYPE_RETURN, progress);
     }
 
@@ -590,6 +593,7 @@ public class User {
      * 获取from为自身的列表
      */
     private NetThread getSendInformThread;
+
     public void getSendInformList(NetProgress progress) {
         if (getSendInformThread != null && !getSendInformThread.isCanceled())
             return;
@@ -688,14 +692,38 @@ public class User {
         }
     }
 
+    public NetThread refusedRequest(int id, int status, String content, Map<String,Object> item, NetProgress progress) {
+        String description = (String)item.get(Inform.DESCRIPTION);
+        String ans;
+        try {
+            JSONObject desObj = new JSONObject(description);
+            JSONObject object = new JSONObject(desObj.getString("message"));
+            object.put("content",content);
+            object.put("type",1);
+            String message = object.toString();
+            desObj.put("message", message);
+            ans = desObj.toString();
+        } catch (JSONException e) {
+            ans = null;
+            e.printStackTrace();
+        }
+        return updateRequest(id, status, ans, progress);
+    }
+
+    public NetThread updateRequest(int id, int status, NetProgress progress) {
+        return updateRequest(id, status, null, progress);
+    }
+
     /**
      * 更新消息的status
      */
-    public NetThread updateRequest(int id, int status, NetProgress progress) {
+    public NetThread updateRequest(int id, int status, String description, NetProgress progress) {
         String url = urlFactory.getAimInformUrl(id);
 
         List<NameValuePair> nvps = new ArrayList<NameValuePair>();
         nvps.add(new BasicNameValuePair(Inform.STATUS, Integer.toString(status)));
+        if (!TextUtils.isEmpty(description))
+            nvps.add(new BasicNameValuePair(Inform.DESCRIPTION, description));
 
         for (NameValuePair i : nvps) {
             Log.i("nvps:", i.getName() + ":" + i.getValue());

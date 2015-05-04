@@ -53,6 +53,7 @@ public class WidgetUtil {
                 R.layout.content_dialog, null);
         final EditText contentInput = (EditText) addCreateApMView
                 .findViewById(R.id.content_input);
+        contentInput.setHint(hint);
         AlertDialog apmDialog = null;
         AlertDialog.Builder builder = null;
 
