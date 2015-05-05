@@ -160,7 +160,7 @@ public class FriendsInformationActivity extends BaseActivity {
 
         @Override
         public void statusError(String response) {
-            String content = "Ê§°Ü:" + response;
+            String content = "ERROR:" + response;
             Toast.makeText(FriendsInformationActivity.this, content,
                     Toast.LENGTH_LONG).show();
         }

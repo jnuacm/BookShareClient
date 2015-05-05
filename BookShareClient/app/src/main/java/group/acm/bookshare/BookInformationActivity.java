@@ -38,6 +38,7 @@ import android.os.Looper;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -248,8 +249,14 @@ public class BookInformationActivity extends BaseActivity {
             // FIXME 注释点击加载
 //            bookImageView.setOnClickListener(new BookImgClick());
 
-            actionButton.setText(getActionButtonText());
-            actionButton.setOnClickListener(new JudgeListener(detailBook));
+            if (bookActionType == Utils.BOOK_BORROW && (Integer) detailBook.get(Book.STATUS) != 1) {
+                actionButton.setVisibility(View.INVISIBLE);
+            } else if (bookPage.bookActionType == Utils.DO_NOTHING) {
+                actionButton.setVisibility(View.INVISIBLE);
+            } else {
+                actionButton.setText(getActionButtonText());
+                actionButton.setOnClickListener(new JudgeListener(detailBook));
+            }
 
             BookImgProcess tmp = new BookImgProcess();
             localUser.getUrlBookImg(
@@ -411,7 +418,7 @@ public class BookInformationActivity extends BaseActivity {
                                     localUser.returnBook(book, time, location, HttpProgress.createShowProgress(
                                             BookInformationActivity.this, "发送成功", "发送失败"));
                                 } catch (JSONException e) {
-                                    Toast.makeText(BookInformationActivity.this, e.toString(),Toast.LENGTH_LONG).show();
+                                    Toast.makeText(BookInformationActivity.this, e.toString(), Toast.LENGTH_LONG).show();
                                     e.printStackTrace();
                                 }
                             }
@@ -426,7 +433,7 @@ public class BookInformationActivity extends BaseActivity {
                                     localUser.askReturn(book, time, location, HttpProgress.createShowProgress(
                                             BookInformationActivity.this, "发送成功", "发送失败"));
                                 } catch (JSONException e) {
-                                    Toast.makeText(BookInformationActivity.this, e.toString(),Toast.LENGTH_LONG).show();
+                                    Toast.makeText(BookInformationActivity.this, e.toString(), Toast.LENGTH_LONG).show();
                                     e.printStackTrace();
                                 }
                             }
@@ -445,7 +452,7 @@ public class BookInformationActivity extends BaseActivity {
                                                     BookInformationActivity.this, "发送成功",
                                                     "发送失败"));
                                 } catch (JSONException e) {
-                                    Toast.makeText(BookInformationActivity.this, e.toString(),Toast.LENGTH_LONG).show();
+                                    Toast.makeText(BookInformationActivity.this, e.toString(), Toast.LENGTH_LONG).show();
                                     e.printStackTrace();
                                 }
                             }
@@ -579,55 +586,28 @@ public class BookInformationActivity extends BaseActivity {
 
         // 弹窗添加评论
         public void addComment() {
-            View addCommentView = LayoutInflater.from(
-                    BookInformationActivity.this).inflate(
-                    R.layout.add_friend_alert_dialog, null);
-            EditText addCommentEdit = (EditText) addCommentView
-                    .findViewById(R.id.add_friend_name);
-            AlertDialog addFriendDialog = null;
-            AlertDialog.Builder builder = null;
+            WidgetUtil.createContentDialog(BookInformationActivity.this, "请输入评论内容", new WidgetUtil.ContentConfirm() {
+                @Override
+                public void onInput(String content) {
+                    if (TextUtils.isEmpty(content))
+                        return;
+                    localUser.addComment((String) detailBook.get(Book.ISBN), content,
+                            new HttpProcessBase() {
+                                @Override
+                                public void statusError(String response) {
+                                    Toast.makeText(appContext, "发送失败", Toast.LENGTH_LONG).show();
+                                }
 
-            builder = new AlertDialog.Builder(BookInformationActivity.this);
-            builder.setTitle("评论");
-            builder.setMessage("请输入评论内容:");
-            builder.setView(addCommentView);
-            builder.setPositiveButton("Yes",
-                    new AddCommentConfirmDialogListener(addCommentEdit));
-            builder.setNegativeButton("No", null);
-            addFriendDialog = builder.create();
-            addFriendDialog.show();
-        }
-    }
-
-    // 确认响应接口
-    private class AddCommentConfirmDialogListener implements
-            DialogInterface.OnClickListener {
-        EditText addCommentEdit;
-
-        public AddCommentConfirmDialogListener(EditText addCommentEdit) {
-            this.addCommentEdit = addCommentEdit;
-        }
-
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            String content = addCommentEdit.getText().toString();
-            if (content.length() <= 0)
-                return;
-            localUser.addComment((String) detailBook.get(Book.ISBN), content,
-                    new HttpProcessBase() {
-                        @Override
-                        public void statusError(String response) {
-                            Toast.makeText(appContext, "发送失败", Toast.LENGTH_LONG).show();
-                        }
-
-                        @Override
-                        public void statusSuccess(String response) {
-                            Toast.makeText(appContext, "发送成功", Toast.LENGTH_LONG).show();
-                            localUser.getCommentList(
-                                    (String) detailBook.get(Book.ISBN),
-                                    new CommentGetProgress());
-                        }
-                    });
+                                @Override
+                                public void statusSuccess(String response) {
+                                    Toast.makeText(appContext, "发送成功", Toast.LENGTH_LONG).show();
+                                    localUser.getCommentList(
+                                            (String) detailBook.get(Book.ISBN),
+                                            new CommentGetProgress());
+                                }
+                            });
+                }
+            }).show();
         }
     }
 

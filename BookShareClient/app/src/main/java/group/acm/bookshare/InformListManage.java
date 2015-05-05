@@ -298,6 +298,7 @@ public class InformListManage {
                         (Integer) item.get(Inform.ID),
                         Inform.REQUEST_STATUS_PERMITTED,
                         new PermittedProgress());
+                clearAndUpdate();
             }
 
             private NetThread confirmAndRThread;
@@ -307,9 +308,11 @@ public class InformListManage {
                 if (confirmAndRThread != null
                         && !confirmAndRThread.isCanceled())
                     return;
+                clearAndUpdate();
                 confirmAndRThread = localUser.updateRequest(
                         (Integer) item.get(Inform.ID),
                         Inform.REQUEST_STATUS_CONFIRM, new PermittedProgress(true));
+                clearAndUpdate();
             }
 
             @Override
@@ -320,14 +323,17 @@ public class InformListManage {
                         + "");
                 activity.startActivityForResult(intent,
                         Utils.ACTIVITY_REQUEST_SHOWCODE);
+                clearAndUpdate();
             }
 
             @Override
             public void scanCode() {
+                clearAndUpdate();
                 Intent openCameraIntent = new Intent(activity,
                         CaptureActivity.class);
                 activity.startActivityForResult(openCameraIntent,
                         Utils.REQUEST_SCANBOOK_UPDATESTATUS);
+                clearAndUpdate();
             }
 
             private NetThread refusedThread;
@@ -344,6 +350,7 @@ public class InformListManage {
                         refusedThread = localUser.refusedRequest(
                                 (Integer) item.get(Inform.ID),
                                 Inform.REQUEST_STATUS_REFUSED, content, item, new PermittedProgress());
+                        clearAndUpdate();
                     }
                 }).show();
             }
@@ -356,6 +363,7 @@ public class InformListManage {
                     return;
                 deleteThread = localUser.deleteRequest(
                         (Integer) item.get(Inform.ID), new PermittedProgress());
+                clearAndUpdate();
             }
 
             private NetThread deleteAndRThread;
@@ -364,8 +372,9 @@ public class InformListManage {
             public void deleteAndRefreshFriend() {
                 if (deleteAndRThread != null && !deleteAndRThread.isCanceled())
                     return;
-                localUser.deleteRequest((Integer) item.get(Inform.ID),
+                deleteAndRThread = localUser.deleteRequest((Integer) item.get(Inform.ID),
                         new PermittedProgress(true));
+                clearAndUpdate();
             }
 
             private NetThread cancelThread;
@@ -377,6 +386,7 @@ public class InformListManage {
                 cancelThread = localUser.updateRequest(
                         (Integer) item.get(Inform.ID),
                         Inform.REQUEST_STATUS_CANCEL, new PermittedProgress());
+                clearAndUpdate();
             }
         }
     }
@@ -384,6 +394,11 @@ public class InformListManage {
     public void reload() {
         localUser.clearInformData();
         localUser.getSendInformList(new SendInformProgress());
+    }
+
+    public void clearAndUpdate() {
+        localUser.clearInformData();
+        informAdapter.notifyDataSetChanged();
     }
 
     public void updateDisplay() {

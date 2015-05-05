@@ -275,12 +275,12 @@ public class FriendListManage {
         AlertDialog.Builder builder = null;
 
         builder = new AlertDialog.Builder(activity);
-        builder.setTitle("Friend");
-        builder.setMessage("Please input your firend'account.");
+        builder.setTitle("加好友");
+        builder.setMessage("请输入好友账户.");
         builder.setView(addFrienView);
-        builder.setPositiveButton("Yes", new AddFriendConfirmDialogListener(
+        builder.setPositiveButton("确认", new AddFriendConfirmDialogListener(
                 addFriendEdit, validateInput));
-        builder.setNegativeButton("No", null);
+        builder.setNegativeButton("取消", null);
         addFriendDialog = builder.create();
         addFriendDialog.show();
     }

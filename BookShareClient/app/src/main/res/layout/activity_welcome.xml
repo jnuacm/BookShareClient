@@ -14,9 +14,9 @@
         android:layout_height="fill_parent"
         android:onClick="Enter" />
 
-    <EditText
+    <!--<EditText
         android:id="@+id/input_host"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"/>-->
 
 </RelativeLayout>
